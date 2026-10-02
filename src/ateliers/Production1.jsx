@@ -89,10 +89,16 @@ export function SimulationProduction1() {
   const R = PR_CHARGES[kR];
   const Q = PR_Q_REF * s, p = PR_P_REF * s * s, Phyd = p * Q;
   const pt = pointFonct(s, R);
+  // Circuit ouvert et court-circuit : seuls comptent les essais faits pendant l'étape « Brancher la charge »
+  const ETAPE_CHARGE = 6;
   useEffect(() => {
+    if (mode === 'guide' && etape === ETAPE_CHARGE) setVus({ co: false, cc: false });
+  }, [etape, mode]);
+  useEffect(() => {
+    if (mode !== 'guide' || etape !== ETAPE_CHARGE) return;
     if (R === Infinity) setVus(v => (v.co ? v : { ...v, co: true }));
     if (R === 0) setVus(v => (v.cc ? v : { ...v, cc: true }));
-  }, [R]);
+  }, [R, mode, etape]);
   const Pel = pt.U * pt.I, eta = Phyd > 0 ? Pel / Phyd : 0;
   const f = PR_P * pt.n, T = f > 0 ? 1 / f : Infinity;
   const vJet = Q / (Math.PI * PR_R_JET ** 2), vAuget = 2 * Math.PI * PR_R_ROUE * pt.n;

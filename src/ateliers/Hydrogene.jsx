@@ -81,7 +81,10 @@ export function SimulationHydrogene() {
   const [guide1, setGuide1] = useEtatPersistant('es1-hydrogene-a1', { etape: 0, reps: {}, verifs: {}, reussies: {} });
   const [guide2, setGuide2] = useEtatPersistant('es1-hydrogene-a2', { etape: 0, reps: {}, verifs: {}, reussies: {} });
   const [releveG, setReleveG] = useState(null);
-  const [modulesVus, setModulesVus] = useState([]);
+  const [tDebutElec, setTDebutElec] = useState(null);   // instant du chronomètre en arrivant sur l'étape « Lancer l'électrolyse »
+  useEffect(() => { if (mode === 'guide' && guide1.etape === 2) setTDebutElec(etat.t); }, [guide1.etape, mode]);
+  const [modulesVus, setModulesVus] = useState([]);   // éléments du banc cliqués pendant l'étape « Les éléments du banc »
+  useEffect(() => { if (mode === 'guide' && guide2.etape === 1) setModulesVus([]); }, [guide2.etape, mode]);
   const [ouverts, setOuverts] = useState({ commandes: true, mesures: true, module: true });
 
   // ── Maquette ──
@@ -214,6 +217,8 @@ export function SimulationHydrogene() {
   const releveGOk = etat.t >= 180 && iEl > 0 && ecl === 100 && !pacOn && etat.vH2 < H2_TUBE;
   const p10g = pointPac(10);
   const pile10 = pacOn && chargeId === '10' && stock;
+  // Durée d'électrolyse depuis l'arrivée sur l'étape (si les tubes sont vidés entre-temps, on repart de zéro)
+  const dureeElec = tDebutElec == null ? 0 : etat.t < tDebutElec ? etat.t : etat.t - tDebutElec;
   const ETAPES1 = [
     { titre: 'Stocker l’énergie du Soleil', focus: ['lampe', 'electro', 'pile'],
       texte: <>Le Soleil ne brille pas toujours quand on a besoin d'électricité. Une solution : utiliser l'électricité solaire
@@ -229,7 +234,7 @@ export function SimulationHydrogene() {
     { titre: 'Lancer l’électrolyse', focus: ['electro'],
       texte: <>Les commandes sont apparues sous le schéma. Lancez le chronomètre (vous pouvez accélérer le temps × 60) et
         laissez l'électrolyse tourner au moins <strong>3 minutes</strong>. Regardez les bulles monter dans les tubes.</>,
-      tache: { type: 'action', ok: etat.t >= 180 && etat.vH2 > 0, consigne: `Durée : ${fmt(etat.t / 60, 1)} min / 3 min` } },
+      tache: { type: 'action', ok: dureeElec >= 180 && etat.vH2 > 0, consigne: `Durée : ${fmt(dureeElec / 60, 1)} min / 3 min` } },
     { titre: 'Deux gaz différents', focus: ['tubes'],
       texte: <>L'électrolyse décompose l'eau : 2 H<sub>2</sub>O → 2 H<sub>2</sub> + O<sub>2</sub>.</>,
       tache: { type: 'qcm', q: 'Quel tube se remplit le plus vite ?', options: ['Le tube de H₂', 'Le tube de O₂', 'Les deux au même rythme'], bonne: 0 } },
@@ -462,7 +467,7 @@ export function SimulationHydrogene() {
   const cadreModule = (id, x, y, w, h) => (
     <rect x={x} y={y} width={w} height={h} rx="8" fill={actifM(id) ? '#fef9c3' : 'transparent'}
       stroke={actifM(id) ? '#ca8a04' : 'transparent'} strokeWidth="2.5" strokeDasharray="6 3"
-      onClick={() => { setModule(m => (m === id ? null : id)); setModulesVus(l => (l.includes(id) ? l : [...l, id])); }} style={{ cursor: 'pointer' }}/>
+      onClick={() => { setModule(m => (m === id ? null : id)); if (enGuide && atelier === 2 && etape2 === 1) setModulesVus(l => (l.includes(id) ? l : [...l, id])); }} style={{ cursor: 'pointer' }}/>
   );
   const dureeHelice = iBanc > 0.05 ? Math.max(0.2, 2.5 - iBanc * 0.22) : 0;
   const schemaBanc = (

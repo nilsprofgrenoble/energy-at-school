@@ -91,11 +91,18 @@ export function SimulationStockage() {
     id = requestAnimationFrame(pas);
     return () => cancelAnimationFrame(id);
   }, [marche]);
+  // Décharge et charge : seules comptent celles faites pendant leur étape du parcours (atelier 1)
+  const ETAPE_DECHARGE = 2, ETAPE_CHARGE = 6;
+  const etapeA1 = mode === 'guide' && atelier === 1 ? guide1.etape : -1;
+  useEffect(() => {
+    if (etapeA1 === ETAPE_DECHARGE) { setVus(v => ({ ...v, decharge: false })); setSocDepart(etat.soc); }
+    if (etapeA1 === ETAPE_CHARGE) { setVus(v => ({ ...v, charge: false })); setSocDepart(etat.soc); }
+  }, [etapeA1]);
   useEffect(() => {
     if (!marche) return;
-    if (sens === 'decharge' && socDepart - etat.soc >= 0.1) setVus(v => (v.decharge ? v : { ...v, decharge: true }));
-    if (sens === 'charge' && etat.soc - socDepart >= 0.1) setVus(v => (v.charge ? v : { ...v, charge: true }));
-  }, [etat.soc, marche, sens, socDepart]);
+    if (etapeA1 === ETAPE_DECHARGE && sens === 'decharge' && socDepart - etat.soc >= 0.1) setVus(v => (v.decharge ? v : { ...v, decharge: true }));
+    if (etapeA1 === ETAPE_CHARGE && sens === 'charge' && etat.soc - socDepart >= 0.1) setVus(v => (v.charge ? v : { ...v, charge: true }));
+  }, [etat.soc, marche, sens, socDepart, etapeA1]);
   const vide = etat.soc <= 0.001, pleine = etat.soc >= 0.999;
   const bloque = !marche && ((sens === 'decharge' && vide) || (sens === 'charge' && pleine));
   function lancer() {

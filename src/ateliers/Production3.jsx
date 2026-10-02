@@ -63,10 +63,16 @@ export function SimulationProduction3() {
   const e = etatRoue(Q, H, R);
   const opt = optimum(Q, H);
 
+  // Circuit ouvert et court-circuit : seuls comptent les essais faits pendant l'étape « Brancher l’alternateur »
+  const ETAPE_CHARGE = 6;
   useEffect(() => {
+    if (mode === 'guide' && etape === ETAPE_CHARGE) setVus({ co: false, cc: false });
+  }, [etape, mode]);
+  useEffect(() => {
+    if (mode !== 'guide' || etape !== ETAPE_CHARGE) return;
     if (R === Infinity) setVus(v => (v.co ? v : { ...v, co: true }));
     if (R === 0) setVus(v => (v.cc ? v : { ...v, cc: true }));
-  }, [R]);
+  }, [R, mode, etape]);
 
   // ── Pesée (balance Roberval, 15 kg) ──
   const refQ = useRef(Q); refQ.current = Q;
