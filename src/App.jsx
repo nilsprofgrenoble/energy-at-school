@@ -19,10 +19,10 @@ const PAGES = [
   { slug: 'production-2', nom: 'Banc Pelton', groupe: 'Produire', icone: '⚙️', couleur: '#7c3aed', composant: SimulationProduction2 },
   { slug: 'production-3', nom: "Au fil de l'eau", groupe: 'Produire', icone: '🏞️', couleur: '#0891b2', composant: SimulationProduction3 },
   { slug: 'transport', nom: 'Réseau électrique', groupe: 'Transporter', icone: '🗼', couleur: '#7c3aed', composant: SimulationTransport },
-  { slug: 'stockage', nom: 'Batteries', groupe: 'Stocker', icone: '🔋', couleur: '#2563eb', composant: SimulationStockage },
-  { slug: 'hydrogene', nom: 'Électrolyse et pile', groupe: 'Hydrogène', icone: '💧', couleur: '#16a34a', composant: SimulationHydrogene },
+  { slug: 'stockage', nom: 'Batteries', groupe: 'Stocker et restituer', icone: '🔋', couleur: '#2563eb', composant: SimulationStockage },
+  { slug: 'hydrogene', nom: 'Hydrogène', groupe: 'Stocker et restituer', icone: '💧', couleur: '#16a34a', composant: SimulationHydrogene },
 ];
-const GROUPES = ['Produire', 'Transporter', 'Stocker', 'Hydrogène'];
+const GROUPES = ['Produire', 'Transporter', 'Stocker et restituer'];
 
 const lirePage = () => {
   const slug = new URLSearchParams(window.location.search).get('atelier');

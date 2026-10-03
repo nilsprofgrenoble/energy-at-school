@@ -112,6 +112,7 @@ export function Graphe({ xMax, yMax, xLabel, yLabel, courbes = [], points = [], 
             <rect x={x0} y={Y(br.val)} width={bw * 0.64} height={H - b - Y(br.val)}
               fill={br.color} opacity={br.fort ? 1 : 0.45} stroke={br.fort ? '#0f172a' : 'none'} strokeWidth="1.5"/>
             <text x={x0 + bw * 0.32} y={H - b + 17} fontSize="12" fill={'#334155'} textAnchor="middle">{br.label}</text>
+            {br.etiquette != null && <text x={x0 + bw * 0.32} y={Y(br.val) - 5} fontSize="12.5" fontWeight="700" fill={'#0f172a'} textAnchor="middle">{br.etiquette}</text>}
           </g>
         );
       })}
@@ -186,6 +187,34 @@ export function CarteParcours({ etapes, etat, setEtat, fin }) {
   }, [reussieMaintenant, dejaReussie, etape, setEtat]);
   // Message de reprise, affiché une seule fois quand on retrouve un parcours commencé
   const [reprise] = useState(() => etape > 0);
+  // La carte est-elle à l'écran ? Sinon, un rappel flottant garde la consigne et le bouton Suivant sous les yeux de l'élève
+  const refCarte = useRef(null);
+  const [carteVisible, setCarteVisible] = useState(true);
+  useEffect(() => {
+    // c'est le haut de la carte (titre et consigne) qui doit être à l'écran
+    const verifier = () => {
+      if (!refCarte.current) return;
+      const r = refCarte.current.getBoundingClientRect();
+      setCarteVisible(r.top > -40 && r.top < window.innerHeight - 120);
+    };
+    verifier();
+    window.addEventListener('scroll', verifier, { passive: true });
+    window.addEventListener('resize', verifier);
+    return () => { window.removeEventListener('scroll', verifier); window.removeEventListener('resize', verifier); };
+  }, []);
+  // Un élément de la page marqué data-apparait="3" (ou "3 7") apparaît à l'étape 3 : on le montre à l'élève
+  const premierRendu = useRef(true);
+  useEffect(() => {
+    if (premierRendu.current) { premierRendu.current = false; return; }
+    const id = setTimeout(() => {
+      const el = document.querySelector(`[data-apparait~="${etape}"]`);
+      if (!el) return;
+      const r = el.getBoundingClientRect();
+      if (r.top < 0 || r.bottom > window.innerHeight) el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      el.classList.remove('vient-d-apparaitre'); void el.offsetWidth; el.classList.add('vient-d-apparaitre');
+    }, 120);
+    return () => clearTimeout(id);
+  }, [etape]);
   const piege = () => {
     const x = lireNombre(reps[etape]);
     if (!isFinite(x)) return 'Entrez une valeur numérique (virgule ou point).';
@@ -195,8 +224,10 @@ export function CarteParcours({ etapes, etat, setEtat, fin }) {
     return null;
   };
   return (
-    <div style={{ background: 'white', borderRadius: 10, padding: '10px 12px', border: `2px solid ${ORANGE_GUIDE}`,
+    <div ref={refCarte} style={{ background: 'white', borderRadius: 10, padding: '10px 12px', border: `2px solid ${ORANGE_GUIDE}`,
       display: 'flex', flexDirection: 'column', gap: 10 }}>
+      <style>{`@keyframes clignoteApparition { 0%, 100% { box-shadow: 0 0 0 0 rgba(234,88,12,0); } 30%, 70% { box-shadow: 0 0 0 4px rgba(234,88,12,0.75); } }
+        .vient-d-apparaitre { animation: clignoteApparition 1.2s ease-in-out 2; border-radius: 10px; }`}</style>
       <div>
         <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12.5, color: TXT2, fontWeight: 700 }}>
           <span>Étape {etape + 1} / {etapes.length}</span>
@@ -261,7 +292,7 @@ export function CarteParcours({ etapes, etat, setEtat, fin }) {
                 border: '1px solid #fdba74', borderRadius: 6, padding: '4px 8px', marginTop: 4 }}>{piege()}</div>}
               {vuRep ? (
                 <div style={{ fontSize: 13.5, color: TXT2, marginTop: 4 }}>
-                  {tache.type === 'num' ? `Réponse attendue : ${sci(tache.vrai)} ${tache.unite}` : `Réponse : ${tache.options[tache.bonne]}. ${tache.expl || ''}`}
+                  {tache.type === 'num' ? `Réponse attendue : ${tache.affiche ? tache.affiche(tache.vrai) : sci(tache.vrai)} ${tache.unite}` : `Réponse : ${tache.options[tache.bonne]}. ${tache.expl || ''}`}
                 </div>
               ) : (
                 <button onClick={() => maj(e => ({ reps: { ...e.reps, [`vu${etape}`]: true } }))} style={{ fontSize: 12.5, marginTop: 4,
@@ -279,6 +310,21 @@ export function CarteParcours({ etapes, etat, setEtat, fin }) {
             style={{ ...btn(peutSuivre, ORANGE_GUIDE), opacity: peutSuivre ? 1 : 0.45 }}>Suivant ▶</button>
         ) : fin}
       </div>
+      {!carteVisible && (
+        <div role="status" style={{ position: 'fixed', right: 14, top: 14, zIndex: 50, maxWidth: 'min(360px, calc(100vw - 28px))',
+          background: 'white', border: `2px solid ${ORANGE_GUIDE}`, borderRadius: 10, padding: '8px 10px',
+          boxShadow: '0 6px 20px rgba(15,23,42,0.25)', display: 'flex', flexDirection: 'column', gap: 6 }}>
+          <div style={{ fontSize: 12, fontWeight: 700, color: TXT2 }}>🧭 Étape {etape + 1} / {etapes.length}</div>
+          <div style={{ fontSize: 14.5, fontWeight: 700, color: TXT }}>{et.titre}</div>
+          {tache && tache.type === 'action' && tache.consigne && <div style={{ fontSize: 13, color: TXT, whiteSpace: 'pre-wrap' }}>{tache.consigne}</div>}
+          {reussie && tache && <div style={{ fontSize: 13, color: '#15803d', fontWeight: 700 }}>✅ C'est fait !</div>}
+          <div style={{ display: 'flex', gap: 6, justifyContent: 'flex-end' }}>
+            <button onClick={() => refCarte.current && refCarte.current.scrollIntoView({ behavior: 'smooth', block: 'start' })} style={{ ...btn(false), padding: '5px 10px', fontSize: 13 }}>⤴ Voir la consigne</button>
+            {etape < etapes.length - 1 && <button onClick={() => { maj(e => ({ etape: e.etape + 1 })); refCarte.current && refCarte.current.scrollIntoView({ behavior: 'smooth', block: 'start' }); }}
+              disabled={!peutSuivre} style={{ ...btn(peutSuivre, ORANGE_GUIDE), padding: '5px 10px', fontSize: 13, opacity: peutSuivre ? 1 : 0.45 }}>Suivant ▶</button>}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

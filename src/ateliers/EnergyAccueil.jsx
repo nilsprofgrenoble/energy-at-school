@@ -16,32 +16,29 @@ const THEMES = [
     pages: [
       { id: 'transport', nom: 'Transport · Réseau électrique', texte: 'Transformateurs et câbles : pourquoi on transporte l’électricité sous haute tension.' },
     ] },
-  { nom: 'Stocker', icone: '🔋', couleur: '#2563eb', question: 'Comment garder l’énergie pour plus tard ?',
+  { nom: 'Stocker et restituer', icone: '🔋', couleur: '#2563eb', question: 'Comment garder l’énergie électrique pour plus tard, puis la rendre quand on en a besoin ?',
     pages: [
-      { id: 'stockage', nom: 'Stockage · Batteries', texte: 'Ce qui se passe dans une batterie lithium-ion, puis assembler des cellules pour un téléphone ou une voiture.' },
-    ] },
-  { nom: 'Hydrogène', icone: '💧', couleur: '#16a34a', question: 'Et si l’on stockait l’électricité sous forme de gaz ?',
-    pages: [
-      { id: 'hydrogene', nom: 'Hydrogène · Électrolyse et pile', texte: 'De la lumière au dihydrogène, puis du dihydrogène à l’électricité, avec une vraie pile à combustible.' },
+      { id: 'stockage', nom: 'Stocker 1 · Batteries', texte: 'L’énergie stockée sous forme chimique dans une batterie lithium-ion, puis assembler des cellules pour un téléphone ou une voiture.' },
+      { id: 'hydrogene', nom: 'Stocker 2 · Hydrogène', texte: 'L’électricité transformée en dihydrogène par électrolyse, puis le dihydrogène retransformé en électricité par une pile à combustible.' },
     ] },
 ];
 
 export function EnergyAccueil() {
   const { txt: TXT, txt2: TXT2 } = KIT;
   const chaine = (
-    <svg viewBox="0 0 640 120" role="img" aria-label="La chaîne de l'énergie : produire, transporter, stocker, hydrogène"
+    <svg viewBox="0 0 640 120" role="img" aria-label="La chaîne de l'énergie : produire, transporter, stocker et restituer"
       style={{ width: '100%', height: 'auto', display: 'block' }}>
       {THEMES.map((t, k) => {
-        const x = 12 + k * 158;
+        const n = THEMES.length, ecart = 34, w = (616 - (n - 1) * ecart) / n, x = 12 + k * (w + ecart);
         return (
           <g key={t.nom}>
-            <rect x={x} y="14" width="130" height="86" rx="12" fill="white" stroke={t.couleur} strokeWidth="3"/>
-            <text x={x + 65} y="52" fontSize="30" textAnchor="middle">{t.icone}</text>
-            <text x={x + 65} y="84" fontSize="17" fontWeight="800" fill={t.couleur} textAnchor="middle">{t.nom}</text>
-            {k < THEMES.length - 1 && (
+            <rect x={x} y="14" width={w} height="86" rx="12" fill="white" stroke={t.couleur} strokeWidth="3"/>
+            <text x={x + w / 2} y="52" fontSize="30" textAnchor="middle">{t.icone}{t.nom.startsWith('Stocker') ? '💧' : ''}</text>
+            <text x={x + w / 2} y="84" fontSize={t.nom.length > 12 ? 14.5 : 17} fontWeight="800" fill={t.couleur} textAnchor="middle">{t.nom}</text>
+            {k < n - 1 && (
               <g>
-                <line x1={x + 132} y1="57" x2={x + 154} y2="57" stroke={TXT2} strokeWidth="3"/>
-                <polygon points={`${x + 150},50 ${x + 158},57 ${x + 150},64`} fill={TXT2}/>
+                <line x1={x + w + 3} y1="57" x2={x + w + ecart - 6} y2="57" stroke={TXT2} strokeWidth="3"/>
+                <polygon points={`${x + w + ecart - 10},50 ${x + w + ecart - 2},57 ${x + w + ecart - 10},64`} fill={TXT2}/>
               </g>
             )}
           </g>
@@ -53,8 +50,9 @@ export function EnergyAccueil() {
     <div style={{ ...cardStyle, textAlign: 'left' }}>
       <h2 style={{ margin: '0 0 6px', fontSize: 22, color: TXT }}>Energy@School · Préparer la journée à l'ENSE3</h2>
       <p style={{ fontSize: 15.5, color: TXT, lineHeight: 1.6, margin: '0 0 12px' }}>
-        Pendant une journée dans les laboratoires de Grenoble INP – Ense³, vous allez découvrir comment on <strong>produit</strong>,
-        <strong> transporte</strong> et <strong>stocke</strong> l'énergie électrique, et le rôle que peut jouer l'<strong>hydrogène</strong>.
+        Pendant une journée dans les laboratoires de Grenoble INP – Ense³, vous allez découvrir comment on <strong>produit</strong> l'énergie
+        électrique, comment on la <strong>transporte</strong>, et comment on la <strong>stocke</strong> pour la <strong>restituer</strong> plus tard,
+        dans une batterie ou sous forme d'hydrogène.
         Chaque élève participe à deux ateliers sur les quatre. Ces pages vous permettent de les préparer avant, et d'y revenir après.
       </p>
 
