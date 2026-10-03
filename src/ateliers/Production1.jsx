@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { cardStyle, Graphe, fmt, sci, lireNombre, proche, CarteParcours, Cadre, ORANGE_GUIDE, useEtatPersistant } from "../commun";
+import { cardStyle, Graphe, fmt, sci, lireNombre, proche, CarteParcours, Cadre, ORANGE_GUIDE, useEtatPersistant, avecIndices } from "../commun";
 
 // ====================================================
 // ENERGY@SCHOOL — ATELIER PRODUCTION 1
@@ -135,7 +135,7 @@ export function SimulationProduction1() {
   const ligne = (k, v, c, cle) => (
     <div key={cle} style={{ display: 'flex', justifyContent: 'space-between', gap: 8, padding: '5px 0',
       borderBottom: `1px dashed ${BORDER}`, fontSize: 14 }}>
-      <span style={{ color: TXT2, fontWeight: 600 }}>{k}</span>
+      <span style={{ color: TXT2, fontWeight: 600 }}>{avecIndices(k)}</span>
       <span style={{ color: c || TXT, fontWeight: 700, fontFamily: 'monospace', whiteSpace: 'nowrap' }}>{v}</span>
     </div>
   );
@@ -605,7 +605,7 @@ export function SimulationProduction1() {
         const ok = verifie && juste(q);
         return (
           <div key={q.id} style={{ borderLeft: `3px solid ${verifie ? (ok ? '#16a34a' : '#dc2626') : BORDER}`, paddingLeft: 8 }}>
-            <div style={{ fontSize: 14, color: TXT, fontWeight: 700, marginBottom: 5 }}>{k + 1}. {q.q}</div>
+            <div style={{ fontSize: 14, color: TXT, fontWeight: 700, marginBottom: 5 }}>{k + 1}. {avecIndices(q.q)}</div>
             {q.type === 'choix' ? (
               <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
                 {q.options.map((o, i) => <button key={i} onClick={() => { setReps(pr => ({ ...pr, [q.id]: i })); setVerifie(false); }}

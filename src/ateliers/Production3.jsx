@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { cardStyle, Graphe, fmt, sci, lireNombre, proche, CarteParcours, useEtatPersistant } from "../commun";
+import { cardStyle, Graphe, fmt, sci, lireNombre, proche, CarteParcours, useEtatPersistant, avecIndices } from "../commun";
 
 // ====================================================
 // ENERGY@SCHOOL — ATELIER PRODUCTION 3
@@ -121,7 +121,7 @@ export function SimulationProduction3() {
   const ligne = (k, v, c, cle) => (
     <div key={cle} style={{ display: 'flex', justifyContent: 'space-between', gap: 8, padding: '5px 0',
       borderBottom: `1px dashed ${BORDER}`, fontSize: 14 }}>
-      <span style={{ color: TXT2, fontWeight: 600 }}>{k}</span>
+      <span style={{ color: TXT2, fontWeight: 600 }}>{avecIndices(k)}</span>
       <span style={{ color: c || TXT, fontWeight: 700, fontFamily: 'monospace', whiteSpace: 'nowrap' }}>{v}</span>
     </div>
   );
@@ -522,7 +522,7 @@ export function SimulationProduction3() {
         const ok = mission.verifie && justeM(q);
         return (
           <div key={q.id} style={{ borderLeft: `3px solid ${mission.verifie ? (ok ? '#16a34a' : '#dc2626') : BORDER}`, paddingLeft: 8 }}>
-            <div style={{ fontSize: 14, color: TXT, fontWeight: 700, marginBottom: 5 }}>{k + 1}. {q.q}</div>
+            <div style={{ fontSize: 14, color: TXT, fontWeight: 700, marginBottom: 5 }}>{k + 1}. {avecIndices(q.q)}</div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
               <input value={mission.reps[q.id] || ''} placeholder="?" aria-label={`Réponse ${k + 1}`}
                 onChange={x => { const v = x.target.value; setMission(m => ({ ...m, verifie: false, reps: { ...m.reps, [q.id]: v } })); }} style={{ ...inp, width: 120 }}/>

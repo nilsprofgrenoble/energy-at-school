@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { cardStyle, Graphe, fmt, sci, lireNombre, proche, CarteParcours, Cadre, ORANGE_GUIDE, useEtatPersistant } from "../commun";
+import { cardStyle, Graphe, fmt, sci, lireNombre, proche, CarteParcours, Cadre, ORANGE_GUIDE, useEtatPersistant, avecIndices } from "../commun";
 import { ParcoursReseauReel } from "./ReseauReel";
 
 // ====================================================
@@ -83,7 +83,7 @@ export function SimulationTransport() {
   const ligne = (k, v, c, cle) => (
     <div key={cle} style={{ display: 'flex', justifyContent: 'space-between', gap: 8, padding: '5px 0',
       borderBottom: `1px dashed ${BORDER}`, fontSize: 14 }}>
-      <span style={{ color: TXT2, fontWeight: 600 }}>{k}</span>
+      <span style={{ color: TXT2, fontWeight: 600 }}>{avecIndices(k)}</span>
       <span style={{ color: c || TXT, fontWeight: 700, fontFamily: 'monospace', whiteSpace: 'nowrap' }}>{v}</span>
     </div>
   );
