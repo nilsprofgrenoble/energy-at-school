@@ -24,16 +24,14 @@ const I_EL_MAX = 0.17;                         // A, à pleine lumière (annexe 
 const iElec = ecl => I_EL_MAX * ecl / 100;
 const uElec = i => (i > 0 ? 1.45 + 0.4 * i : 0); // 1,52 V pour 0,17 A (annexe A)
 
-// ── Maquette : caractéristique de la petite pile (annexe A) ──
+// ── Maquette : caractéristique de la petite pile, modèle lissé ajusté sur les points de l'annexe A ──
+// U = E0 − A·ln(1 + i/i0) − R·i − m·(exp(n·i) − 1) : pertes d'activation, pertes ohmiques, pertes de transport de matière
 const PAC_PTS = [[0, 0.77], [0.003, 0.76], [0.007, 0.75], [0.014, 0.73], [0.064, 0.65],
   [0.079, 0.41], [0.080, 0.23], [0.082, 0.09], [0.083, 0]];
+const PAC = { E0: 0.77204, A: 0.070538, i0: 0.016419, R: 0.0047701, m: 2.6284e-9, n: 233.17 };
 function uPac(i) {
-  if (i <= 0) return PAC_PTS[0][1];
-  for (let k = 0; k < PAC_PTS.length - 1; k++) {
-    const [i0, u0] = PAC_PTS[k], [i1, u1] = PAC_PTS[k + 1];
-    if (i <= i1) return u0 + (u1 - u0) * (i - i0) / (i1 - i0);
-  }
-  return 0;
+  if (i <= 0) return PAC.E0;
+  return Math.max(0, PAC.E0 - PAC.A * Math.log(1 + i / PAC.i0) - PAC.R * i - PAC.m * (Math.exp(PAC.n * i) - 1));
 }
 // Point de fonctionnement : intersection de U = f(I) et de la droite U = R·I
 function pointPac(R) {
@@ -531,7 +529,7 @@ export function SimulationHydrogene() {
   );
 
   // ════════════════ GRAPHIQUES ════════════════
-  const ptsPac = Array.from({ length: 84 }, (_, k) => [k / 1000, uPac(k / 1000)]);
+  const ptsPac = Array.from({ length: 401 }, (_, k) => [k * 0.0835 / 400, uPac(k * 0.0835 / 400)]);   // pas fin : la chute finale est raide
   const grapheMaquette = (() => {
     if (ongletG1 === 'volumes') {
       const tMax = Math.max(10, Math.ceil(etat.t / 60 / 5) * 5);
@@ -544,9 +542,10 @@ export function SimulationHydrogene() {
       const R = charge.R, iMax = 0.09;
       const pOp = pointPac(R);
       return <Graphe xMax={iMax} yMax={0.9} xLabel="I (A)" yLabel="U (V)"
-        courbes={[{ pts: ptsPac, color: COUL.pile, label: 'pile : U = f(I)' },
+        courbes={[{ pts: ptsPac, color: COUL.pile, label: 'pile (modèle)' },
           { pts: [[0, 0], [Math.min(iMax, 0.9 / R), Math.min(0.9, R * iMax)]], color: TXT2, dash: '5 4', label: `charge : U = R × I` }]}
-        points={pacOn && pt.i > 0 ? [{ x: pt.i, y: pt.u, color: TXT, fill: '#fde047', r: 6 }] : []}/>;
+        points={[...PAC_PTS.map(([i, u]) => ({ x: i, y: u, color: TXT, fill: 'white', r: 3.5 })),
+          ...(pacOn && pt.i > 0 ? [{ x: pt.i, y: pt.u, color: TXT, fill: '#fde047', r: 6 }] : [])]}/>;
     }
     const barres = CHARGES.filter(c => c.id !== 'moteur').map(c => ({
       label: c.nom, val: pointPac(c.R).p * 1000, color: COUL.pile, fort: c.id === chargeId }));
@@ -688,9 +687,24 @@ export function SimulationHydrogene() {
         de la réaction en électricité. La tension réelle, plus faible, dit directement quelle part est récupérée.
       </div>
       <div style={{ color: TXT2, marginTop: 6 }}>
-        Deux précautions : on suppose que tout le dihydrogène consommé réagit (pas de fuite ni de purge),
-        et certains documents divisent par 1,23 V (énergie maximale récupérable, ΔG) au lieu de 1,48 V (ΔH) :
-        le rendement annoncé est alors plus élevé.
+        Une précaution : on suppose que tout le dihydrogène consommé réagit (pas de fuite ni de purge).
+      </div>
+      <div style={{ marginTop: 10, fontWeight: 700 }}>Pour aller plus loin : 1,48 V ou 1,23 V ?</div>
+      <div>L'énergie de la réaction H<sub>2</sub> + ½ O<sub>2</sub> → H<sub>2</sub>O se décompose en deux parts :
+        ΔH = ΔG + TΔS.</div>
+      <ul style={{ margin: '4px 0', paddingLeft: 20 }}>
+        <li><strong>ΔH = 285 kJ/mol</strong> (eau formée liquide) : toute l'énergie de la réaction. ΔH / 2F = <strong>1,48 V</strong>.
+          C'est aussi le pouvoir calorifique supérieur (PCS) du dihydrogène.</li>
+        <li><strong>ΔG = 237 kJ/mol</strong> : la part qui peut être échangée sous forme électrique. ΔG / 2F = <strong>1,23 V</strong>.</li>
+        <li><strong>TΔS = 48 kJ/mol</strong> : le reste, échangé sous forme de chaleur.</li>
+      </ul>
+      <div>Pour la <strong>pile</strong>, même parfaite, on ne pourrait récupérer en électricité que ΔG, soit 1,23 / 1,48 ≈ 83 % de ΔH :
+        le reste part forcément en chaleur. Pour l'<strong>électrolyseur</strong>, 1,23 V est la tension minimale ; entre 1,23 et 1,48 V,
+        il doit prendre de la chaleur à son environnement ; au-delà de 1,48 V (la tension « thermoneutre »), il en dégage.</div>
+      <div style={{ color: TXT2, marginTop: 6 }}>
+        On divise ici par 1,48 V, car on compare l'électricité obtenue à toute l'énergie du dihydrogène consommé. Diviser par 1,23 V
+        donne un rendement plus élevé, qui compare à l'électricité maximale théorique. Attention à une confusion fréquente : le
+        pouvoir calorifique inférieur (PCI, eau formée à l'état de vapeur, 242 kJ/mol) correspond à 1,25 V, et non à 1,23 V.
       </div>
     </div>
   );
@@ -1020,7 +1034,7 @@ export function SimulationHydrogene() {
   }[ongletG];
 
   const blocGraphe = (
-    <div style={box}>
+    <div style={box} data-apparait={enGuide ? (atelier === 1 ? '2 15 16' : '8 9') : undefined}>
       <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', marginBottom: 8 }}>
         {ongletsG.map(([k, l]) => <button key={k} onClick={() => setOngletG(k)} style={petitBtn(ongletG === k, '#334155')}>{l}</button>)}
       </div>
@@ -1079,7 +1093,7 @@ export function SimulationHydrogene() {
       {enGuide ? (
         <div className="h2-l2">
           {ongletsG.length > 0 && blocGraphe}
-          <div>
+          <div data-apparait={atelier === 1 ? '2 5 13' : '3'}>
             {atelier === 1 ? <>{section('commandes', 'Commandes', commandesMaquette)}{rev1.chrono && section('mesures', 'Mesures', mesuresMaquette)}</>
               : section('commandes', 'Commandes et mesures', commandesBanc)}
           </div>
