@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { cardStyle, Graphe, fmt, sci, lireNombre, proche, CarteParcours, Cadre, ORANGE_GUIDE, useEtatPersistant, avecIndices } from "../commun";
+import { signalerDefi } from "../avancement";
 
 // ====================================================
 // ENERGY@SCHOOL — ATELIER STOCKAGE
@@ -712,6 +713,10 @@ export function SimulationStockage() {
     { id: 'n', q: 'Quantité de lithium échangée', unite: 'mol', vrai: defi.q * 3600 / ST_F },
   ] : [];
   const justeD = q => { const x = lireNombre(defi.reps[q.id]); return isFinite(x) && proche(x, q.vrai, 0.04); };
+  const defiRelevé = !!defi && (atelier === 1
+    ? !!defi.verifie && qDefi1.length > 0 && qDefi1.every(justeD)
+    : !!defi.valide && defi.valide.ok && defi.valide.leger);
+  useEffect(() => { if (defiRelevé) signalerDefi('defi-stockage'); }, [defiRelevé]);
   const missionDefi = defi && defi.mission ? MISSIONS.find(x => x.id === defi.mission) : null;
   const voletDefi = !defi ? null : atelier === 1 ? (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>

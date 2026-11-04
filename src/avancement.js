@@ -2,7 +2,7 @@
 //  AVANCEMENT ET NIVEAUX D'ENERGY@SCHOOL
 //  • Chaque parcours guidé a une clé (celle de son état dans le navigateur, « es1-… »).
 //  • Un parcours est TERMINÉ quand l'élève a atteint sa dernière étape. L'ordre n'a aucune importance.
-//  • Le niveau ne dépend que du NOMBRE de parcours terminés, jamais de l'ordre ni d'un classement.
+//  • Le niveau ne dépend que du NOMBRE de parcours terminés et de défis relevés, jamais de l'ordre ni d'un classement.
 //  • Connecté, l'avancement est aussi enregistré sur le serveur (table energy_progres) et suit l'élève d'un appareil à l'autre.
 //    Sans compte, tout continue de fonctionner : seul l'enregistrement sur le serveur est absent.
 // ═══════════════════════════════════════════════════════════════════════════
@@ -26,23 +26,36 @@ export const FAMILLES = [
 ];
 export const TOUS_PARCOURS = FAMILLES.flatMap(f => f.parcours.map(p => ({ ...p, famille: f.id })));
 
-// Niveaux : seuil = nombre de parcours terminés
+// Les défis : un par page. Un défi est « relevé » quand l'élève l'a réussi en entier (toutes les réponses justes,
+// ou la solution optimale pour les missions de dimensionnement).
+export const DEFIS = [
+  { cle: 'defi-production1', nom: 'Turbine Pelton', page: 'production-1', famille: 'produire' },
+  { cle: 'defi-production2', nom: 'Banc Pelton', page: 'production-2', famille: 'produire' },
+  { cle: 'defi-production3', nom: 'Au fil de l’eau', page: 'production-3', famille: 'produire' },
+  { cle: 'defi-transport', nom: 'Réseau électrique', page: 'transport', famille: 'transporter' },
+  { cle: 'defi-stockage', nom: 'Batteries', page: 'stockage', famille: 'stocker' },
+  { cle: 'defi-hydrogene', nom: 'Hydrogène', page: 'hydrogene', famille: 'stocker' },
+];
+// Niveaux : seuil = points = parcours terminés (9 au maximum) + défis relevés (6 au maximum) = 15.
+// Les deux derniers niveaux ne s'atteignent qu'en relevant des défis.
 export const NIVEAUX = [
-  { seuil: 0, nom: 'Étincelle', icone: '✨' },
-  { seuil: 1, nom: 'Courant', icone: '🔌' },
-  { seuil: 3, nom: 'Tension', icone: '⚡' },
-  { seuil: 5, nom: 'Puissance', icone: '💪' },
-  { seuil: 7, nom: 'Rendement', icone: '📊' },
-  { seuil: 9, nom: 'Centrale', icone: '🏭' },
+  { seuil: 0, nom: 'Étincelle capricieuse', icone: '✨' },
+  { seuil: 1, nom: 'Court-circuit maîtrisé', icone: '🔌' },
+  { seuil: 4, nom: 'Tension montante', icone: '⚡' },
+  { seuil: 7, nom: 'Puissance explosive', icone: '💥' },
+  { seuil: 10, nom: 'Rendement imbattable', icone: '🏆' },
+  { seuil: 13, nom: 'Surtension légendaire', icone: '🌩️' },
 ];
 export const termine = p => !!p && p.etape >= p.total - 1 && p.total > 1;
 // « suivi » : { cle: { etape, total, reussies } }
 export function bilan(suivi) {
   const faits = TOUS_PARCOURS.filter(p => termine(suivi[p.cle])).length;
-  let k = 0; NIVEAUX.forEach((n, i) => { if (faits >= n.seuil) k = i; });
+  const defis = DEFIS.filter(d => termine(suivi[d.cle])).length;
+  const points = faits + defis, max = TOUS_PARCOURS.length + DEFIS.length;
+  let k = 0; NIVEAUX.forEach((n, i) => { if (points >= n.seuil) k = i; });
   const suivant = NIVEAUX[k + 1] || null;
   const badges = FAMILLES.filter(f => f.parcours.every(p => termine(suivi[p.cle])));
-  return { faits, total: TOUS_PARCOURS.length, niveau: NIVEAUX[k], indice: k, suivant, badges };
+  return { faits, total: TOUS_PARCOURS.length, defis, totalDefis: DEFIS.length, points, max, niveau: NIVEAUX[k], indice: k, suivant, badges, tousDefis: defis === DEFIS.length };
 }
 
 // ── Avancement connu de cet appareil (état « es1-… » des parcours) ──
@@ -78,6 +91,8 @@ async function envoyer() {
     for (const l of lignes) enAttente[l.cle] = plus(enAttente[l.cle], l);
   }
 }
+// Un défi relevé s'enregistre comme un parcours terminé (2 étapes, dernière atteinte)
+export const signalerDefi = cle => signaler(cle, 1, 2, 1);
 // Appelé par les cartes de parcours à chaque changement d'étape
 export function signaler(cle, etape, total, reussies) {
   if (!cle) return;

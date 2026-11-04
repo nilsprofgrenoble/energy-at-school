@@ -91,7 +91,7 @@ export function EnergyAccueil() {
           </ul>
           <strong>Avant la journée</strong> : faites le parcours guidé des deux ateliers auxquels vous participerez.
           <strong> Après la journée</strong> : revenez explorer, relevez les défis, et découvrez les ateliers que vous n'avez pas faits.
-          <div style={{ fontSize: 13, color: TXT2, marginTop: 6 }}>Votre progression dans les parcours est enregistrée sur cet appareil : vous pouvez vous arrêter et reprendre plus tard. Avec le compte donné par votre professeur (bouton « Se connecter » en haut à droite), elle est aussi enregistrée en ligne, vous choisissez un pseudo et vous débloquez des niveaux au fil des parcours terminés, dans l’ordre que vous voulez.</div>
+          <div style={{ fontSize: 13, color: TXT2, marginTop: 6 }}>Votre progression dans les parcours est enregistrée sur cet appareil : vous pouvez vous arrêter et reprendre plus tard. Avec le compte donné par votre professeur (bouton « Se connecter » en haut à droite), elle est aussi enregistrée en ligne, vous choisissez un pseudo et vous débloquez des niveaux au fil des parcours terminés et des défis relevés, dans l’ordre que vous voulez.</div>
         </div>
       </div>
     </div>

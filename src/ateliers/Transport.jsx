@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { cardStyle, Graphe, fmt, sci, lireNombre, proche, CarteParcours, Cadre, ORANGE_GUIDE, useEtatPersistant, avecIndices } from "../commun";
+import { signalerDefi } from "../avancement";
 import { ParcoursReseauReel } from "./ReseauReel";
 
 // ====================================================
@@ -376,6 +377,8 @@ export function SimulationTransport() {
   const solutionsOk = mission ? REGLAGES.flatMap(([a, b]) => CABLES.map(c => ({ a, b, c, eta: reseau(a, b, c.S).eta * 100 })))
     .filter(x => x.eta >= mission.cible) : [];
   const meilleurCout = solutionsOk.length ? Math.min(...solutionsOk.map(x => coutLigne(x.c))) : null;
+  const defiRelevé = !!mission && !!mission.valide && mission.valide.ok && mission.valide.moinsCher;
+  useEffect(() => { if (defiRelevé) signalerDefi('defi-transport'); }, [defiRelevé]);
   function validerMission() {
     const ok = Math.abs(m1 * m2 - 1) < 0.01 && r.eta * 100 >= mission.cible;
     const moinsCher = ok && coutLigne(cable) <= meilleurCout + 1e-9;
