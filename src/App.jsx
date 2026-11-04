@@ -65,42 +65,40 @@ export default function App() {
 
   const onglet = p => (
     <button key={p.slug} onClick={() => aller(p.slug)} aria-current={p.slug === slug ? 'page' : undefined}
-      style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '6px 10px', borderRadius: 8, cursor: 'pointer',
-        fontWeight: 700, fontSize: 14, whiteSpace: 'nowrap',
-        border: `1.5px solid ${p.slug === slug ? p.couleur : '#cbd5e1'}`,
+      style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 14px', borderRadius: 999, cursor: 'pointer',
+        fontWeight: 800, fontSize: 14, whiteSpace: 'nowrap',
+        border: `1.5px solid ${p.slug === slug ? p.couleur : '#d5dfeb'}`,
         background: p.slug === slug ? p.couleur : 'white', color: p.slug === slug ? 'white' : '#334155' }}>
-      <span>{p.icone}</span>{p.nom}
+      <span aria-hidden="true">{p.icone}</span>{p.nom}
     </button>
   );
+  const pilule = { padding: '8px 16px', borderRadius: 999, border: '1.5px solid #d5dfeb', background: 'white', cursor: 'pointer', fontWeight: 800, fontSize: 13.5, color: '#334155' };
 
   return (
-    <div style={{ minHeight: '100vh', background: '#f1f5f9', display: 'flex', flexDirection: 'column' }}>
-      <header style={{ background: 'white', borderBottom: `4px solid ${page.couleur}`, padding: '12px 20px' }}>
+    <div style={{ minHeight: '100vh', background: '#eef3f9', display: 'flex', flexDirection: 'column', fontFamily: "'Nunito', 'Segoe UI', system-ui, sans-serif" }}>
+      <header style={{ background: 'white', borderBottom: '1px solid #d5dfeb', padding: '10px 20px 12px' }}>
         <div style={{ maxWidth: 1400, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 10 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
             <button onClick={() => aller('presentation')} style={{ background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left', padding: 0 }}>
-              <div style={{ fontSize: 24, fontWeight: 900, color: '#0f172a', letterSpacing: '-0.01em' }}>
-                ⚡ Energy<span style={{ color: '#ea580c' }}>@</span>School
+              <div style={{ fontFamily: "'Outfit', sans-serif", fontSize: 28, fontWeight: 800, color: '#0c1a2e', letterSpacing: '-0.03em', lineHeight: 1.1 }}>
+                <span aria-hidden="true">⚡</span> Energy<span style={{ color: '#ea580c' }}>@</span>School
               </div>
-              <div style={{ fontSize: 13, color: '#475569' }}>Simulations pour préparer la journée à Grenoble INP – Ense³, et y revenir ensuite</div>
+              <div style={{ fontSize: 13, color: '#3d4d63', fontWeight: 600 }}>Simulations pour préparer la journée à Grenoble INP – Ense³, et y revenir ensuite</div>
             </button>
-            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-            <a href="https://paillasse-virtuelle.fr/" target="_blank" rel="noopener noreferrer" title="Toutes les simulations de chimie et de physique"
-              style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '3px 10px', borderRadius: 8, border: '1.5px solid #cbd5e1', background: 'white', textDecoration: 'none' }}>
-              <img src={`${import.meta.env.BASE_URL}paillasse-logo.png`} alt="Paillasse virtuelle" height="28" style={{ height: 28, width: 'auto' }} />
-            </a>
-            <BoutonCompte aller={aller} />
-            <button onClick={partager} style={{ padding: '7px 12px', borderRadius: 8, border: '1.5px solid #cbd5e1', background: 'white',
-              cursor: 'pointer', fontWeight: 700, fontSize: 13, color: '#334155' }}>
-              {copie ? '✅ Lien copié' : '🔗 Partager cette page'}
-            </button>
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
+              <a href="https://paillasse-virtuelle.fr/" target="_blank" rel="noopener noreferrer" title="Toutes les simulations de chimie et de physique"
+                style={{ display: 'flex', alignItems: 'center', padding: '4px 12px', borderRadius: 999, border: '1.5px solid #d5dfeb', background: 'white', textDecoration: 'none' }}>
+                <img src={`${import.meta.env.BASE_URL}paillasse-logo.png`} alt="Paillasse virtuelle" height="28" style={{ height: 28, width: 'auto' }} />
+              </a>
+              <BoutonCompte aller={aller} />
+              {slug === 'presentation' && <button onClick={partager} style={pilule}>{copie ? '✅ Lien copié' : '🔗 Partager'}</button>}
             </div>
           </div>
-          <nav aria-label="Ateliers" style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'flex-end' }}>
+          <nav aria-label="Ateliers" style={{ display: 'flex', gap: 14, flexWrap: 'wrap', alignItems: 'flex-end' }}>
             {onglet(PAGES[0])}
             {GROUPES.map(g => (
               <div key={g} style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-                <span style={{ fontSize: 11, fontWeight: 800, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.06em', paddingLeft: 2 }}>{g}</span>
+                <span style={{ fontSize: 11, fontWeight: 800, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.08em', paddingLeft: 4 }}>{g}</span>
                 <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>{PAGES.filter(p => p.groupe === g).map(onglet)}</div>
               </div>
             ))}
@@ -108,11 +106,17 @@ export default function App() {
         </div>
       </header>
 
-      <main style={{ flex: 1, width: '100%', maxWidth: 1400, margin: '0 auto', padding: '16px 20px', boxSizing: 'border-box' }}>
+      <main style={{ flex: 1, width: '100%', maxWidth: 1400, margin: '0 auto', padding: '16px 20px 24px', boxSizing: 'border-box' }}>
+        {slug !== 'presentation' && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 14, margin: '4px 0 14px', flexWrap: 'wrap' }}>
+            <span aria-hidden="true" style={{ width: 56, height: 56, borderRadius: 18, background: `${page.couleur}22`, display: 'grid', placeItems: 'center', fontSize: 30, flexShrink: 0 }}>{page.icone}</span>
+            <h1 style={{ margin: 0, flex: 1, fontFamily: "'Outfit', sans-serif", fontWeight: 800, letterSpacing: '-0.02em', color: '#0c1a2e', fontSize: 'clamp(26px, 3.8vw, 40px)', lineHeight: 1.1, textWrap: 'balance' }}>{page.nom}</h1>
+            <button onClick={partager} style={pilule}>{copie ? '✅ Lien copié' : '🔗 Partager'}</button>
+          </div>)}
         <Composant key={slug} aller={aller} />
       </main>
 
-      <footer style={{ textAlign: 'center', fontSize: '0.78rem', color: '#64748b', padding: '16px 12px', borderTop: '1px solid #e2e8f0', background: 'white' }}>
+      <footer style={{ textAlign: 'center', fontSize: '0.82rem', color: '#3d4d63', padding: '18px 12px', borderTop: '1px solid #d5dfeb', background: 'white' }}>
         © {new Date().getFullYear()} Nils Aronssohn — Lycée Argouges, Grenoble ·{' '}
         <a href="https://creativecommons.org/licenses/by-nc-nd/4.0/deed.fr" target="_blank" rel="noopener noreferrer" style={{ color: 'inherit' }}>CC BY-NC-ND 4.0</a>
         {' '}· libre d'accès, reproduction et modification non autorisées ·{' '}

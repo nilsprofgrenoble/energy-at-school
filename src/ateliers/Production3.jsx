@@ -114,7 +114,7 @@ export function SimulationProduction3() {
   const { txt: TXT, txt2: TXT2, bord: BORDER, fond: BG } = COUL;
   const box = { background: BG, borderRadius: 10, padding: '10px 12px', border: `1px solid ${BORDER}` };
   const titreBox = { fontWeight: 700, fontSize: 15, color: TXT, marginBottom: 6 };
-  const btn = (actif, c = '#0284c7') => ({ padding: '7px 14px', borderRadius: 8, cursor: 'pointer',
+  const btn = (actif, c = '#0284c7') => ({ padding: '7px 14px', borderRadius: 999, cursor: 'pointer',
     fontWeight: 700, fontSize: 14, border: `1.5px solid ${actif ? c : BORDER}`,
     background: actif ? c : 'white', color: actif ? 'white' : TXT2 });
   const petitBtn = (actif, c) => ({ ...btn(actif, c), padding: '5px 10px', fontSize: 13 });

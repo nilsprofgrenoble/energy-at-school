@@ -42,8 +42,8 @@ export function TabBtn({ active, color, onClick, children }) {
 }
 
 export const cardStyle = {
-  background: "#fff", border: "1px solid #eef5ff",
-  borderRadius: 10, padding: 14, boxSizing: "border-box",
+  background: "#fff", border: "1px solid #d5dfeb",
+  borderRadius: 24, padding: 18, boxSizing: "border-box",
   textAlign: "left"   // le gabarit Vite (App.css) centre tout le texte du site par défaut
 };
 
@@ -186,7 +186,7 @@ export function CarteParcours({ etapes, etat, setEtat, fin, cle }) {
   const et = etapes[Math.min(etape, etapes.length - 1)];
   const tache = et.tache;
   const TXT = '#0f172a', TXT2 = '#334155', BORDER = '#cbd5e1';
-  const btn = (actif, c = '#0284c7') => ({ padding: '7px 14px', borderRadius: 8, cursor: 'pointer',
+  const btn = (actif, c = '#0284c7') => ({ padding: '7px 14px', borderRadius: 999, cursor: 'pointer',
     fontWeight: 700, fontSize: 14, border: `1.5px solid ${actif ? c : BORDER}`,
     background: actif ? c : 'white', color: actif ? 'white' : TXT2 });
   const maj = f => setEtat(e => ({ ...e, ...f(e) }));
@@ -429,11 +429,11 @@ export function BandeauContexte({ id, contexte, couleur = '#0284c7' }) {
 
 // Briques d'interface partagées (mêmes styles que les pages Energy@School)
 export const KIT = { txt: '#0f172a', txt2: '#334155', bord: '#cbd5e1', fond: '#f8fafc' };
-export const styleBouton = (actif, c = '#0284c7') => ({ padding: '7px 14px', borderRadius: 8, cursor: 'pointer',
+export const styleBouton = (actif, c = '#0284c7') => ({ padding: '7px 14px', borderRadius: 999, cursor: 'pointer',
   fontWeight: 700, fontSize: 14, border: `1.5px solid ${actif ? c : KIT.bord}`,
   background: actif ? c : 'white', color: actif ? 'white' : KIT.txt2 });
 export const stylePetitBouton = (actif, c) => ({ ...styleBouton(actif, c), padding: '5px 10px', fontSize: 13 });
-export const styleBoite = { background: KIT.fond, borderRadius: 10, padding: '10px 12px', border: `1px solid ${KIT.bord}` };
+export const styleBoite = { background: KIT.fond, borderRadius: 16, padding: '10px 12px', border: `1px solid ${KIT.bord}` };
 
 export function Section({ titre, ouvert, onBascule, children }) {
   return (
