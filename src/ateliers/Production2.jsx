@@ -616,7 +616,7 @@ export function SimulationProduction2() {
                 Les dynamomètres F<sub>1</sub> et F<sub>2</sub> permettent de calculer le couple. L'animation de la roue est ralentie.</>}
           </div>
         </div>
-        {enGuide ? <CarteParcours etapes={ETAPES} etat={guide} setEtat={setGuide} fin={finParcours}/> : blocGraphe}
+        {enGuide ? <CarteParcours cle="es1-production2" etapes={ETAPES} etat={guide} setEtat={setGuide} fin={finParcours}/> : blocGraphe}
       </div>
       {enGuide ? (
         <div className="p2-l2">

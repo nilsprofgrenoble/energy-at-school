@@ -491,7 +491,7 @@ export function SimulationProduction3() {
       <button onClick={() => { setMode('defi'); nouvelleMission(); }} style={btn(true, '#0ea5e9')}>🎯 Défi</button>
     </span>
   );
-  const carteEtape = <CarteParcours etapes={ETAPES} etat={guide} setEtat={setGuide} fin={finParcours}/>;
+  const carteEtape = <CarteParcours cle="es1-production3" etapes={ETAPES} etat={guide} setEtat={setGuide} fin={finParcours}/>;
 
   // ════════════════ DÉFI : UNE MISSION D'INGÉNIEUR ════════════════
   function nouvelleMission() {

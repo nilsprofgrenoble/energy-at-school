@@ -806,8 +806,8 @@ export function SimulationStockage() {
           </div>
         </div>
         {enGuide ? (atelier === 1
-          ? <CarteParcours key="s1" etapes={ETAPES1} etat={guide1} setEtat={setGuide1} fin={finParcours}/>
-          : <CarteParcours key="s2" etapes={ETAPES2} etat={guide2} setEtat={setGuide2} fin={finParcours}/>)
+          ? <CarteParcours key="s1" cle="es1-stockage-a1" etapes={ETAPES1} etat={guide1} setEtat={setGuide1} fin={finParcours}/>
+          : <CarteParcours key="s2" cle="es1-stockage-a2" etapes={ETAPES2} etat={guide2} setEtat={setGuide2} fin={finParcours}/>)
           : mode === 'defi' ? <div style={box}>{voletDefi}</div> : blocGraphe}
       </div>
       <div className="st-l2">

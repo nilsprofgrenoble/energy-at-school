@@ -450,7 +450,7 @@ export function SimulationTransport() {
                 L'épaisseur des câbles dessinés suit leur section.</>}
           </div>
         </div>
-        {enGuide ? <CarteParcours etapes={ETAPES} etat={guide} setEtat={setGuide} fin={finParcours}/>
+        {enGuide ? <CarteParcours cle="es1-transport" etapes={ETAPES} etat={guide} setEtat={setGuide} fin={finParcours}/>
           : mode === 'defi' ? <div style={box}>{voletDefi}</div> : blocGraphe}
       </div>
       <div className="tr-l2">
