@@ -713,7 +713,7 @@ export function SimulationProduction1() {
                 L'animation de la roue est très ralentie : en vrai, elle fait plusieurs dizaines de tours par seconde.</>}
           </div>
         </div>
-        {enGuide ? <CarteParcours etapes={ETAPES} etat={guide} setEtat={setGuide} fin={finParcours}/> : blocGraphe}
+        {enGuide ? <CarteParcours cle="es1-production1" etapes={ETAPES} etat={guide} setEtat={setGuide} fin={finParcours}/> : blocGraphe}
       </div>
 
       {enGuide ? (

@@ -6,6 +6,9 @@ import { SimulationProduction3 } from "./ateliers/Production3";
 import { SimulationTransport } from "./ateliers/Transport";
 import { SimulationStockage } from "./ateliers/Stockage";
 import { SimulationHydrogene } from "./ateliers/Hydrogene";
+import { BoutonCompte, PageProfil, PageSuivi } from "./Compte";
+import { restaurer } from "./serveur";
+import { synchroniser } from "./avancement";
 
 // ============================================================
 //  SITE ENERGY@SCHOOL
@@ -21,6 +24,9 @@ const PAGES = [
   { slug: 'transport', nom: 'Réseau électrique', groupe: 'Transporter', icone: '🗼', couleur: '#7c3aed', composant: SimulationTransport },
   { slug: 'stockage', nom: 'Batteries', groupe: 'Stocker et restituer', icone: '🔋', couleur: '#2563eb', composant: SimulationStockage },
   { slug: 'hydrogene', nom: 'Hydrogène', groupe: 'Stocker et restituer', icone: '💧', couleur: '#16a34a', composant: SimulationHydrogene },
+  // Pages de compte (hors de la barre d'onglets : on y accède par le bouton en haut à droite)
+  { slug: 'profil', nom: 'Mon profil', groupe: null, icone: '👤', couleur: '#ea580c', composant: PageProfil, compte: true },
+  { slug: 'suivi', nom: 'Suivi des classes', groupe: null, icone: '👩‍🏫', couleur: '#ea580c', composant: PageSuivi, compte: true },
 ];
 const GROUPES = ['Produire', 'Transporter', 'Stocker et restituer'];
 
@@ -34,6 +40,8 @@ export default function App() {
   const [copie, setCopie] = useState(false);
   const page = PAGES.find(p => p.slug === slug);
   const Composant = page.composant;
+  // Reprend la session enregistrée (si l'élève est resté connecté) puis resynchronise l'avancement
+  useEffect(() => { restaurer().then(synchroniser).catch(() => {}); }, []);
 
   // Navigation sans recharger la page, en gardant les boutons Précédent / Suivant du navigateur
   useEffect(() => {
@@ -76,10 +84,13 @@ export default function App() {
               </div>
               <div style={{ fontSize: 13, color: '#475569' }}>Simulations pour préparer la journée à Grenoble INP – Ense³, et y revenir ensuite</div>
             </button>
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+            <BoutonCompte aller={aller} />
             <button onClick={partager} style={{ padding: '7px 12px', borderRadius: 8, border: '1.5px solid #cbd5e1', background: 'white',
               cursor: 'pointer', fontWeight: 700, fontSize: 13, color: '#334155' }}>
               {copie ? '✅ Lien copié' : '🔗 Partager cette page'}
             </button>
+            </div>
           </div>
           <nav aria-label="Ateliers" style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'flex-end' }}>
             {onglet(PAGES[0])}
@@ -94,7 +105,7 @@ export default function App() {
       </header>
 
       <main style={{ flex: 1, width: '100%', maxWidth: 1400, margin: '0 auto', padding: '16px 20px', boxSizing: 'border-box' }}>
-        <Composant key={slug} />
+        <Composant key={slug} aller={aller} />
       </main>
 
       <footer style={{ textAlign: 'center', fontSize: '0.78rem', color: '#64748b', padding: '16px 12px', borderTop: '1px solid #e2e8f0', background: 'white' }}>

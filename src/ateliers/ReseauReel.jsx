@@ -212,7 +212,7 @@ export function ParcoursReseauReel({ fin }) {
             L'élément encadré en orange est celui dont parle l'étape en cours.
           </div>
         </div>
-        <CarteParcours etapes={ETAPES} etat={guide} setEtat={setGuide} fin={fin}/>
+        <CarteParcours cle="es1-transport-prep" etapes={ETAPES} etat={guide} setEtat={setGuide} fin={fin}/>
       </div>
       <div className="tr-l2">
         <div data-apparait={`${idx('bas')} ${idx('section')}`}>

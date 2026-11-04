@@ -1090,8 +1090,8 @@ export function SimulationHydrogene() {
         </div>
 
         {enGuide ? (atelier === 1
-          ? <CarteParcours key="g1" etapes={ETAPES1} etat={guide1} setEtat={setGuide1} fin={finParcours}/>
-          : <CarteParcours key="g2" etapes={ETAPES2} etat={guide2} setEtat={setGuide2} fin={finParcours}/>) : blocGraphe}
+          ? <CarteParcours key="g1" cle="es1-hydrogene-a1" etapes={ETAPES1} etat={guide1} setEtat={setGuide1} fin={finParcours}/>
+          : <CarteParcours key="g2" cle="es1-hydrogene-a2" etapes={ETAPES2} etat={guide2} setEtat={setGuide2} fin={finParcours}/>) : blocGraphe}
       </div>
 
       {enGuide ? (

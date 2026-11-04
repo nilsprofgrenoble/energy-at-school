@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useMemo } from "react";
+import { signaler } from "./avancement";
 
 // ============================================================
 //  UTILITAIRES PARTAGÉS
@@ -177,8 +178,11 @@ export function avecIndices(t) {
   return <>{morceaux}</>;
 }
 
-export function CarteParcours({ etapes, etat, setEtat, fin }) {
+export function CarteParcours({ etapes, etat, setEtat, fin, cle }) {
   const { etape, reps, verifs } = etat;
+  // Avancement : signalé au module d'avancement (niveaux, enregistrement sur le serveur si l'élève est connecté)
+  const nbReussies = etat.reussies ? Object.values(etat.reussies).filter(Boolean).length : 0;
+  useEffect(() => { if (cle) signaler(cle, etape, etapes.length, nbReussies); }, [cle, etape, etapes.length, nbReussies]);
   const et = etapes[Math.min(etape, etapes.length - 1)];
   const tache = et.tache;
   const TXT = '#0f172a', TXT2 = '#334155', BORDER = '#cbd5e1';
