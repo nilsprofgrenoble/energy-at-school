@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useMemo } from "react";
 import { cardStyle, Graphe, fmt, sci, lireNombre, proche, CarteParcours, Cadre, ORANGE_GUIDE, useEtatPersistant, avecIndices } from "../commun";
+import { signalerDefi } from "../avancement";
 
 // ====================================================
 // ENERGY@SCHOOL — ATELIER HYDROGÈNE (ENSE3)
@@ -865,6 +866,8 @@ export function SimulationHydrogene() {
     return null;
   };
   const score = questions.filter(juste).length;
+  const defiRelevé = mode === 'defi' && niveau >= 2 && verifie && questions.length > 0 && score === questions.length;
+  useEffect(() => { if (defiRelevé) signalerDefi('defi-hydrogene'); }, [defiRelevé]);
 
   function demarrer(n) {
     setNiveau(n); setReps({}); setVerifie(false);

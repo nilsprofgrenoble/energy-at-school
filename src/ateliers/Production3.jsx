@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { cardStyle, Graphe, fmt, sci, lireNombre, proche, CarteParcours, useEtatPersistant, avecIndices } from "../commun";
+import { signalerDefi } from "../avancement";
 
 // ====================================================
 // ENERGY@SCHOOL — ATELIER PRODUCTION 3
@@ -513,6 +514,8 @@ export function SimulationProduction3() {
   ];
   const justeM = q => { const x = lireNombre(mission.reps[q.id]); return isFinite(x) && proche(x, q.vrai, q.tol); };
   const scoreM = mission ? questionsMission.filter(justeM).length : 0;
+  const defiRelevé = !!mission && mission.verifie && questionsMission.length > 0 && scoreM === questionsMission.length;
+  useEffect(() => { if (defiRelevé) signalerDefi('defi-production3'); }, [defiRelevé]);
   const voletDefi = !mission ? null : (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
       <div style={{ fontSize: 15, color: TXT, lineHeight: 1.6 }}>

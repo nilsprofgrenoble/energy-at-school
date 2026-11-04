@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { cardStyle, Graphe, fmt, sci, lireNombre, proche, CarteParcours, Cadre, ORANGE_GUIDE, useEtatPersistant, avecIndices } from "../commun";
+import { signalerDefi } from "../avancement";
 
 // ====================================================
 // ENERGY@SCHOOL — ATELIER PRODUCTION 1
@@ -574,6 +575,9 @@ export function SimulationProduction1() {
     return null;
   };
   const score = questions.filter(juste).length;
+  // Défi relevé (compte pour le niveau, voir avancement.js)
+  const defiRelevé = mode === 'defi' && niveau >= 2 && verifie && questions.length > 0 && score === questions.length;
+  useEffect(() => { if (defiRelevé) signalerDefi('defi-production1'); }, [defiRelevé]);
   function demarrer(nv) { setNiveau(nv); setReps({}); setVerifie(false); setReleve(null); }
   const releveOk = !!seau.fini && ouv > 0 && R !== Infinity && R !== 0;
   function relever() {

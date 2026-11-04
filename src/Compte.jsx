@@ -5,7 +5,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { cardStyle, KIT, styleBouton, styleBoite } from './commun';
 import { useSession, estEleve, estProf, connexion, deconnexion, changerMotDePasse, rest, toutLire, getSession } from './serveur';
-import { FAMILLES, TOUS_PARCOURS, NIVEAUX, bilan, termine, useSuivi, synchroniser, oublierLocal } from './avancement';
+import { FAMILLES, TOUS_PARCOURS, DEFIS, NIVEAUX, bilan, termine, useSuivi, synchroniser, oublierLocal } from './avancement';
 import { pseudo, propositions, ADJECTIFS, NOMS } from './pseudos';
 
 const CLE_PROPRIO = 'es-proprietaire';
@@ -141,10 +141,10 @@ export function PageProfil({ aller }) {
 
       <div style={styleBoite}>
         <div style={{ fontSize: 14.5, color: KIT.txt, marginBottom: 6 }}>
-          <strong>{b.faits} parcours terminé{b.faits > 1 ? 's' : ''} sur {b.total}.</strong>{' '}
-          {b.suivant ? <>Encore {b.suivant.seuil - b.faits} pour le niveau « {b.suivant.icone} {b.suivant.nom} ».</> : <>Niveau maximal atteint : bravo !</>}
+          <strong>{b.points} point{b.points > 1 ? 's' : ''} sur {b.max}</strong> : {b.faits} parcours terminé{b.faits > 1 ? 's' : ''} sur {b.total} et {b.defis} défi{b.defis > 1 ? 's' : ''} relevé{b.defis > 1 ? 's' : ''} sur {b.totalDefis}.{' '}
+          {b.suivant ? <>Encore {b.suivant.seuil - b.points} point{b.suivant.seuil - b.points > 1 ? 's' : ''} pour le niveau « {b.suivant.icone} {b.suivant.nom} ».</> : <>Niveau maximal atteint : bravo !</>}
         </div>
-        <Barre valeur={b.faits} max={b.total} couleur="#ea580c" />
+        <Barre valeur={b.points} max={b.max} couleur="#ea580c" />
         <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 8 }}>
           {NIVEAUX.map((n, i) => (
             <span key={n.nom} style={{ fontSize: 12.5, padding: '3px 8px', borderRadius: 12, fontWeight: 700,
@@ -152,7 +152,7 @@ export function PageProfil({ aller }) {
               {n.icone} {n.nom} · {n.seuil}
             </span>))}
         </div>
-        <div style={{ fontSize: 12.5, color: KIT.txt2, marginTop: 6 }}>Un parcours est terminé quand vous arrivez à sa dernière étape. Vous pouvez les faire dans l’ordre que vous voulez.</div>
+        <div style={{ fontSize: 12.5, color: KIT.txt2, marginTop: 6 }}>Chaque parcours terminé (dernière étape atteinte) et chaque défi relevé (réussi en entier) rapporte 1 point. Les deux derniers niveaux demandent de relever des défis. Vous pouvez tout faire dans l’ordre que vous voulez.</div>
       </div>
 
       {FAMILLES.map(f => (
@@ -168,6 +168,16 @@ export function PageProfil({ aller }) {
               </div>);
           })}
         </div>))}
+
+      <div style={{ border: '1.5px solid #ea580c', borderLeft: '6px solid #ea580c', borderRadius: 10, padding: '8px 12px' }}>
+        <div style={{ fontWeight: 800, color: '#ea580c', fontSize: 16 }}>🎯 Défis relevés {b.tousDefis && <span style={{ fontSize: 12.5, background: '#ea580c', color: 'white', borderRadius: 12, padding: '2px 8px', marginLeft: 6 }}>🏅 Relève-défis</span>}</div>
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 6 }}>
+          {DEFIS.map(d => { const fait = termine(suivi[d.cle]); return (
+            <a key={d.cle} href={`?atelier=${d.page}`} onClick={e => { e.preventDefault(); aller(d.page); }}
+              style={{ fontSize: 13.5, fontWeight: 700, padding: '4px 10px', borderRadius: 14, textDecoration: 'none',
+                background: fait ? '#dcfce7' : '#f1f5f9', color: fait ? '#166534' : '#475569', border: `1px solid ${fait ? '#86efac' : '#e2e8f0'}` }}>{fait ? '✅' : '🎯'} {d.nom}</a>); })}
+        </div>
+      </div>
 
       <div style={styleBoite}>
         <div style={{ fontSize: 15, fontWeight: 800, color: KIT.txt, marginBottom: 6 }}>{p ? 'Changer de pseudo' : 'Choisissez votre pseudo'}</div>
@@ -221,8 +231,8 @@ export function PageSuivi({ aller }) {
   }), [eleves, prog, pseud]);
   if (!estProf(s)) return <div style={cardStyle}>Page réservée aux professeurs connectés. <button onClick={() => aller('presentation')} style={styleBouton(false)}>Retour</button></div>;
   const exporter = () => {
-    const tete = ['identifiant', 'pseudo', 'niveau', 'parcours terminés', ...TOUS_PARCOURS.map(p => p.nom)];
-    const l = lignes.map(r => [r.identifiant, r.pseudo?.texte || '', r.bilan.niveau.nom, r.bilan.faits, ...TOUS_PARCOURS.map(p => (r.suivi[p.cle] ? `${Math.min(r.suivi[p.cle].etape + 1, r.suivi[p.cle].total)}/${r.suivi[p.cle].total}` : ''))]);
+    const tete = ['identifiant', 'pseudo', 'niveau', 'points', 'parcours terminés', 'défis relevés', ...TOUS_PARCOURS.map(p => p.nom), ...DEFIS.map(d => 'défi ' + d.nom)];
+    const l = lignes.map(r => [r.identifiant, r.pseudo?.texte || '', r.bilan.niveau.nom, r.bilan.points, r.bilan.faits, r.bilan.defis, ...TOUS_PARCOURS.map(p => (r.suivi[p.cle] ? `${Math.min(r.suivi[p.cle].etape + 1, r.suivi[p.cle].total)}/${r.suivi[p.cle].total}` : '')), ...DEFIS.map(d => (termine(r.suivi[d.cle]) ? 'oui' : ''))]);
     const csv = [tete, ...l].map(r => r.map(c => `"${String(c).replace(/"/g, '""')}"`).join(';')).join('\n');
     const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8' })); a.download = 'energy-at-school-suivi.csv'; a.click();
   };
@@ -246,14 +256,15 @@ export function PageSuivi({ aller }) {
         <div style={{ overflowX: 'auto' }}>
           <table style={{ borderCollapse: 'collapse', fontSize: 13.5, minWidth: 640, width: '100%' }}>
             <thead><tr style={{ background: '#f1f5f9' }}>
-              <th style={th}>Élève</th><th style={th}>Pseudo</th><th style={th}>Niveau</th>
+              <th style={th}>Élève</th><th style={th}>Pseudo</th><th style={th}>Niveau</th><th style={th}>Défis</th>
               {TOUS_PARCOURS.map(p => <th key={p.cle} style={{ ...th, fontSize: 11.5, maxWidth: 90 }} title={p.nom}>{FAMILLES.find(f => f.id === p.famille).icone} {p.nom}</th>)}
             </tr></thead>
             <tbody>{lignes.map(r => (
               <tr key={r.user_id} style={{ borderTop: '1px solid #e2e8f0' }}>
                 <td style={td}><strong>{r.identifiant}</strong></td>
                 <td style={td}>{r.pseudo ? `${r.pseudo.icone} ${r.pseudo.texte}` : <span style={{ color: '#94a3b8' }}>—</span>}</td>
-                <td style={td}>{r.bilan.niveau.icone} {r.bilan.niveau.nom} <span style={{ color: '#64748b' }}>({r.bilan.faits}/{r.bilan.total})</span></td>
+                <td style={td}>{r.bilan.niveau.icone} {r.bilan.niveau.nom} <span style={{ color: '#64748b' }}>({r.bilan.points}/{r.bilan.max})</span></td>
+                <td style={{ ...td, textAlign: 'center' }} title={DEFIS.filter(d => termine(r.suivi[d.cle])).map(d => d.nom).join(', ')}>{r.bilan.defis}/{r.bilan.totalDefis}</td>
                 {TOUS_PARCOURS.map(p => { const v = r.suivi[p.cle]; return (
                   <td key={p.cle} style={{ ...td, textAlign: 'center' }}>{termine(v) ? '✅' : v ? <span style={{ color: '#64748b' }}>{Math.round(100 * Math.min(v.etape, v.total - 1) / (v.total - 1))} %</span> : <span style={{ color: '#cbd5e1' }}>·</span>}</td>); })}
               </tr>))}
@@ -261,7 +272,7 @@ export function PageSuivi({ aller }) {
           </table>
           {!lignes.length && <div style={{ fontSize: 14, color: KIT.txt2, padding: 8 }}>Cette classe n’a pas encore d’élèves.</div>}
         </div>)}
-      <div style={{ fontSize: 12.5, color: KIT.txt2 }}>« ✅ » : parcours terminé (dernière étape atteinte). Pourcentage : étape la plus avancée atteinte. L’ordre des parcours est libre.</div>
+      <div style={{ fontSize: 12.5, color: KIT.txt2 }}>« ✅ » : parcours terminé (dernière étape atteinte). Pourcentage : étape la plus avancée atteinte. « Défis » : défis relevés en entier. Points = parcours terminés + défis relevés ; l’ordre est libre.</div>
     </div>
   );
 }
