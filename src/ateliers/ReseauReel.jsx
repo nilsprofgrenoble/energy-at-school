@@ -37,26 +37,28 @@ export function ParcoursReseauReel({ fin }) {
     { id: 'contexte', titre: 'Alimenter une ville', focus: [],
       texte: <>Une centrale doit fournir <strong>P = 1 MW</strong> à une ville située à <strong>20 km</strong>. Le courant fait l'aller et
         le retour dans deux câbles en aluminium : 40 km de câble en tout. Comment perdre le moins d'énergie en route ? Le jour J, vous
-        ferez la même étude sur une maquette ; ici, on l'applique à un vrai réseau.</>, tache: null },
+        ferez la même étude sur une maquette ; ici, on l'applique à un vrai réseau.
+        <br/><em>Hypothèses : ligne à deux conducteurs (aller et retour), charge résistive (la puissance est le produit de U par I), et on néglige
+        la chute de tension dans le calcul du courant. Un vrai réseau est triphasé : l'ordre de grandeur des pertes reste le même.</em></>, tache: null },
     { id: 'joule', titre: 'Pourquoi perd-on de l’énergie ?', focus: ['ligne'],
       texte: <>Les câbles ne sont pas des conducteurs parfaits : ils ont une résistance R.</>,
       tache: { type: 'qcm', q: 'Que devient l’énergie perdue dans les câbles ?', options: ['Elle chauffe les câbles (effet Joule)', 'Elle retourne à la centrale', 'Elle est stockée dans les pylônes'], bonne: 0 } },
     { id: 'I', titre: 'Le courant dans la ligne', focus: ['ligne'],
       texte: <>La ligne est à <strong>U = 20 kV</strong>. La puissance transportée vaut P = U × I.</>,
-      tache: { type: 'num', q: 'Intensité du courant dans la ligne I = P / U', unite: 'A', vrai: r20.I, tol: 0.02,
+      tache: { type: 'num', q: 'Intensité du courant dans la ligne I = P / U', carnet: 'Intensité I (20 kV)', unite: 'A', vrai: r20.I, tol: 0.02,
         pieges: [[r20.I * 1000, '20 kV = 20 000 V.'], [20000 / 1e6, 'C’est P / U, et non U / P.']] } },
     { id: 'R', titre: 'La résistance de la ligne', focus: ['ligne'],
       texte: <>Câbles en aluminium (ρ = 2,8 × 10⁻⁸ Ω·m) de section <strong>S = 150 mm²</strong>, sur une longueur totale L = 40 km
         (aller et retour). On a R = ρ × L / S.</>,
-      tache: { type: 'num', q: 'Résistance totale de la ligne R', unite: 'Ω', vrai: r20.R, tol: 0.02,
+      tache: { type: 'num', q: 'Résistance totale de la ligne R', carnet: 'Résistance R de la ligne', unite: 'Ω', vrai: r20.R, tol: 0.02,
         pieges: [[r20.R / 2, 'Le courant fait l’aller et le retour : L = 2 × 20 km = 40 km.'], [r20.R * 1e6, 'Convertissez S en m² : 1 mm² = 10⁻⁶ m².'], [r20.R / 1e6, 'Convertissez S en m² : 1 mm² = 10⁻⁶ m².']],
         aide: 'Pensez à tout convertir en mètres et en m².' } },
     { id: 'PJ', titre: 'Les pertes par effet Joule', focus: ['ligne'],
-      texte: <>La puissance perdue en chaleur dans la ligne vaut P<sub>J</sub> = R × I².</>,
-      tache: { type: 'num', q: 'Pertes P_J, en kW', unite: 'kW', vrai: r20.PJ / 1000, tol: 0.02, affiche: v => fmt(v, 1),
+      texte: <>La puissance perdue en chaleur dans la ligne vaut P<sub>J</sub> = R × I². Reprenez vos deux résultats : I = {fmt(r20.I, 0)} A et R = {fmt(r20.R, 2)} Ω.</>,
+      tache: { type: 'num', q: 'Pertes P_J, en kW', carnet: 'Pertes P_J (20 kV)', unite: 'kW', vrai: r20.PJ / 1000, tol: 0.02, affiche: v => fmt(v, 1),
         pieges: [[r20.R * r20.I / 1000, 'C’est R × I², avec le courant au carré.'], [r20.PJ, 'La réponse est demandée en kW.']] } },
     { id: 'eta', titre: 'Le rendement du transport', focus: ['ville'],
-      texte: <>La ville reçoit P − P<sub>J</sub>. Le rendement du transport vaut η = (P − P<sub>J</sub>) / P.</>,
+      texte: <>La ville reçoit P − P<sub>J</sub>, avec P = 1 MW et P<sub>J</sub> = {fmt(r20.PJ / 1000, 1)} kW (étape précédente). Le rendement du transport vaut η = (P − P<sub>J</sub>) / P.</>,
       tache: { type: 'num', q: 'Rendement du transport, en %', unite: '%', vrai: r20.eta * 100, tol: 0.002, affiche: v => fmt(v, 1),
         pieges: [[r20.PJ / P_CENTRALE * 100, 'C’est la part perdue : le rendement est la part qui arrive.']] } },
     { id: 'bas', titre: 'Et si l’on transportait à 400 V ?', focus: ['transfo1'],
@@ -64,7 +66,7 @@ export function ParcoursReseauReel({ fin }) {
       tache: { type: 'action', ok: U === 400 && S === 150, consigne: U === 400 && S === 150 ? null : 'Choisissez 400 V (câble de 150 mm²).' } },
     { id: 'I400', titre: 'Le courant à 400 V', focus: ['ligne'],
       texte: <>Pour transporter la même puissance, 1 MW, sous une tension 50 fois plus petite…</>,
-      tache: { type: 'num', q: 'Intensité du courant à 400 V', unite: 'A', vrai: r400.I, tol: 0.02 } },
+      tache: { type: 'num', q: 'Intensité du courant à 400 V', carnet: false, unite: 'A', vrai: r400.I, tol: 0.02 } },
     { id: 'absurde', titre: 'Un résultat absurde', focus: ['ville'],
       texte: <>Avec 2500 A, la formule donne des pertes de {puissance(r400.PJ)}, et une chute de tension de {fmt(r400.dU / 1000, 1)} kV dans les câbles.</>,
       tache: { type: 'qcm', q: 'Que signifie ce résultat ?', options: ['C’est impossible : il n’arriverait rien à la ville, la ligne fondrait', 'La ville reçoit plus que prévu', 'Les pertes sont acceptables'], bonne: 0,
@@ -204,7 +206,7 @@ export function ParcoursReseauReel({ fin }) {
         <div style={styleBoite}>
           <div style={{ fontWeight: 700, fontSize: 15, color: KIT.txt, marginBottom: 6 }}>Un vrai réseau : de la centrale à la ville</div>
           {schema}
-          {vu('eta') && bilan}
+          {etape > idx('eta') && bilan}
           <div style={{ fontSize: 13, color: KIT.txt2, marginTop: 6, lineHeight: 1.5 }}>
             L'épaisseur de la ligne suit la section des câbles ; sa couleur vire au rouge quand les pertes augmentent.
             L'élément encadré en orange est celui dont parle l'étape en cours.
