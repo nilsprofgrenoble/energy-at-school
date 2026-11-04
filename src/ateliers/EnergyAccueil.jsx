@@ -5,6 +5,8 @@ import { cardStyle, KIT, styleBoite } from "../commun";
 // Vue d'ensemble de la journée et accès aux six pages d'ateliers (liens ?atelier=…).
 // ====================================================
 
+const PAILLASSE_URL = 'https://paillasse-virtuelle.fr/';
+
 const THEMES = [
   { nom: 'Produire', icone: '🌊', couleur: '#0284c7', question: 'Comment transformer l’énergie de l’eau en électricité ?',
     pages: [
@@ -94,6 +96,20 @@ export function EnergyAccueil() {
           <div style={{ fontSize: 13, color: TXT2, marginTop: 6 }}>Votre progression dans les parcours est enregistrée sur cet appareil : vous pouvez vous arrêter et reprendre plus tard. Avec le compte donné par votre professeur (bouton « Se connecter » en haut à droite), elle est aussi enregistrée en ligne, vous choisissez un pseudo et vous débloquez des niveaux au fil des parcours terminés et des défis relevés, dans l’ordre que vous voulez.</div>
         </div>
       </div>
+
+      <a href={PAILLASSE_URL} target="_blank" rel="noopener noreferrer"
+        style={{ display: 'flex', gap: 16, alignItems: 'center', flexWrap: 'wrap', textDecoration: 'none', color: TXT, marginTop: 12,
+          background: 'linear-gradient(135deg, #eff6ff, #fff7ed)', border: '1.5px solid #93c5fd', borderRadius: 12, padding: '14px 16px' }}>
+        <img src={`${import.meta.env.BASE_URL}paillasse-logo.png`} alt="Paillasse virtuelle" width="168" height="62" style={{ height: 62, width: 'auto' }} />
+        <div style={{ flex: '1 1 300px', minWidth: 0 }}>
+          <div style={{ fontSize: 17, fontWeight: 800 }}>Et après ? Découvrez la Paillasse virtuelle</div>
+          <div style={{ fontSize: 14, color: TXT2, lineHeight: 1.55, margin: '2px 0 4px' }}>
+            Le même principe, pour la chimie et la physique : plus de 60 simulations avec parcours guidé, exploration libre et défis,
+            et des exercices par compétence, de la Seconde au BTS. Gratuit, sans inscription.
+          </div>
+          <span style={{ fontSize: 14, fontWeight: 800, color: '#0b4f94' }}>Ouvrir paillasse-virtuelle.fr ›</span>
+        </div>
+      </a>
     </div>
   );
 }

@@ -85,6 +85,10 @@ export default function App() {
               <div style={{ fontSize: 13, color: '#475569' }}>Simulations pour préparer la journée à Grenoble INP – Ense³, et y revenir ensuite</div>
             </button>
             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+            <a href="https://paillasse-virtuelle.fr/" target="_blank" rel="noopener noreferrer" title="Toutes les simulations de chimie et de physique"
+              style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '3px 10px', borderRadius: 8, border: '1.5px solid #cbd5e1', background: 'white', textDecoration: 'none' }}>
+              <img src={`${import.meta.env.BASE_URL}paillasse-logo.png`} alt="Paillasse virtuelle" height="28" style={{ height: 28, width: 'auto' }} />
+            </a>
             <BoutonCompte aller={aller} />
             <button onClick={partager} style={{ padding: '7px 12px', borderRadius: 8, border: '1.5px solid #cbd5e1', background: 'white',
               cursor: 'pointer', fontWeight: 700, fontSize: 13, color: '#334155' }}>
@@ -112,7 +116,7 @@ export default function App() {
         © {new Date().getFullYear()} Nils Aronssohn — Lycée Argouges, Grenoble ·{' '}
         <a href="https://creativecommons.org/licenses/by-nc-nd/4.0/deed.fr" target="_blank" rel="noopener noreferrer" style={{ color: 'inherit' }}>CC BY-NC-ND 4.0</a>
         {' '}· libre d'accès, reproduction et modification non autorisées ·{' '}
-        <a href="https://nilsprofgrenoble.github.io/simulations-chimie/" style={{ color: 'inherit' }}>autres simulations de chimie-physique</a>
+        <a href="https://paillasse-virtuelle.fr/" style={{ color: 'inherit', fontWeight: 700 }}>Paillasse virtuelle : toutes les autres simulations de chimie et de physique</a>
       </footer>
     </div>
   );
