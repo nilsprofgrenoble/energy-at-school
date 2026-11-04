@@ -171,18 +171,19 @@ export function SimulationProduction3() {
     { titre: 'Calculer le débit', focus: ['balance'],
       texte: <>La balance a basculé au bout de <strong>{tPes ? fmt(tPes, 1) : '?'} s</strong>. 15 kg d'eau occupent un volume
         V = m / ρ, avec ρ = 1,0 × 10³ kg·m⁻³. Le débit est Q<sub>V</sub> = V / Δt.</>,
-      tache: { type: 'num', id: 'Q', q: <>Débit volumique Q<sub>V</sub></>, unite: 'm³·s⁻¹', vrai: Qmes, tol: 0.03,
+      tache: { type: 'num', id: 'Q', q: <>Débit volumique Q<sub>V</sub></>, carnet: 'Débit Q_V', unite: 'm³·s⁻¹', vrai: Qmes, tol: 0.03,
         pieges: Qmes ? [[15 / tPes, 'Il faut d’abord passer de la masse au volume : V = m / ρ.'], [Qmes * 1000, 'Le volume doit être en m³ : 15 kg d’eau = 0,015 m³.']] : [],
         aide: 'Notation scientifique acceptée : pour 4,5 × 10⁻⁶, tapez 4,5e-6.' } },
     { titre: 'La vitesse de l’eau', focus: ['H', 'L'],
       texte: <>L'eau occupe dans le canal une section rectangulaire : hauteur d'eau H = <strong>5,0 cm</strong>, largeur
-        L = <strong>7,5 cm</strong>. On utilise Q<sub>V</sub> = v × S, avec S = H × L.</>,
-      tache: { type: 'num', id: 'va', q: <>Vitesse de l'eau v<sub>a</sub> = Q<sub>V</sub> / (H × L)</>, unite: 'm·s⁻¹', vrai: vaMes, tol: 0.04,
+        L = <strong>7,5 cm</strong>. On utilise Q<sub>V</sub> = v × S, avec S = H × L et le débit de l'étape précédente : Q<sub>V</sub> = {Qmes ? sci(Qmes) : '?'} m³·s⁻¹.</>,
+      tache: { type: 'num', id: 'va', q: <>Vitesse de l'eau v<sub>a</sub> = Q<sub>V</sub> / (H × L)</>, carnet: 'Vitesse de l’eau v_a', unite: 'm·s⁻¹', vrai: vaMes, tol: 0.04,
         pieges: vaMes ? [[vaMes / 1e4, 'H et L doivent être en mètres : 5,0 cm = 0,050 m.'], [vaMes * 1e4, 'H et L doivent être en mètres.']] : [] } },
     { titre: 'La puissance disponible', focus: ['canal'],
       texte: <>On admet que la puissance apportée par l'eau qui s'écoule vaut P<sub>hyd</sub> = ½ × ρ × S × v<sub>a</sub>³
-        (c'est l'énergie cinétique transportée chaque seconde ; elle pourra être démontrée pendant la journée).</>,
-      tache: { type: 'num', id: 'Ph', q: <>Puissance hydraulique P<sub>hyd</sub></>, unite: 'W', vrai: PhMes, tol: 0.05,
+        (c'est l'énergie cinétique transportée chaque seconde ; elle pourra être démontrée pendant la journée). Avec la vitesse de l'eau
+        de l'étape précédente, v<sub>a</sub> = {vaMes ? fmt(vaMes, 3) : '?'} m·s⁻¹, et S = H × L = 3,75 × 10⁻³ m².</>,
+      tache: { type: 'num', id: 'Ph', q: <>Puissance hydraulique P<sub>hyd</sub></>, carnet: 'Puissance hydraulique P_hyd', unite: 'W', vrai: PhMes, tol: 0.05,
         pieges: PhMes ? [[PhMes * 2, 'N’oubliez pas le ½.'], [PhMes / vaMes, 'La vitesse est au cube : v³ = v × v × v.']] : [],
         aide: 'S = H × L en m².' } },
     { titre: 'Brancher l’alternateur', focus: ['charge'],
@@ -201,13 +202,14 @@ export function SimulationProduction3() {
     { titre: 'La puissance électrique', focus: ['charge'],
       texte: <>Réglez la charge sur <strong>10 Ω</strong>. L'alternateur est <strong>triphasé</strong> : on admet que
         P<sub>élec</sub> = √3 × U × I, avec U la tension entre deux phases et I l'intensité dans une phase.</>,
-      tache: { type: 'num', id: 'Pe', q: <>Puissance électrique P<sub>élec</sub> (charge de 10 Ω)</>, unite: 'W', vrai: P10, tol: 0.04,
+      tache: { type: 'num', id: 'Pe', q: <>Puissance électrique P<sub>élec</sub> (charge de 10 Ω)</>, carnet: 'Puissance électrique P_élec (10 Ω)', unite: 'W', vrai: P10, tol: 0.04,
         bloque: R !== 10 ? 'Réglez d’abord la charge sur 10 Ω.' : null,
         pieges: [[U10 * I10, 'N’oubliez pas le facteur √3 de l’alternateur triphasé.'], [P10 * 1000, 'I doit être en ampères : 50 mA = 0,050 A.']] } },
     { titre: 'Le rendement', focus: ['canal', 'charge'],
       texte: <>Le rendement compare la puissance utile à la puissance absorbée : r = P<sub>utile</sub> / P<sub>absorbée</sub>.
-        Ici, la puissance utile est l'électricité produite ; la puissance absorbée est celle apportée par l'eau.</>,
-      tache: { type: 'num', id: 'eta', q: <>Rendement r = P<sub>élec</sub> / P<sub>hyd</sub></>, unite: '%', vrai: PhMes ? P10 / PhMes * 100 : null, tol: 0.06,
+        Ici, la puissance utile est l'électricité produite ; la puissance absorbée est celle apportée par l'eau.
+        Reprenez vos deux résultats : P<sub>hyd</sub> = {PhMes ? fmt(PhMes, 2) : '?'} W et P<sub>élec</sub> = {fmt(P10, 3)} W (charge de 10 Ω).</>,
+      tache: { type: 'num', id: 'eta', q: <>Rendement r = P<sub>élec</sub> / P<sub>hyd</sub></>, carnet: false, unite: '%', vrai: PhMes ? P10 / PhMes * 100 : null, tol: 0.06,
         pieges: PhMes ? [[PhMes / P10 * 100, 'C’est l’inverse : puissance utile (électrique) sur puissance absorbée (eau).'], [P10 / PhMes, 'Exprimez le rendement en pourcentage (× 100).']] : [] } },
     { titre: 'La vitesse de la roue', focus: ['roue'],
       texte: <>Toujours sur 10 Ω, chronométrez la durée de <strong>5 tours</strong> de roue (le chronomètre est accéléré
@@ -217,12 +219,12 @@ export function SimulationProduction3() {
         attente: chrono.actif ? `Tours comptés : ${Math.floor(chrono.tours)} / 5` : null } },
     { titre: 'Vitesse de rotation', focus: ['roue'],
       texte: <>La roue a fait 5 tours en <strong>{t5 ? fmt(t5, 2) : '?'} s</strong>.</>,
-      tache: { type: 'num', id: 'N', q: 'Vitesse de rotation N', unite: 'tr·min⁻¹', vrai: Nmes, tol: 0.03,
+      tache: { type: 'num', id: 'N', q: 'Vitesse de rotation N', carnet: 'Vitesse de rotation N', unite: 'tr·min⁻¹', vrai: Nmes, tol: 0.03,
         pieges: Nmes ? [[Nmes / 60, 'La réponse est demandée en tours par minute : multipliez par 60.'], [t5 / 5 * 60, 'C’est le nombre de tours divisé par la durée.']] : [] } },
     { titre: 'Vitesse de la pale', focus: ['r'],
       texte: <>Le milieu de la pale immergée est à r = <strong>17 cm</strong> de l'axe. On rappelle v = r × ω,
-        avec ω en rad·s⁻¹ (1 tr·s⁻¹ = 2π rad·s⁻¹).</>,
-      tache: { type: 'num', id: 'vp', q: 'Vitesse du milieu de la pale', unite: 'm·s⁻¹', vrai: vPale, tol: 0.04,
+        avec ω en rad·s⁻¹ (1 tr·s⁻¹ = 2π rad·s⁻¹) : reprenez la vitesse de rotation N = {Nmes ? fmt(Nmes, 1) : '?'} tr·min⁻¹ de l'étape précédente.</>,
+      tache: { type: 'num', id: 'vp', q: 'Vitesse du milieu de la pale', carnet: 'Vitesse de la pale v_pale', unite: 'm·s⁻¹', vrai: vPale, tol: 0.04,
         pieges: vPale ? [[vPale * 60, 'N est en tr/min : divisez par 60 pour avoir des tr/s.'], [vPale / (2 * Math.PI), 'N’oubliez pas 2π.'], [vPale * 100, 'r doit être en mètres.']] : [] } },
     { titre: 'Chercher le maximum', focus: ['charge'],
       texte: <>Le graphique est apparu. Faites varier la charge, du court-circuit au circuit ouvert, et ajoutez un point à
@@ -230,7 +232,7 @@ export function SimulationProduction3() {
       tache: { type: 'action', ok: points.length >= 6, consigne: `Points ajoutés : ${points.length} / 6` } },
     { titre: 'Le point optimal', focus: ['roue', 'canal'],
       texte: <>Repérez sur votre courbe la vitesse de la pale au rendement maximal, et comparez-la à la vitesse de l'eau
-        v<sub>a</sub> calculée plus tôt.</>,
+        v<sub>a</sub> calculée plus tôt (valeurs rappelées ci-dessous).</>,
       tache: { type: 'num', id: 'rap', q: <>Rapport v<sub>pale</sub> / v<sub>a</sub> au rendement maximal (1 chiffre significatif)</>, unite: '',
         vrai: opt.u / opt.va, tol: 0.25,
         expl: 'La pale va environ deux fois moins vite que l’eau. Trop lente, elle freine l’eau sans avancer ; trop rapide, l’eau ne la pousse plus.' } },

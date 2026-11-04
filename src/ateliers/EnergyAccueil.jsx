@@ -18,7 +18,7 @@ const THEMES = [
     ] },
   { nom: 'Stocker et restituer', icone: '🔋', couleur: '#2563eb', question: 'Comment garder l’énergie électrique pour plus tard, puis la rendre quand on en a besoin ?',
     pages: [
-      { id: 'stockage', nom: 'Stocker 1 · Batteries', texte: 'L’énergie stockée sous forme chimique dans une batterie lithium-ion, puis assembler des cellules pour un téléphone ou une voiture.' },
+      { id: 'stockage', nom: 'Stocker 1 · Batteries', texte: 'L’énergie stockée sous forme chimique dans une cellule lithium-ion, puis assembler des cellules (NMC, LFP, Na-ion…) pour un téléphone ou une voiture.' },
       { id: 'hydrogene', nom: 'Stocker 2 · Hydrogène', texte: 'L’électricité transformée en dihydrogène par électrolyse, puis le dihydrogène retransformé en électricité par une pile à combustible.' },
     ] },
 ];
