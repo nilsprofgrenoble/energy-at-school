@@ -13,7 +13,7 @@ import { synchroniser } from "./avancement";
 // ============================================================
 //  SITE ENERGY@SCHOOL
 //  Pour ajouter ou renommer une page : modifiez la liste PAGES ci-dessous.
-//  L'adresse d'une page est  …/energy-at-school/?atelier=<slug>
+//  L'adresse d'une page est  <adresse du site>/?atelier=<slug>
 // ============================================================
 
 const PAGES = [
