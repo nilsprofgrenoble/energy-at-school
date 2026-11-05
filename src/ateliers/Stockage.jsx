@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { cardStyle, Graphe, fmt, sci, lireNombre, proche, CarteParcours, Cadre, ORANGE_GUIDE, useEtatPersistant, avecIndices } from "../commun";
+import { cardStyle, Graphe, fmt, sci, lireNombre, proche, CarteParcours, Cadre, ORANGE_GUIDE, useEtatPersistant, avecIndices, IndiceDefi, valeurAttendue, arrondiSig } from "../commun";
 import { signalerDefi } from "../avancement";
 
 // ====================================================
@@ -22,7 +22,8 @@ const ocv = x => {
   return 4.2;
 };
 const ST_RINT = 0.05;   // Ω, résistance interne
-const Wh_kg = v => fmt(v, 0);   // densités d'énergie sans décimale : Q et m varient d'une cellule à l'autre
+const Wh_kg = v => fmt(v, 0);
+const attendu2 = x => valeurAttendue(arrondiSig(x, 2));   // « valeur attendue » à 2 chiffres significatifs (comme les données)   // densités d'énergie sans décimale : Q et m varient d'une cellule à l'autre
 const masseTxt = g => (g >= 1000 ? `${fmt(g / 1000, g >= 10000 ? 0 : 1)} kg` : `${fmt(g, 0)} g`);
 
 // Cellules disponibles pour l'atelier 2 (valeurs du tableau de l'atelier)
@@ -707,12 +708,16 @@ export function SimulationStockage() {
     }
   }
   const qDefi1 = defi && atelier === 1 && defi.q ? [
-    { id: 't', q: <>Une cellule de {fmt(defi.q, 1)} Ah débite {fmt(defi.i, 1)} A. Durée de la décharge</>, unite: 'h', vrai: defi.q / defi.i },
-    { id: 'e', q: 'Énergie stockée (tension nominale 3,7 V)', unite: 'Wh', vrai: 3.7 * defi.q },
-    { id: 'd', q: <>Densité d'énergie (masse {defi.m} g)</>, unite: 'Wh/kg', affiche: Wh_kg, vrai: 3.7 * defi.q / (defi.m / 1000) },
-    { id: 'n', q: 'Quantité de lithium échangée', unite: 'mol', vrai: defi.q * 3600 / ST_F },
+    { id: 't', q: <>Une cellule de {fmt(defi.q, 1)} Ah débite {fmt(defi.i, 1)} A. Durée de la décharge</>, unite: 'h', vrai: defi.q / defi.i,
+      indice: <>Une cellule de capacité Q (en Ah) qui débite un courant I (en A) dure t = Q / I : l’ampère-heure est déjà une unité « courant × heures ».</> },
+    { id: 'e', q: 'Énergie stockée (tension nominale 3,7 V)', unite: 'Wh', vrai: 3.7 * defi.q,
+      indice: <>E = U × Q, avec U = 3,7 V la tension nominale et Q la capacité en Ah : le résultat est directement en Wh.</> },
+    { id: 'd', q: <>Densité d'énergie (masse {defi.m} g)</>, unite: 'Wh/kg', affiche: Wh_kg, vrai: 3.7 * defi.q / (defi.m / 1000),
+      indice: <>La densité d’énergie est l’énergie stockée par kilogramme : d = E / m, avec E la valeur de la question 2 et m en <strong>kg</strong> (1 g = 10⁻³ kg).</> },
+    { id: 'n', q: 'Quantité de lithium échangée', unite: 'mol', vrai: defi.q * 3600 / ST_F,
+      indice: <>Convertissez la capacité en coulombs (1 Ah = 3 600 C), puis n(e⁻) = Q / F avec F = 96 485 C·mol⁻¹. Chaque ion Li⁺ échange un électron : n(Li) = n(e⁻).</> },
   ] : [];
-  const justeD = q => { const x = lireNombre(defi.reps[q.id]); return isFinite(x) && proche(x, q.vrai, 0.04); };
+  const justeD = q => { const x = lireNombre(defi.reps[q.id]); return isFinite(x) && proche(x, q.vrai, 0.06); };   // 6 % : de quoi accepter un résultat final arrondi à 2 chiffres significatifs (jusqu'à 5 % d'écart)
   const defiRelevé = !!defi && (atelier === 1
     ? !!defi.verifie && qDefi1.length > 0 && qDefi1.every(justeD)
     : !!defi.valide && defi.valide.ok && defi.valide.leger);
@@ -721,6 +726,7 @@ export function SimulationStockage() {
   const voletDefi = !defi ? null : atelier === 1 ? (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
       <div style={{ fontSize: 15, fontWeight: 700, color: TXT }}>Défi : caractériser une cellule Li-ion</div>
+      <div style={{ fontSize: 12.5, color: TXT2, lineHeight: 1.5 }}>Les données ont 2 chiffres significatifs : gardez au moins 3 chiffres dans vos calculs intermédiaires et donnez le résultat final avec 2 chiffres significatifs.</div>
       {qDefi1.map((q, k) => {
         const ok = defi.verifie && justeD(q);
         return (
@@ -733,7 +739,8 @@ export function SimulationStockage() {
               <span style={{ fontSize: 13, color: TXT2 }}>{q.unite}</span>
               {defi.verifie && <span>{ok ? '✅' : '❌'}</span>}
             </div>
-            {defi.verifie && !ok && <div style={{ fontSize: 12.5, color: TXT2, marginTop: 3 }}>Valeur attendue : {q.unite === 'Wh/kg' ? Wh_kg(q.vrai) : sci(q.vrai)} {q.unite}</div>}
+            {defi.verifie && !ok && <div style={{ fontSize: 12.5, color: TXT2, marginTop: 3 }}>Valeur attendue : {attendu2(q.vrai)} {q.unite}</div>}
+            {!ok && q.indice && <IndiceDefi>{q.indice}</IndiceDefi>}
           </div>
         );
       })}
@@ -748,6 +755,7 @@ export function SimulationStockage() {
         <strong>Défi : {missionDefi.nom}.</strong> Contraintes : {missionDefi.texte}. Trouvez une solution qui respecte tout,
         avec <strong>la batterie la plus légère possible</strong>.
       </div>
+      {!(defi.valide && defi.valide.ok && defi.valide.leger) && <IndiceDefi>Pour s cellules en série et p branches en parallèle : U = s × U<sub>cellule</sub>, Q = p × Q<sub>cellule</sub>, E = U × Q et m = s × p × m<sub>cellule</sub>. Fixez d’abord s pour viser la tension demandée, puis p pour atteindre l’énergie, en cherchant la cellule qui a la meilleure énergie par gramme.</IndiceDefi>}
       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
         <button onClick={() => {
           const ok = missionDefi.ok(bat);
