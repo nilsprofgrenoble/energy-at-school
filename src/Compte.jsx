@@ -82,7 +82,7 @@ export function BoutonCompte({ aller }) {
   const s = useSession(), suivi = useSuivi();
   const [ouvert, setOuvert] = useState(false);
   const [p] = usePseudo();
-  const style = { padding: '8px 16px', borderRadius: 999, border: '1.5px solid #d5dfeb', background: 'white', cursor: 'pointer', fontWeight: 800, fontSize: 13.5, color: '#334155' };
+  const style = { padding: '8px 16px', borderRadius: 999, border: '1.5px solid #eadfd2', background: 'white', cursor: 'pointer', fontWeight: 800, fontSize: 13.5, color: '#334155' };
   if (estEleve(s)) {
     const b = bilan(suivi), pp = p ? pseudo(p.adj, p.nom) : null;
     return <button onClick={() => aller('profil')} style={style} title="Mon profil et mes niveaux">{pp ? `${pp.icone} ${pp.texte}` : `👤 ${s.profil.identifiant}`} · {b.niveau.icone} {b.niveau.nom}</button>;

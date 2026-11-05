@@ -67,27 +67,26 @@ export default function App() {
     <button key={p.slug} onClick={() => aller(p.slug)} aria-current={p.slug === slug ? 'page' : undefined}
       style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 14px', borderRadius: 999, cursor: 'pointer',
         fontWeight: 800, fontSize: 14, whiteSpace: 'nowrap',
-        border: `1.5px solid ${p.slug === slug ? p.couleur : '#d5dfeb'}`,
+        border: `1.5px solid ${p.slug === slug ? p.couleur : '#eadfd2'}`,
         background: p.slug === slug ? p.couleur : 'white', color: p.slug === slug ? 'white' : '#334155' }}>
       <span aria-hidden="true">{p.icone}</span>{p.nom}
     </button>
   );
-  const pilule = { padding: '8px 16px', borderRadius: 999, border: '1.5px solid #d5dfeb', background: 'white', cursor: 'pointer', fontWeight: 800, fontSize: 13.5, color: '#334155' };
+  const pilule = { padding: '8px 16px', borderRadius: 999, border: '1.5px solid #eadfd2', background: 'white', cursor: 'pointer', fontWeight: 800, fontSize: 13.5, color: '#334155' };
 
   return (
-    <div style={{ minHeight: '100vh', background: '#eef3f9', display: 'flex', flexDirection: 'column', fontFamily: "'Nunito', 'Segoe UI', system-ui, sans-serif" }}>
-      <header style={{ background: 'white', borderBottom: '1px solid #d5dfeb', padding: '10px 20px 12px' }}>
+    <div style={{ minHeight: '100vh', background: '#fffaf3', display: 'flex', flexDirection: 'column', fontFamily: "'Nunito', 'Segoe UI', system-ui, sans-serif" }}>
+      <header style={{ background: 'white', borderBottom: '1px solid #eadfd2', padding: '10px 20px 12px' }}>
         <div style={{ maxWidth: 1400, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 10 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
-            <button onClick={() => aller('presentation')} style={{ background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left', padding: 0 }}>
-              <div style={{ fontFamily: "'Outfit', sans-serif", fontSize: 28, fontWeight: 800, color: '#0c1a2e', letterSpacing: '-0.03em', lineHeight: 1.1 }}>
-                <span aria-hidden="true">⚡</span> Energy<span style={{ color: '#ea580c' }}>@</span>School
-              </div>
-              <div style={{ fontSize: 13, color: '#3d4d63', fontWeight: 600 }}>Simulations pour préparer la journée à Grenoble INP – Ense³, et y revenir ensuite</div>
+            <button onClick={() => aller('presentation')} aria-label="Energy@School, retour à la présentation"
+              style={{ background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left', padding: 0, display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>
+              <img src={`${import.meta.env.BASE_URL}energy-logo.png`} alt="Energy@School" width="174" height="72" style={{ height: 72, width: 'auto', display: 'block' }} />
+              <span style={{ fontSize: 13, color: '#3d4d63', fontWeight: 600, maxWidth: 330, lineHeight: 1.35 }}>Simulations pour préparer la journée à Grenoble INP – Ense³, et y revenir ensuite</span>
             </button>
             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
               <a href="https://paillasse-virtuelle.fr/" target="_blank" rel="noopener noreferrer" title="Toutes les simulations de chimie et de physique"
-                style={{ display: 'flex', alignItems: 'center', padding: '4px 12px', borderRadius: 999, border: '1.5px solid #d5dfeb', background: 'white', textDecoration: 'none' }}>
+                style={{ display: 'flex', alignItems: 'center', padding: '4px 12px', borderRadius: 999, border: '1.5px solid #eadfd2', background: 'white', textDecoration: 'none' }}>
                 <img src={`${import.meta.env.BASE_URL}paillasse-logo.png`} alt="Paillasse virtuelle" height="28" style={{ height: 28, width: 'auto' }} />
               </a>
               <BoutonCompte aller={aller} />
@@ -116,7 +115,7 @@ export default function App() {
         <Composant key={slug} aller={aller} />
       </main>
 
-      <footer style={{ textAlign: 'center', fontSize: '0.82rem', color: '#3d4d63', padding: '18px 12px', borderTop: '1px solid #d5dfeb', background: 'white' }}>
+      <footer style={{ textAlign: 'center', fontSize: '0.82rem', color: '#3d4d63', padding: '18px 12px', borderTop: '1px solid #eadfd2', background: 'white' }}>
         © {new Date().getFullYear()} Nils Aronssohn — Lycée Argouges, Grenoble ·{' '}
         <a href="https://creativecommons.org/licenses/by-nc-nd/4.0/deed.fr" target="_blank" rel="noopener noreferrer" style={{ color: 'inherit' }}>CC BY-NC-ND 4.0</a>
         {' '}· libre d'accès, reproduction et modification non autorisées ·{' '}
