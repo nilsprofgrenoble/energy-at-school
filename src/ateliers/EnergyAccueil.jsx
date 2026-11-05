@@ -129,7 +129,7 @@ export function EnergyAccueil({ aller }) {
 
       <a href={PAILLASSE_URL} target="_blank" rel="noopener noreferrer"
         style={{ display: 'flex', gap: 18, alignItems: 'center', flexWrap: 'wrap', textDecoration: 'none', color: TXT,
-          background: '#fff', border: '1px solid #d5dfeb', borderRadius: 28, padding: '20px 24px' }}>
+          background: '#fff', border: '1px solid #eadfd2', borderRadius: 28, padding: '20px 24px' }}>
         <img src={`${import.meta.env.BASE_URL}paillasse-logo.png`} alt="Paillasse virtuelle" width="168" height="62" style={{ height: 62, width: 'auto' }} />
         <div style={{ flex: '1 1 300px', minWidth: 0 }}>
           <div style={{ fontFamily: "'Outfit', sans-serif", fontSize: 22, fontWeight: 800, letterSpacing: '-0.01em' }}>Et après ? Découvrez la Paillasse virtuelle</div>
