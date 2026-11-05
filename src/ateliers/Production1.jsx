@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { cardStyle, Graphe, fmt, sci, lireNombre, proche, CarteParcours, Cadre, ORANGE_GUIDE, useEtatPersistant, avecIndices } from "../commun";
+import { cardStyle, Graphe, fmt, sci, lireNombre, proche, CarteParcours, Cadre, ORANGE_GUIDE, useEtatPersistant, avecIndices, IndiceDefi, valeurAttendue, arrondiSig } from "../commun";
 import { signalerDefi } from "../avancement";
 
 // ====================================================
@@ -537,34 +537,46 @@ export function SimulationProduction1() {
     const Qm = 1e-3 / t, Ph = pBar * 1e5 * Qm, Pe = U * I;
     if (niveau === 2) return [
       { id: 'Q', type: 'num', q: <>Débit Q<sub>V</sub> = V / Δt (le seau de 1 L est rempli en {fmt(t, 1)} s)</>, unite: 'm³·s⁻¹', vrai: Qm, tol: 0.03,
+        indice: <>Le débit volumique est le volume écoulé par unité de temps : Q<sub>V</sub> = V / Δt. Convertissez 1 L en m³ (1 L = 10⁻³ m³) et gardez Δt en secondes.</>,
         pieges: [[1 / t, '1 L = 10⁻³ m³ : convertissez le volume en m³.']], aide: 'Notation scientifique acceptée : pour 4,5 × 10⁻⁶, tapez 4,5e-6.' },
       { id: 'Ph', type: 'num', q: <>Puissance hydraulique P<sub>hyd</sub> = p × Q<sub>V</sub> (manomètre : {fmt(pBar, 2)} bar)</>, unite: 'W', vrai: Ph, tol: 0.04,
+        indice: <>P<sub>hyd</sub> = p × Q<sub>V</sub> avec p en pascals (1 bar = 10⁵ Pa) et Q<sub>V</sub> en m³·s⁻¹ (question 1).</>,
         pieges: [[pBar * Qm, '1 bar = 10⁵ Pa : convertissez la pression en pascals.']] },
-      { id: 'Pe', type: 'num', q: <>Puissance électrique P<sub>élec</sub> = U × I (U = {fmt(U, 2)} V ; I = {fmt(I, 3)} A)</>, unite: 'W', vrai: Pe, tol: 0.03 },
+      { id: 'Pe', type: 'num', q: <>Puissance électrique P<sub>élec</sub> = U × I (U = {fmt(U, 2)} V ; I = {fmt(I, 3)} A)</>, unite: 'W', vrai: Pe, tol: 0.03,
+        indice: <>La puissance électrique est le produit de la tension par l’intensité : P<sub>élec</sub> = U × I (U en V, I en A, résultat en W).</> },
       { id: 'eta', type: 'num', q: <>Rendement η = P<sub>élec</sub> / P<sub>hyd</sub></>, unite: '%', vrai: Pe / Ph * 100, tol: 0.05,
+        indice: <>η = puissance utile / puissance reçue = P<sub>élec</sub> / P<sub>hyd</sub> (questions 2 et 3), multiplié par 100 pour l’exprimer en %.</>,
         pieges: [[Ph / Pe * 100, 'C’est l’inverse : puissance utile (électrique) sur puissance reçue (hydraulique).'], [Pe / Ph, 'Exprimez le rendement en pourcentage (× 100).']] },
     ];
-    const Qm3 = PR_Q_REF * oq / 80, n = fr / PR_P, va = 2 * Math.PI * PR_R_ROUE * n, ve = Qm3 / (Math.PI * PR_R_JET ** 2);
+    const Qm3 = arrondiSig(PR_Q_REF * oq / 80, 2), n = fr / PR_P, va = 2 * Math.PI * PR_R_ROUE * n, ve = Qm3 / (Math.PI * PR_R_JET ** 2);
     return [
       { id: 'pp', type: 'num', q: 'À basse vitesse, la turbine fait 10 tours en 4 s et le signal a une période T = 100 ms. Nombre de paires de pôles p = f / n',
-        unite: '', vrai: 4, tol: 0, pieges: [[0.25, 'C’est p = f / n, et non n / f.'], [1, 'n = 10 tours / 4 s = 2,5 tr·s⁻¹ et f = 1 / T = 10 Hz.']] },
+        unite: '', vrai: 4, tol: 0,
+        indice: <>La fréquence électrique est f = 1 / T = 1 / 0,100 s = 10 Hz et la vitesse de rotation n = 10 tours / 4 s = 2,5 tr·s⁻¹. Puis p = f / n.</>, pieges: [[0.25, 'C’est p = f / n, et non n / f.'], [1, 'n = 10 tours / 4 s = 2,5 tr·s⁻¹ et f = 1 / T = 10 Hz.']] },
       { id: 'f', type: 'num', q: <>Sur l'oscilloscope, mesurez la période T puis calculez f = 1 / T</>, unite: 'Hz', vrai: fr, tol: 0.06,
+        indice: <>Lisez la période T sur l’oscilloscope (nombre de divisions × durée d’une division), convertissez-la en secondes, puis f = 1 / T.</>,
         pieges: [[1 / fr * 1000, 'Vous avez donné T en ms : la fréquence est f = 1 / T, avec T en secondes.'], [fr / 1000, 'T doit être en secondes : 1 ms = 10⁻³ s.']] },
       { id: 'n', type: 'num', q: 'Vitesse de rotation n = f / p', unite: 'tr·s⁻¹', vrai: n, tol: 0.06,
+        indice: <>La fréquence f des tensions vaut n × p (p = 4 paires de pôles), donc n = f / p, avec f la fréquence de la question précédente.</>,
         pieges: [[fr * PR_P, 'C’est n = f / p (et non f × p).']] },
-      { id: 'va', type: 'num', q: <>Vitesse de l'auget v<sub>a</sub> = r × 2π n (r = 4,0 cm)</>, unite: 'm·s⁻¹', vrai: va, tol: 0.06,
+      { id: 'va', type: 'num', q: <>Vitesse de l'auget v<sub>a</sub> = r × 2π n (r = 4,0 cm)</>, unite: 'm·s⁻¹', vrai: va, tol: 0.07,
+        indice: <>L’auget décrit un cercle de rayon r = 0,040 m à n tours par seconde : v<sub>a</sub> = r × ω = r × 2π × n, avec n en tr·s⁻¹ (question 3) et r en mètres.</>,
         pieges: [[va / (2 * Math.PI), 'N’oubliez pas 2π : 1 tr·s⁻¹ = 2π rad·s⁻¹.'], [va * 100, 'r doit être en mètres : 4,0 cm = 0,040 m.']] },
-      { id: 've', type: 'num', q: <>Vitesse du jet v<sub>e</sub> = Q<sub>V</sub> / S (jet de 2,0 mm de diamètre ; Q<sub>V</sub> = {sci(Qm3)} m³·s⁻¹)</>, unite: 'm·s⁻¹', vrai: ve, tol: 0.05,
+      { id: 've', type: 'num', q: <>Vitesse du jet v<sub>e</sub> = Q<sub>V</sub> / S (jet de 2,0 mm de diamètre ; Q<sub>V</sub> = {sci(Qm3, 2)} m³·s⁻¹)</>, unite: 'm·s⁻¹', vrai: ve, tol: 0.05,
+        indice: <>Le débit traverse la section du jet : Q<sub>V</sub> = v<sub>e</sub> × S, donc v<sub>e</sub> = Q<sub>V</sub> / S avec S = π r² et r = 1,0 mm = 1,0 × 10⁻³ m (le diamètre vaut 2,0 mm).</>,
         pieges: [[ve / 4, 'S = π r² avec r = 1,0 mm (le rayon, pas le diamètre).'], [ve * 1e-6, 'Le rayon doit être en mètres : 1,0 mm = 1,0 × 10⁻³ m.']] },
-      { id: 'rap', type: 'num', q: <>Rapport v<sub>a</sub> / v<sub>e</sub></>, unite: '', vrai: va / ve, tol: 0.08 },
+      { id: 'rap', type: 'num', q: <>Rapport v<sub>a</sub> / v<sub>e</sub></>, unite: '', vrai: va / ve, tol: 0.10,
+        indice: <>Divisez la vitesse de l’auget (question 4) par la vitesse du jet (question 5). Ce rapport n’a pas d’unité : on attend environ 0,5 au rendement maximal.</> },
     ];
   })();
 
+  // Un élève qui arrondit correctement à 2 chiffres significatifs (écart relatif jusqu'à 5 % pour un résultat en 1,0…) doit être jugé juste.
+  const TOL_MIN_2CS = 0.05;
   const juste = q => {
     const r = reps[q.id];
     if (q.type === 'choix') return r === q.bonne;
     const x = lireNombre(r);
-    return isFinite(x) && (q.tol === 0 ? Math.round(x) === q.vrai : proche(x, q.vrai, q.tol));
+    return isFinite(x) && (q.tol === 0 ? Math.round(x) === q.vrai : proche(x, q.vrai, Math.max(q.tol, TOL_MIN_2CS)));
   };
   const piege = q => {
     const x = lireNombre(reps[q.id]);
@@ -627,12 +639,13 @@ export function SimulationProduction1() {
               </div>
             )}
             {verifie && q.type === 'choix' && <span style={{ fontSize: 13 }}>{ok ? ' ✅' : ' ❌'}</span>}
+            {q.type === 'num' && !ok && q.indice && <IndiceDefi>{q.indice}</IndiceDefi>}
             {q.aide && !verifie && <div style={{ fontSize: 12, color: TXT2, marginTop: 3 }}>{q.aide}</div>}
             {verifie && q.type === 'num' && !ok && piege(q) && (
               <div style={{ fontSize: 12.5, color: '#9a3412', background: '#fff7ed', border: '1px solid #fdba74', borderRadius: 6, padding: '4px 8px', marginTop: 4 }}>{piege(q)}</div>
             )}
             {verifie && q.type === 'num' && !ok && (reps[`vu_${q.id}`]
-              ? <div style={{ fontSize: 12.5, color: TXT2, marginTop: 3 }}>Valeur attendue : {sci(q.vrai)} {q.unite}</div>
+              ? <div style={{ fontSize: 12.5, color: TXT2, marginTop: 3 }}>Valeur attendue : {valeurAttendue(q.vrai)} {q.unite}</div>
               : <button onClick={() => setReps(pr => ({ ...pr, [`vu_${q.id}`]: true }))} style={{ fontSize: 12, marginTop: 3, background: 'none',
                   border: 'none', color: TXT2, textDecoration: 'underline', cursor: 'pointer', padding: 0 }}>voir la valeur attendue</button>)}
           </div>
@@ -644,8 +657,11 @@ export function SimulationProduction1() {
           {verifie && <strong style={{ color: score === questions.length ? '#15803d' : TXT }}>{score} / {questions.length}{score === questions.length ? ' 🎉' : ''}</strong>}
         </div>
       )}
+      {niveau === 2 && releve && <div style={{ fontSize: 12.5, color: TXT2 }}>
+        Vos mesures ont 3 chiffres significatifs : donnez vos résultats avec 2 ou 3 chiffres significatifs.
+      </div>}
       {niveau === 3 && releve && <div style={{ fontSize: 12.5, color: TXT2 }}>
-        Rappels : 1 tr·s⁻¹ = 2π rad·s⁻¹ ; aire d'un disque S = π r².
+        Rappels : 1 tr·s⁻¹ = 2π rad·s⁻¹ ; aire d'un disque S = π r². Donnez vos résultats avec 2 ou 3 chiffres significatifs.
       </div>}
     </div>
   );

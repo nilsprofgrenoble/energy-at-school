@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { cardStyle, Graphe, fmt, sci, lireNombre, proche, CarteParcours, useEtatPersistant, avecIndices } from "../commun";
+import { cardStyle, Graphe, fmt, sci, lireNombre, proche, CarteParcours, useEtatPersistant, avecIndices, IndiceDefi, valeurAttendue } from "../commun";
 import { signalerDefi } from "../avancement";
 
 // ====================================================
@@ -437,7 +437,7 @@ export function SimulationProduction3() {
     <>
       {revele.balance && ligne('Pesée de 15 kg', pesee.fini ? `${fmt(pesee.fini, 1)} s` : '—', COUL.eau, 'pes')}
       {!enGuide && mode !== 'defi' && ligne(<>Débit Q<sub>V</sub></>, `${sci(Q)} m³·s⁻¹`, COUL.eau, 'q')}
-      {mode === 'defi' && ligne('Débitmètre', `${fmt(Q * 1000, 2)} L/s`, COUL.eau, 'qd')}
+      {mode === 'defi' && ligne('Débitmètre', `${fmt(Q * 1000, 1)} L/s`, COUL.eau, 'qd')}
       {mode === 'defi' && ligne('Hauteur d’eau H', `${fmt(H * 100, 1)} cm`, COUL.eau, 'hd')}
       {revele.charge && ligne('Tension U (entre phases)', `${fmt(e.U, 2)} V`, COUL.elec, 'u')}
       {revele.charge && ligne('Intensité I (une phase)', `${fmt(e.I * 1000, 0)} mA`, COUL.elec, 'i')}
@@ -496,7 +496,7 @@ export function SimulationProduction3() {
 
   // ════════════════ DÉFI : UNE MISSION D'INGÉNIEUR ════════════════
   function nouvelleMission() {
-    const Qm = Math.round((1.8 + Math.random() * 1.6) * 100) / 100000;    // m³/s, au centième de L/s
+    const Qm = (18 + Math.floor(Math.random() * 17)) / 10000;               // m³/s : 1,8 à 3,4 L/s, au dixième de L/s (2 chiffres significatifs, comme la balance : 15 kg / t)
     const Hm = [0.040, 0.045, 0.050, 0.055, 0.060][Math.floor(Math.random() * 5)];
     setMission({ Q: Qm, H: Hm, reps: {}, verifie: false });
     setPoints([]);
@@ -506,11 +506,16 @@ export function SimulationProduction3() {
   const optM = mission ? optimum(mission.Q, mission.H) : null;
   const eM = mission ? etatRoue(mission.Q, mission.H, 10) : null;
   const questionsMission = !mission ? [] : [
-    { id: 'va', q: <>Vitesse de l'eau v<sub>a</sub></>, unite: 'm·s⁻¹', vrai: eM.va, tol: 0.04 },
-    { id: 'ph', q: <>Puissance disponible P<sub>hyd</sub></>, unite: 'W', vrai: eM.Phyd, tol: 0.05 },
-    { id: 'pmax', q: <>Trouvez la charge qui donne le plus de puissance : P<sub>élec</sub> maximale</>, unite: 'W', vrai: optM.P, tol: 0.06 },
-    { id: 'eta', q: 'Rendement maximal de l’installation', unite: '%', vrai: optM.eta * 100, tol: 0.08 },
-    { id: 'n', q: 'Vitesse de rotation de la roue à ce maximum', unite: 'tr·min⁻¹', vrai: optM.N, tol: 0.08 },
+    { id: 'va', q: <>Vitesse de l'eau v<sub>a</sub></>, unite: 'm·s⁻¹', vrai: eM.va, tol: 0.04,
+      indice: <>L’eau traverse la section du canal S = H × L (L = 7,5 cm). Le débit volumique Q (en m³·s⁻¹) vaut Q = S × v<sub>a</sub>, donc v<sub>a</sub> = Q / S. Convertissez : 1 L = 10⁻³ m³ et 1 cm = 10⁻² m.</> },
+    { id: 'ph', q: <>Puissance disponible P<sub>hyd</sub></>, unite: 'W', vrai: eM.Phyd, tol: 0.05,
+      indice: <>C’est la puissance cinétique de l’eau qui traverse la section : P<sub>hyd</sub> = ½ × ρ × S × v<sub>a</sub>³, avec ρ = 1000 kg·m⁻³, S = H × L (en m²) et v<sub>a</sub> la vitesse trouvée à la question 1.</> },
+    { id: 'pmax', q: <>Trouvez la charge qui donne le plus de puissance : P<sub>élec</sub> maximale</>, unite: 'W', vrai: optM.P, tol: 0.06,
+      indice: <>Faites varier la charge R et relevez P<sub>élec</sub> = √3 × U × I pour chaque valeur (placez des points sur la courbe). Le maximum est atteint pour la charge qui donne la courbe la plus haute.</> },
+    { id: 'eta', q: 'Rendement maximal de l’installation', unite: '%', vrai: optM.eta * 100, tol: 0.08,
+      indice: <>Le rendement est le rapport entre la puissance utile et la puissance reçue : η = P<sub>élec,max</sub> / P<sub>hyd</sub> (question 2), puis × 100 pour l’exprimer en %.</> },
+    { id: 'n', q: 'Vitesse de rotation de la roue à ce maximum', unite: 'tr·min⁻¹', vrai: optM.N, tol: 0.08,
+      indice: <>Réglez la charge sur la valeur qui donne P<sub>élec</sub> maximale, puis lisez la vitesse de rotation N de la roue dans « Mesures ».</> },
   ];
   const justeM = q => { const x = lireNombre(mission.reps[q.id]); return isFinite(x) && proche(x, q.vrai, q.tol); };
   const scoreM = mission ? questionsMission.filter(justeM).length : 0;
@@ -519,9 +524,9 @@ export function SimulationProduction3() {
   const voletDefi = !mission ? null : (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
       <div style={{ fontSize: 15, color: TXT, lineHeight: 1.6 }}>
-        <strong>Mission :</strong> la rivière a changé ! Le débitmètre indique <strong>{fmt(mission.Q * 1000, 2)} L/s</strong> et la hauteur
+        <strong>Mission :</strong> la rivière a changé ! Le débitmètre indique <strong>{fmt(mission.Q * 1000, 1)} L/s</strong> et la hauteur
         d'eau vaut <strong>{fmt(mission.H * 100, 1)} cm</strong>. Calculez la puissance disponible, puis trouvez le meilleur
-        réglage de la charge (tracez votre courbe !).
+        réglage de la charge (tracez votre courbe !). Les données ont 2 chiffres significatifs : donnez vos résultats avec 2 chiffres significatifs.
       </div>
       {questionsMission.map((q, k) => {
         const ok = mission.verifie && justeM(q);
@@ -534,7 +539,8 @@ export function SimulationProduction3() {
               <span style={{ fontSize: 13, color: TXT2 }}>{q.unite}</span>
               {mission.verifie && <span>{ok ? '✅' : '❌'}</span>}
             </div>
-            {mission.verifie && !ok && <div style={{ fontSize: 12.5, color: TXT2, marginTop: 3 }}>Valeur attendue : {sci(q.vrai)} {q.unite}</div>}
+            {mission.verifie && !ok && <div style={{ fontSize: 12.5, color: TXT2, marginTop: 3 }}>Valeur attendue : {valeurAttendue(q.vrai)} {q.unite}</div>}
+            {!ok && q.indice && <IndiceDefi>{q.indice}</IndiceDefi>}
           </div>
         );
       })}

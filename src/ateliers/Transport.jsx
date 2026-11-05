@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { cardStyle, Graphe, fmt, sci, lireNombre, proche, CarteParcours, Cadre, ORANGE_GUIDE, useEtatPersistant, avecIndices } from "../commun";
+import { cardStyle, Graphe, fmt, sci, lireNombre, proche, CarteParcours, Cadre, ORANGE_GUIDE, useEtatPersistant, avecIndices, IndiceDefi } from "../commun";
 import { signalerDefi } from "../avancement";
 import { ParcoursReseauReel } from "./ReseauReel";
 
@@ -374,15 +374,17 @@ export function SimulationTransport() {
     setMission({ cible, valide: null });
   }
   const coutLigne = c => c.prix * 2 * 10;
-  const solutionsOk = mission ? REGLAGES.flatMap(([a, b]) => CABLES.map(c => ({ a, b, c, eta: reseau(a, b, c.S).eta * 100 })))
+  // Le rendement est comparé à la cible tel qu'il est AFFICHÉ (au dixième de %) : ce que l'élève lit est ce qui est jugé.
+  const etaAffiche = x => Math.round(x * 10) / 10;
+  const solutionsOk = mission ? REGLAGES.flatMap(([a, b]) => CABLES.map(c => ({ a, b, c, eta: etaAffiche(reseau(a, b, c.S).eta * 100) })))
     .filter(x => x.eta >= mission.cible) : [];
   const meilleurCout = solutionsOk.length ? Math.min(...solutionsOk.map(x => coutLigne(x.c))) : null;
   const defiRelevé = !!mission && !!mission.valide && mission.valide.ok && mission.valide.moinsCher;
   useEffect(() => { if (defiRelevé) signalerDefi('defi-transport'); }, [defiRelevé]);
   function validerMission() {
-    const ok = Math.abs(m1 * m2 - 1) < 0.01 && r.eta * 100 >= mission.cible;
+    const ok = Math.abs(m1 * m2 - 1) < 0.01 && etaAffiche(r.eta * 100) >= mission.cible;
     const moinsCher = ok && coutLigne(cable) <= meilleurCout + 1e-9;
-    setMission(m => ({ ...m, valide: { ok, moinsCher, eta: r.eta * 100, cout: coutLigne(cable) } }));
+    setMission(m => ({ ...m, valide: { ok, moinsCher, eta: etaAffiche(r.eta * 100), cout: coutLigne(cable) } }));
   }
   const voletDefi = !mission ? null : (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -405,7 +407,15 @@ export function SimulationTransport() {
               : <>⚠️ Contrat respecté ({fmt(mission.valide.eta, 1)} %), mais il existe une solution moins chère. Cherchez encore !</>}
         </div>
       )}
-      <div style={{ fontSize: 12.5, color: TXT2 }}>Astuce : le réglage des transformateurs ne coûte rien…</div>
+      <div style={{ fontSize: 12.5, color: TXT2 }}>Le rendement lu dans « Mesures » (au dixième de %) est celui qui est comparé à la cible.</div>
+      {!(mission.valide && mission.valide.ok && mission.valide.moinsCher) && (
+        <IndiceDefi>
+          Rendement du transport : r = P<sub>2</sub> / P<sub>1</sub> (puissance reçue par les habitations sur puissance fournie par le générateur).
+          Pertes dans la ligne : P<sub>pertes</sub> = R × I², avec R = ρ × 2L / S : un câble de section S plus grande a une résistance plus faible,
+          mais coûte plus cher (coût = prix au mètre × 2 × 10 m). Une tension plus élevée dans la ligne réduit I donc les pertes : le réglage des
+          transformateurs ne coûte rien (pour que les habitations reçoivent la bonne tension, il faut m<sub>1</sub> × m<sub>2</sub> = 1). Testez les
+          réglages avec le câble le moins cher avant de passer à un câble plus gros.
+        </IndiceDefi>)}
     </div>
   );
 

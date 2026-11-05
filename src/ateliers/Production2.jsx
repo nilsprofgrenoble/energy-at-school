@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { cardStyle, Graphe, fmt, sci, lireNombre, proche, CarteParcours, Cadre, ORANGE_GUIDE, useEtatPersistant, avecIndices } from "../commun";
+import { cardStyle, Graphe, fmt, sci, lireNombre, proche, CarteParcours, Cadre, ORANGE_GUIDE, useEtatPersistant, avecIndices, IndiceDefi, valeurAttendue } from "../commun";
 import { signalerDefi } from "../avancement";
 
 // ====================================================
@@ -424,19 +424,26 @@ export function SimulationProduction2() {
     ];
     if (niveau === 2 && releve) {
       const { q, pBar, F1: f1, n } = releve;
-      const Qs = q / 60000, Ph = pBar * 1e5 * Qs, C = (f1 - f1 / P2_RAPPORT_F) * P2_D / 2, w = 2 * Math.PI * n / 60, Pm = C * w;
+      const f2 = Math.round(f1 / P2_RAPPORT_F * 10) / 10;           // F₂ telle qu'elle est affichée (1 décimale)
+      const Qs = q / 60000, Ph = pBar * 1e5 * Qs, C = (f1 - f2) * P2_D / 2, w = 2 * Math.PI * n / 60, Pm = C * w;
       return [
         { id: 'Q', type: 'num', q: <>Débit en m³·s⁻¹ ({fmt(q, 1)} L/min)</>, unite: 'm³·s⁻¹', vrai: Qs, tol: 0.03,
+          indice: <>Convertissez : 1 L = 10⁻³ m³ et 1 min = 60 s, donc Q (m³·s⁻¹) = Q (L/min) × 10⁻³ / 60.</>,
           pieges: [[q / 1000, 'N’oubliez pas les minutes : 1 min = 60 s.'], [q / 60, '1 L = 10⁻³ m³.']], aide: 'Notation scientifique acceptée : pour 4,5 × 10⁻⁶, tapez 4,5e-6.' },
         { id: 'Ph', type: 'num', q: <>Puissance hydraulique P<sub>hyd</sub> = p × Q (p = {fmt(pBar, 2)} bar)</>, unite: 'W', vrai: Ph, tol: 0.04,
+          indice: <>P<sub>hyd</sub> = p × Q avec p en pascals (1 bar = 10⁵ Pa) et Q en m³·s⁻¹ (question 1).</>,
           pieges: [[pBar * Qs, '1 bar = 10⁵ Pa.'], [pBar * 1e5 * q / 1000, 'Le débit doit être en m³·s⁻¹ (divisez aussi par 60).']] },
-        { id: 'C', type: 'num', q: <>Couple de freinage C = (F<sub>1</sub> − F<sub>2</sub>) × D/2 (F<sub>1</sub> = {fmt(f1, 1)} N ; F<sub>2</sub> = {fmt(f1 / P2_RAPPORT_F, 1)} N ; D = 5,0 cm)</>,
+        { id: 'C', type: 'num', q: <>Couple de freinage C = (F<sub>1</sub> − F<sub>2</sub>) × D/2 (F<sub>1</sub> = {fmt(f1, 1)} N ; F<sub>2</sub> = {fmt(f2, 1)} N ; D = 5,0 cm)</>,
           unite: 'N·m', vrai: C, tol: 0.04,
+          indice: <>Le frein à bande exerce sur la poulie une force F<sub>1</sub> − F<sub>2</sub> à la distance D/2 de l’axe (le rayon, pas le diamètre) : C = (F<sub>1</sub> − F<sub>2</sub>) × D/2, avec D en mètres.</>,
           pieges: [[C * 2, 'C’est D/2, le rayon de la poulie.'], [C * 100, 'D doit être en mètres : 5,0 cm = 0,050 m.']] },
         { id: 'w', type: 'num', q: <>Vitesse angulaire ω = 2π × n / 60 (n = {fmt(n, 0)} tr/min)</>, unite: 'rad·s⁻¹', vrai: w, tol: 0.03,
+          indice: <>1 tour = 2π rad et 1 min = 60 s : ω = 2π × n / 60, avec n en tr/min.</>,
           pieges: [[n / 60, 'N’oubliez pas 2π : 1 tour = 2π rad.'], [2 * Math.PI * n, 'n est en tours par minute : divisez par 60.']] },
-        { id: 'Pm', type: 'num', q: <>Puissance mécanique P<sub>méca</sub> = C × ω</>, unite: 'W', vrai: Pm, tol: 0.05 },
+        { id: 'Pm', type: 'num', q: <>Puissance mécanique P<sub>méca</sub> = C × ω</>, unite: 'W', vrai: Pm, tol: 0.05,
+          indice: <>La puissance mécanique d’un couple qui tourne : P<sub>méca</sub> = C × ω (C en N·m de la question 3, ω en rad·s⁻¹ de la question 4).</> },
         { id: 'eta', type: 'num', q: <>Rendement η = P<sub>méca</sub> / P<sub>hyd</sub></>, unite: '%', vrai: Pm / Ph * 100, tol: 0.06,
+          indice: <>η = puissance utile / puissance reçue = P<sub>méca</sub> / P<sub>hyd</sub> (questions 5 et 2), multiplié par 100 pour l’exprimer en %.</>,
           pieges: [[Ph / Pm * 100, 'C’est l’inverse : puissance utile sur puissance reçue.'], [Pm / Ph, 'Exprimez le rendement en pourcentage.']] },
       ];
     }
@@ -446,23 +453,29 @@ export function SimulationProduction2() {
       const vaOpt = 2 * Math.PI * releve.n / 60 * P2_R;
       return [
         { id: 'va0', type: 'num', q: <>Vitesse de l'auget à vide v<sub>a</sub> = r × 2π n / 60 (n = {fmt(n0, 0)} tr/min ; r = 5,00 cm)</>, unite: 'm·s⁻¹', vrai: va0m, tol: 0.03,
+          indice: <>L’auget se déplace sur un cercle de rayon r = 0,0500 m : v<sub>a</sub> = r × ω avec ω = 2π × n / 60 (n en tr/min, ω en rad·s⁻¹).</>,
           pieges: [[va0m * 60, 'n est en tr/min : divisez par 60 pour avoir des tr/s.'], [va0m / (2 * Math.PI), 'N’oubliez pas 2π.'], [va0m * 100, 'r doit être en mètres.']] },
         { id: 've', type: 'num', q: <>Vitesse du jet par Bernoulli v<sub>e</sub> = √(2p/ρ) (p = {fmt(releveVide.pBar, 2)} bar ; ρ = 1000 kg·m⁻³)</>, unite: 'm·s⁻¹', vrai: ve, tol: 0.04,
+          indice: <>Le théorème de Bernoulli donne p = ½ ρ v<sub>e</sub>² (pression convertie en vitesse), donc v<sub>e</sub> = √(2p / ρ) avec p en pascals (1 bar = 10⁵ Pa).</>,
           pieges: [[Math.sqrt(2 * releveVide.pBar / P2_RHO), 'La pression doit être en pascals : 1 bar = 10⁵ Pa.'], [Math.sqrt(releveVide.pBar * 1e5 / P2_RHO), 'N’oubliez pas le facteur 2 : ½ ρ v² = p.']] },
         { id: 'pq', type: 'choix', q: 'Pourquoi la roue à vide ne tourne-t-elle pas aussi vite que le jet ?',
           options: ['Les frottements (paliers, air, éclaboussures) la freinent', 'Le jet ralentit dans l’air', 'La roue est trop lourde'], bonne: 0 },
-        { id: 'vaopt', type: 'num', q: <>Vitesse de l'auget au rendement maximal (votre relevé : n = {fmt(releve.n, 0)} tr/min)</>, unite: 'm·s⁻¹', vrai: vaOpt, tol: 0.04 },
-        { id: 'rap', type: 'num', q: <>Rapport v<sub>a</sub>(rendement max) / v<sub>a</sub>(à vide)</>, unite: '', vrai: vaOpt / va0m, tol: 0.06 },
+        { id: 'vaopt', type: 'num', q: <>Vitesse de l'auget au rendement maximal (votre relevé : n = {fmt(releve.n, 0)} tr/min)</>, unite: 'm·s⁻¹', vrai: vaOpt, tol: 0.04,
+          indice: <>Même formule que pour la vitesse à vide : v<sub>a</sub> = r × 2π × n / 60, mais avec la valeur de n de votre relevé au rendement maximal (r = 0,0500 m).</> },
+        { id: 'rap', type: 'num', q: <>Rapport v<sub>a</sub>(rendement max) / v<sub>a</sub>(à vide)</>, unite: '', vrai: vaOpt / va0m, tol: 0.06,
+          indice: <>Divisez la vitesse de l’auget au rendement maximal (question 4) par la vitesse de l’auget à vide (question 1) : ce rapport n’a pas d’unité (environ 0,5 attendu).</> },
       ];
     }
     return [];
   })();
 
+  // Un élève qui arrondit correctement à 2 chiffres significatifs (jusqu'à 5 % d'écart relatif) doit être jugé juste.
+  const TOL_MIN_2CS = 0.05;
   const juste = q => {
     const r = reps[q.id];
     if (q.type === 'choix') return r === q.bonne;
     const x = lireNombre(r);
-    return isFinite(x) && proche(x, q.vrai, q.tol);
+    return isFinite(x) && proche(x, q.vrai, Math.max(q.tol, TOL_MIN_2CS));
   };
   const piege = q => {
     const x = lireNombre(reps[q.id]);
@@ -489,7 +502,8 @@ export function SimulationProduction2() {
       <button onClick={() => { setReleve(mesureActuelle()); setReps({}); setVerifie(false); }} disabled={!releveOk}
         style={{ ...btn(releveOk, '#0ea5e9'), opacity: releveOk ? 1 : 0.5 }}>📋 Relever mes mesures</button>
       {releve && <div style={{ fontSize: 13, marginTop: 6, fontFamily: 'monospace', lineHeight: 1.6 }}>
-        Q = {fmt(releve.q, 1)} L/min ; p = {fmt(releve.pBar, 2)} bar ; n = {releve.n} tr/min<br/>F₁ = {fmt(releve.F1, 1)} N ; F₂ = {fmt(releve.F1 / P2_RAPPORT_F, 1)} N
+        Q = {fmt(releve.q, 1)} L/min ; p = {fmt(releve.pBar, 2)} bar ; n = {releve.n} tr/min<br/>F₁ = {fmt(releve.F1, 1)} N ; F₂ = {fmt(Math.round(releve.F1 / P2_RAPPORT_F * 10) / 10, 1)} N
+        <br/><span style={{ fontFamily: 'inherit', color: TXT2 }}>Donnez vos résultats avec 2 ou 3 chiffres significatifs.</span>
       </div>}
     </div>
   ) : niveau === 3 ? (
@@ -506,6 +520,7 @@ export function SimulationProduction2() {
       </div>
       {releveVide && <div style={{ fontSize: 13, marginTop: 6, fontFamily: 'monospace' }}>à vide : n = {releveVide.n} tr/min ; p = {fmt(releveVide.pBar, 2)} bar</div>}
       {releve && <div style={{ fontSize: 13, fontFamily: 'monospace' }}>au maximum : n = {releve.n} tr/min</div>}
+      {releve && releveVide && <div style={{ fontSize: 12.5, color: TXT2 }}>Donnez vos résultats avec 2 ou 3 chiffres significatifs.</div>}
       {releveVide && releveVide.q !== qL && <div style={{ fontSize: 12, color: '#b91c1c' }}>Le débit a changé depuis le relevé à vide.</div>}
     </div>
   ) : null;
@@ -531,12 +546,13 @@ export function SimulationProduction2() {
                 {verifie && <span>{ok ? '✅' : '❌'}</span>}
               </div>
             )}
+            {q.type === 'num' && !ok && q.indice && <IndiceDefi>{q.indice}</IndiceDefi>}
             {q.aide && !verifie && <div style={{ fontSize: 12, color: TXT2, marginTop: 3 }}>{q.aide}</div>}
             {verifie && q.type === 'num' && !ok && piege(q) && (
               <div style={{ fontSize: 12.5, color: '#9a3412', background: '#fff7ed', border: '1px solid #fdba74', borderRadius: 6, padding: '4px 8px', marginTop: 4 }}>{piege(q)}</div>
             )}
             {verifie && q.type === 'num' && !ok && (reps[`vu_${q.id}`]
-              ? <div style={{ fontSize: 12.5, color: TXT2, marginTop: 3 }}>Valeur attendue : {sci(q.vrai)} {q.unite}</div>
+              ? <div style={{ fontSize: 12.5, color: TXT2, marginTop: 3 }}>Valeur attendue : {valeurAttendue(q.vrai)} {q.unite}</div>
               : <button onClick={() => setReps(pr => ({ ...pr, [`vu_${q.id}`]: true }))} style={{ fontSize: 12, marginTop: 3, background: 'none',
                   border: 'none', color: TXT2, textDecoration: 'underline', cursor: 'pointer', padding: 0 }}>voir la valeur attendue</button>)}
           </div>

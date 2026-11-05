@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useMemo } from "react";
-import { cardStyle, Graphe, fmt, sci, lireNombre, proche, CarteParcours, Cadre, ORANGE_GUIDE, useEtatPersistant, avecIndices } from "../commun";
+import { cardStyle, Graphe, fmt, sci, lireNombre, proche, CarteParcours, Cadre, ORANGE_GUIDE, useEtatPersistant, avecIndices, IndiceDefi, valeurAttendue, arrondiSig } from "../commun";
 import { signalerDefi } from "../avancement";
 
 // ====================================================
@@ -745,27 +745,31 @@ export function SimulationHydrogene() {
     { n: 2, nom: 'Calculs', c: '#0ea5e9', desc: atelier === 1 ? "Puissance, énergie et rendement à partir de vos mesures." : 'Lire le banc et calculer U cellule, J, P, rendement.' },
     { n: 3, nom: 'Expert', c: '#dc2626', desc: atelier === 1 ? 'Loi de Faraday, tableau d’avancement et rendement de toute la maquette.' : 'Dimensionner une pile réelle.' },
   ];
-  const pp = pointPac(10), pm = pointPac(CHARGES.find(c => c.id === 'moteur').R);
+  const pp0 = pointPac(10), pm0 = pointPac(CHARGES.find(c => c.id === 'moteur').R);
+  // Valeurs de la pile arrondies comme à l'affichage (U : 2 décimales, I : 3 décimales) : le corrigé part des mêmes nombres que l'élève
+  const arr = (x, d) => Math.round(x * 10 ** d) / 10 ** d;
+  const pp = { u: arr(pp0.u, 2), i: arr(pp0.i, 3) }, pm = { u: arr(pm0.u, 2), i: arr(pm0.i, 3) };
+  pp.p = pp.u * pp.i; pm.p = pm.u * pm.i;
   // Questions : type 'qcm' (options, bonne) ou 'num' (vrai, unite, tol, pieges [valeur, message], aide)
   const questions = (() => {
     if (!niveau) return [];
     if (atelier === 1 && niveau === 1) return [
-      { id: 'q1', type: 'qcm', q: "Lancez l'électrolyse quelques minutes. Quel tube se remplit le plus vite ?",
+      { id: 'q1', type: 'qcm', indice: 'Pensez à l’équation 2 H₂O → 2 H₂ + O₂ : combien de molécules de H₂ pour une de O₂ ?', q: "Lancez l'électrolyse quelques minutes. Quel tube se remplit le plus vite ?",
         options: ['Le tube de H₂', 'Le tube de O₂', 'Les deux au même rythme'], bonne: 0,
         expl: "L'eau H₂O contient deux fois plus d'atomes d'hydrogène que d'oxygène." },
-      { id: 'q2', type: 'qcm', q: 'Comparez les deux volumes. Que constatez-vous ?',
+      { id: 'q2', type: 'qcm', indice: 'Comparez les graduations des deux tubes ; reliez avec les coefficients de l’équation 2 H₂O → 2 H₂ + O₂.', q: 'Comparez les deux volumes. Que constatez-vous ?',
         options: ['V(H₂) ≈ 2 × V(O₂)', 'V(H₂) ≈ V(O₂)', 'V(O₂) ≈ 2 × V(H₂)'], bonne: 0,
         expl: '2 H₂O → 2 H₂ + O₂ : deux molécules de H₂ pour une de O₂.' },
-      { id: 'q3', type: 'qcm', q: "Diminuez l'éclairement de la lampe. La production de gaz…",
+      { id: 'q3', type: 'qcm', indice: 'Moins de lumière : le panneau solaire fournit-il plus ou moins de courant ? Et le courant fait-il plus ou moins d’électrolyse ?', q: "Diminuez l'éclairement de la lampe. La production de gaz…",
         options: ['augmente', 'diminue', 'ne change pas'], bonne: 1,
         expl: 'Moins de lumière, moins de courant : moins d’électrons pour décomposer l’eau.' },
-      { id: 'q4', type: 'qcm', q: 'Branchez la pile sur 200 Ω, puis sur 1 Ω. Quand la résistance diminue, la tension de la pile…',
+      { id: 'q4', type: 'qcm', indice: 'Essayez les deux charges et lisez la tension de la pile à chaque fois : la pile a une résistance interne, elle perd de la tension quand le courant augmente.', q: 'Branchez la pile sur 200 Ω, puis sur 1 Ω. Quand la résistance diminue, la tension de la pile…',
         options: ['augmente', 'diminue', 'reste la même'], bonne: 1,
         expl: 'La pile débite plus de courant et perd plus de tension dans sa propre résistance interne.' },
-      { id: 'q5', type: 'qcm', q: 'Pour quelle charge la pile fournit-elle la plus grande puissance ? (onglet « Puissance »)',
+      { id: 'q5', type: 'qcm', indice: 'Placez la pile successivement sur chaque charge et comparez la puissance P = U × I (onglet « Puissance »).', q: 'Pour quelle charge la pile fournit-elle la plus grande puissance ? (onglet « Puissance »)',
         options: ['200 Ω', '50 Ω', '10 Ω', '1 Ω'], bonne: 2,
         expl: 'Avec 200 Ω le courant est trop faible, avec 1 Ω la tension s’effondre : le maximum est entre les deux.' },
-      { id: 'q6', type: 'qcm', q: "Toute l'énergie électrique donnée à l'électrolyseur n'est pas stockée. Où est passé le reste ?",
+      { id: 'q6', type: 'qcm', indice: 'Pensez à la conservation de l’énergie : que devient l’énergie électrique qui n’est pas stockée sous forme chimique ?', q: "Toute l'énergie électrique donnée à l'électrolyseur n'est pas stockée. Où est passé le reste ?",
         options: ['Elle a disparu', 'En chaleur', 'Dans le panneau solaire'], bonne: 1,
         expl: "L'énergie se conserve : ce qui n'est pas stocké est dissipé en chaleur." },
     ];
@@ -774,76 +778,76 @@ export function SimulationHydrogene() {
       const P = u * i, E = P * t, n = v / 1000 / H2_VM, Es = n * H2_DH;
       const ne = i * t / H2_F, nth = ne / 2, vth = nth * H2_VM * 1000;
       if (niveau === 2) return [
-        { id: 'P', type: 'num', q: <>Puissance reçue par l'électrolyseur P = U × I</>, unite: 'W', vrai: P, tol: 0.04,
+        { id: 'P', type: 'num', indice: <>P = U × I, avec U en volts et I en ampères (valeurs relevées dans « Votre manip »).</>, q: <>Puissance reçue par l'électrolyseur P = U × I</>, unite: 'W', vrai: P, tol: 0.06,
           aide: 'Multipliez la tension par l’intensité relevées.' },
-        { id: 'E', type: 'num', q: <>Énergie électrique consommée E = P × Δt</>, unite: 'J', vrai: E, tol: 0.04,
+        { id: 'E', type: 'num', indice: <>E = P × Δt, avec Δt en <strong>secondes</strong> (1 min = 60 s) : 1 W × 1 s = 1 J.</>, q: <>Énergie électrique consommée E = P × Δt</>, unite: 'J', vrai: E, tol: 0.06,
           pieges: [[E / 60, 'Δt doit être en secondes, pas en minutes.']], aide: 'Δt en secondes.' },
-        { id: 'n', type: 'num', q: <>Quantité de H<sub>2</sub> produite n = V / V<sub>m</sub> (V<sub>m</sub> = 24 L·mol⁻¹)</>, unite: 'mol', vrai: n, tol: 0.04,
+        { id: 'n', type: 'num', indice: <>n = V / V<sub>m</sub> : convertissez d’abord le volume en litres (1 mL = 10⁻³ L), puis divisez par V<sub>m</sub> = 24 L·mol⁻¹.</>, q: <>Quantité de H<sub>2</sub> produite n = V / V<sub>m</sub> (V<sub>m</sub> = 24 L·mol⁻¹)</>, unite: 'mol', vrai: n, tol: 0.06,
           pieges: [[n * 1000, 'Le volume doit être en litres : 1 mL = 10⁻³ L.'],
             [v / 1000 / 22.4, '22,4 L·mol⁻¹ vaut à 0 °C ; à 20 °C, Vₘ = 24 L·mol⁻¹.']],
           aide: 'Convertissez le volume en litres. Notation scientifique acceptée : pour 4,5 × 10⁻⁶, tapez 4,5e-6.' },
-        { id: 'Es', type: 'num', q: <>Énergie stockée E<sub>stockée</sub> = n × 285 000 J·mol⁻¹</>, unite: 'J', vrai: Es, tol: 0.05,
+        { id: 'Es', type: 'num', indice: <>Chaque mole de H₂ formée stocke 285 000 J : E<sub>stockée</sub> = n × 285 000, avec n la quantité trouvée à la question précédente.</>, q: <>Énergie stockée E<sub>stockée</sub> = n × 285 000 J·mol⁻¹</>, unite: 'J', vrai: Es, tol: 0.06,
           pieges: [[Es / 1000, '285 kJ·mol⁻¹ = 285 000 J·mol⁻¹.']] },
-        { id: 'eta', type: 'num', q: <>Rendement de l'électrolyseur η = E<sub>stockée</sub> / E<sub>consommée</sub></>, unite: '%', vrai: Es / E * 100, tol: 0.06,
+        { id: 'eta', type: 'num', indice: <>η = énergie utile / énergie reçue = E<sub>stockée</sub> / E<sub>consommée</sub>, puis × 100 pour l’exprimer en %.</>, q: <>Rendement de l'électrolyseur η = E<sub>stockée</sub> / E<sub>consommée</sub></>, unite: '%', vrai: Es / E * 100, tol: 0.06,
           pieges: [[E / Es * 100, 'C’est l’inverse : énergie utile (stockée) sur énergie reçue.'],
             [Es / E, 'Exprimez le rendement en pourcentage (× 100).']] },
       ];
       if (niveau === 3) return [
-        { id: 'ne', type: 'num', q: <>Quantité d'électrons n(e⁻) = I × Δt / F</>, unite: 'mol', vrai: ne, tol: 0.04,
+        { id: 'ne', type: 'num', indice: <>n(e⁻) = I × Δt / F avec I en A, Δt en s et F = 96 485 C·mol⁻¹ (charge d’une mole d’électrons).</>, q: <>Quantité d'électrons n(e⁻) = I × Δt / F</>, unite: 'mol', vrai: ne, tol: 0.06,
           pieges: [[ne / 60, 'Δt doit être en secondes.']] },
-        { id: 'nth', type: 'num', q: <>Quantité de H<sub>2</sub> attendue (2 e⁻ par molécule)</>, unite: 'mol', vrai: nth, tol: 0.04,
+        { id: 'nth', type: 'num', indice: <>À la cathode : 2 H⁺ + 2 e⁻ → H₂. Il faut donc 2 électrons par molécule de H₂ : n(H₂) = n(e⁻) / 2.</>, q: <>Quantité de H<sub>2</sub> attendue (2 e⁻ par molécule)</>, unite: 'mol', vrai: nth, tol: 0.06,
           pieges: [[ne, 'Il faut 2 électrons pour une molécule de H₂ : divisez par 2.'], [ne / 4, 'Divisez par 2, pas par 4 (4 e⁻ par molécule de O₂).']] },
-        { id: 'vth', type: 'num', q: <>Volume de H<sub>2</sub> attendu</>, unite: 'mL', vrai: vth, tol: 0.04,
+        { id: 'vth', type: 'num', indice: <>V = n × V<sub>m</sub> (V<sub>m</sub> = 24 L·mol⁻¹), en litres ; multipliez par 1000 pour l’exprimer en mL.</>, q: <>Volume de H<sub>2</sub> attendu</>, unite: 'mL', vrai: vth, tol: 0.06,
           pieges: [[vth / 1000, 'La réponse est demandée en mL.']] },
-        { id: 'etaF', type: 'num', q: <>Rendement faradique = V<sub>mesuré</sub> / V<sub>attendu</sub></>, unite: '%', vrai: v / vth * 100, tol: 0.06,
+        { id: 'etaF', type: 'num', indice: <>Le rendement faradique compare le volume recueilli au volume prévu par la loi de Faraday : η<sub>F</sub> = V<sub>mesuré</sub> / V<sub>attendu</sub>, puis × 100 pour des %.</>, q: <>Rendement faradique = V<sub>mesuré</sub> / V<sub>attendu</sub></>, unite: '%', vrai: v / vth * 100, tol: 0.06,
           pieges: [[vth / v * 100, 'C’est le volume mesuré divisé par le volume attendu.']] },
-        { id: 'xf', type: 'num', q: <>Tableau d'avancement de H<sub>2</sub>O → H<sub>2</sub> + ½ O<sub>2</sub> : avancement final x<sub>f</sub> (d'après le volume mesuré)</>,
-          unite: 'mol', vrai: n, tol: 0.04,
+        { id: 'xf', type: 'num', indice: <>Dans H₂O → H₂ + ½ O₂, le coefficient de H₂ est 1 : x<sub>f</sub> = n(H₂) = V / V<sub>m</sub> (V en litres).</>, q: <>Tableau d'avancement de H<sub>2</sub>O → H<sub>2</sub> + ½ O<sub>2</sub> : avancement final x<sub>f</sub> (d'après le volume mesuré)</>,
+          unite: 'mol', vrai: n, tol: 0.06,
           pieges: [[n * 1000, 'Le volume doit être en litres : 1 mL = 10⁻³ L.'], [v / 1000 / 22.4, 'À 20 °C, Vₘ = 24 L·mol⁻¹.']],
           aide: 'L’avancement final est égal à la quantité de H₂ formée.' },
-        { id: 'nO2', type: 'num', q: <>Quantité de O<sub>2</sub> formée n(O<sub>2</sub>) = ½ x<sub>f</sub></>, unite: 'mol', vrai: n / 2, tol: 0.04,
+        { id: 'nO2', type: 'num', indice: <>Le coefficient de O₂ vaut ½ : n(O₂) = ½ × x<sub>f</sub>.</>, q: <>Quantité de O<sub>2</sub> formée n(O<sub>2</sub>) = ½ x<sub>f</sub></>, unite: 'mol', vrai: n / 2, tol: 0.06,
           pieges: [[n, 'Le coefficient de O₂ est ½ : n(O₂) = avancement final / 2.'], [2 * n, 'Le coefficient de O₂ est ½ : on divise par 2.']] },
-        { id: 'meau', type: 'num', q: <>Masse d'eau consommée m = x<sub>f</sub> × M(H<sub>2</sub>O)</>, unite: 'g', vrai: n * 18, tol: 0.04,
+        { id: 'meau', type: 'num', indice: <>n(H₂O consommée) = x<sub>f</sub> (coefficient 1) ; m = n × M avec M(H₂O) = 2 × 1 + 16 = 18 g·mol⁻¹.</>, q: <>Masse d'eau consommée m = x<sub>f</sub> × M(H<sub>2</sub>O)</>, unite: 'g', vrai: n * 18, tol: 0.06,
           pieges: [[n * 16, 'M(H₂O) = 16 + 2 × 1 = 18 g·mol⁻¹ (et non 16).'], [n * 18000, 'La réponse est demandée en grammes.']] },
-        { id: 'Ppac', type: 'num', q: <>Branchez la pile sur 10 Ω et relevez U et I : puissance fournie P<sub>pile</sub></>, unite: 'W', vrai: pp.p, tol: 0.06,
+        { id: 'Ppac', type: 'num', indice: <>Branchez la pile sur 10 Ω, lisez U et I dans « Mesures », puis P = U × I (U en V, I en A : le résultat est en W, pas en mW).</>, q: <>Branchez la pile sur 10 Ω et relevez U et I : puissance fournie P<sub>pile</sub></>, unite: 'W', vrai: pp.p, tol: 0.06,
           pieges: [[pp.p * 1000, 'La réponse est demandée en W (1 mW = 10⁻³ W).']] },
-        { id: 'chaine', type: 'num', q: <>Rendement de la chaîne électrolyseur + pile. Si la pile, branchée sur 10 Ω, consomme tout le H<sub>2</sub> stocké, elle rend
+        { id: 'chaine', type: 'num', indice: <>E<sub>rendue</sub> = n × 2F × U<sub>pile</sub> (n = quantité de H₂ stockée, F = 96 485 C·mol⁻¹), puis rendement = E<sub>rendue</sub> / E<sub>consommée</sub> × 100.</>, q: <>Rendement de la chaîne électrolyseur + pile. Si la pile, branchée sur 10 Ω, consomme tout le H<sub>2</sub> stocké, elle rend
           E<sub>rendue</sub> = n(H<sub>2</sub>) × 2F × U<sub>pile</sub> (U<sub>pile</sub> lue sur la pile ; on la suppose constante). Rendement = E<sub>rendue</sub> / E<sub>consommée</sub></>,
           unite: '%', vrai: n * 2 * H2_F * pp.u / E * 100, tol: 0.08,
           pieges: [[pp.p / P * 100, 'Comparez des énergies, pas des puissances : la pile et l’électrolyseur ne fonctionnent pas en même temps ni au même rythme.']] },
-        { id: 'Umot', type: 'num', q: <>Branchez maintenant le moteur : tension U<sub>moteur</sub> lue aux bornes de la pile</>, unite: 'V', vrai: pm.u, tol: 0.04 },
-        { id: 'maq', type: 'num', q: <>Rendement de toute la maquette, de la lampe au moteur : η = η<sub>panneau</sub> × (n × 2F × U<sub>moteur</sub> / E<sub>consommée</sub>) × η<sub>moteur</sub>,
+        { id: 'Umot', type: 'num', indice: <>Choisissez la charge « Moteur » dans les commandes de la pile, puis lisez la tension U de la pile dans « Mesures ».</>, q: <>Branchez maintenant le moteur : tension U<sub>moteur</sub> lue aux bornes de la pile</>, unite: 'V', vrai: pm.u, tol: 0.05 },
+        { id: 'maq', type: 'num', indice: <>Calculez d’abord E<sub>rendue</sub> / E<sub>consommée</sub> comme à la question précédente (avec U<sub>moteur</sub>), puis multipliez par 0,10 (panneau) et par 0,90 (moteur).</>, q: <>Rendement de toute la maquette, de la lampe au moteur : η = η<sub>panneau</sub> × (n × 2F × U<sub>moteur</sub> / E<sub>consommée</sub>) × η<sub>moteur</sub>,
           avec η<sub>panneau</sub> = 10 % et η<sub>moteur</sub> = 90 %</>, unite: '%', vrai: 0.10 * (n * 2 * H2_F * pm.u / E) * 0.90 * 100, tol: 0.08,
           pieges: [[(n * 2 * H2_F * pm.u / E) * 100, 'N’oubliez pas les rendements du panneau (10 %) et du moteur (90 %).'],
             [0.10 * (n * 2 * H2_F * pm.u / E) * 0.90, 'Exprimez le rendement en pourcentage (× 100).']] },
       ];
     }
     if (atelier === 2 && niveau === 1) return MODULES.map(m => ({
-      id: m.id, type: 'module', q: m.nom, bonne: m.id }));
+      id: m.id, type: 'module', q: m.nom, bonne: m.id, indice: 'Suivez le trajet du dihydrogène sur le schéma, de son stockage jusqu’à la production d’électricité : chaque module a un rôle précis sur ce trajet.' }));
     if (atelier === 2 && niveau === 2) {
-      const U10 = uBanc(10);
+      const U10 = Math.round(uBanc(10) * 100) / 100;
       return [
-        { id: 'U', type: 'num', q: 'Réglez I = 10 A. Tension lue aux bornes de la pile', unite: 'V', vrai: U10, tol: 0.02 },
-        { id: 'Uc', type: 'num', q: 'Tension aux bornes d’une cellule (la pile en compte 10)', unite: 'V', vrai: U10 / 10, tol: 0.03,
+        { id: 'U', type: 'num', indice: <>Réglez le curseur du banc sur I = 10 A et lisez la tension de la pile U dans « Mesures ».</>, q: 'Réglez I = 10 A. Tension lue aux bornes de la pile', unite: 'V', vrai: U10, tol: 0.05 },
+        { id: 'Uc', type: 'num', indice: <>Les 10 cellules sont empilées en série : les tensions s’ajoutent, donc U<sub>cellule</sub> = U<sub>pile</sub> / 10.</>, q: 'Tension aux bornes d’une cellule (la pile en compte 10)', unite: 'V', vrai: U10 / 10, tol: 0.05,
           pieges: [[U10, 'Divisez la tension de la pile par le nombre de cellules.']] },
-        { id: 'J', type: 'num', q: 'Densité de courant J = I / S (S = 25 cm²)', unite: 'A·cm⁻²', vrai: 0.4, tol: 0.02,
+        { id: 'J', type: 'num', indice: <>J = I / S, avec I = 10 A et S = 25 cm² : la densité de courant s’exprime en A·cm⁻².</>, q: 'Densité de courant J = I / S (S = 25 cm²)', unite: 'A·cm⁻²', vrai: 0.4, tol: 0.05,
           pieges: [[2.5, 'C’est I / S, pas S / I.']] },
-        { id: 'P', type: 'num', q: 'Puissance fournie P = U × I', unite: 'W', vrai: U10 * 10, tol: 0.03 },
-        { id: 'eta', type: 'num', q: 'Rendement η = U cellule / 1,48 V', unite: '%', vrai: U10 / 10 / U_TH * 100, tol: 0.04,
+        { id: 'P', type: 'num', indice: <>P = U × I, avec U lue dans « Mesures » (en V) et I = 10 A.</>, q: 'Puissance fournie P = U × I', unite: 'W', vrai: U10 * 10, tol: 0.06 },
+        { id: 'eta', type: 'num', indice: <>Le rendement d’une cellule compare sa tension réelle à la tension théorique : η = U<sub>cellule</sub> / 1,48 V, × 100 pour des % (U<sub>cellule</sub> = U<sub>pile</sub> / 10).</>, q: 'Rendement η = U cellule / 1,48 V', unite: '%', vrai: U10 / 10 / U_TH * 100, tol: 0.06,
           pieges: [[U10 / U_TH * 100, 'Utilisez la tension d’une seule cellule.']] },
       ];
     }
     if (atelier === 2 && niveau === 3) {
-      const { P, U } = cibleDefi, uc = uBanc(10) / 10, j = 0.4;
+      const { P, U } = cibleDefi, uc = Math.round(uBanc(10) / 10 * 100) / 100, j = 0.4;   // U cellule arrondie comme dans l'énoncé (2 décimales)
       const N = Math.ceil(U / uc), I = P / U, S = I / j, deb = N * I / (2 * H2_F) * H2_VM * 60;
       return [
-        { id: 'N', type: 'num', q: `Nombre de cellules pour obtenir ${U} V (arrondir à l'entier supérieur)`, unite: 'cellules', vrai: N, tol: 0,
+        { id: 'N', type: 'num', indice: <>Les cellules sont en série : U = N × U<sub>cellule</sub>, donc N = U / U<sub>cellule</sub>, à arrondir à l’entier <strong>supérieur</strong>.</>, q: `Nombre de cellules pour obtenir ${U} V (arrondir à l'entier supérieur)`, unite: 'cellules', vrai: N, tol: 0,
           pieges: [[Math.floor(U / uc), 'Arrondissez à l’entier supérieur : sinon la tension est trop faible.']] },
-        { id: 'I', type: 'num', q: `Courant débité pour ${P} W sous ${U} V`, unite: 'A', vrai: I, tol: 0.02 },
-        { id: 'S', type: 'num', q: 'Surface d’une cellule S = I / J (J = 0,4 A·cm⁻²)', unite: 'cm²', vrai: S, tol: 0.03,
+        { id: 'I', type: 'num', indice: <>P = U × I, donc I = P / U.</>, q: `Courant débité pour ${P} W sous ${U} V`, unite: 'A', vrai: I, tol: 0.05 },
+        { id: 'S', type: 'num', indice: <>J = I / S, donc S = I / J (J = 0,4 A·cm⁻²), en cm².</>, q: 'Surface d’une cellule S = I / J (J = 0,4 A·cm⁻²)', unite: 'cm²', vrai: S, tol: 0.06,
           pieges: [[I * j, 'C’est S = I / J.']] },
-        { id: 'deb', type: 'num', q: <>Consommation de H<sub>2</sub> : N × I / (2F) mol·s⁻¹, convertie en L·min⁻¹ (V<sub>m</sub> = 24 L·mol⁻¹)</>,
-          unite: 'L·min⁻¹', vrai: deb, tol: 0.05,
+        { id: 'deb', type: 'num', indice: <>n(H₂) consommée par seconde = N × I / (2F) en mol·s⁻¹ ; multipliez par V<sub>m</sub> = 24 L·mol⁻¹ puis par 60 pour passer des secondes aux minutes.</>, q: <>Consommation de H<sub>2</sub> : N × I / (2F) mol·s⁻¹, convertie en L·min⁻¹ (V<sub>m</sub> = 24 L·mol⁻¹)</>,
+          unite: 'L·min⁻¹', vrai: deb, tol: 0.06,
           pieges: [[deb / 60, 'Multipliez par 60 pour passer de L·s⁻¹ à L·min⁻¹.'], [deb * 2, 'Il faut 2 électrons par molécule de H₂ : divisez par 2F.']] },
       ];
     }
@@ -931,6 +935,7 @@ export function SimulationHydrogene() {
           qui fonctionnent comme celles du banc à 10 A (U cellule ≈ {fmt(uBanc(10) / 10, 2)} V ; J = 0,4 A·cm⁻²).
         </div>
       )}
+      {questions.some(q => q.type === 'num') && <div style={{ fontSize: 12, color: TXT2, lineHeight: 1.5 }}>Gardez au moins 3 chiffres significatifs dans vos calculs intermédiaires ; donnez le résultat final avec 2 chiffres significatifs.</div>}
       {questions.map((q, k) => {
         const ok = verifie && juste(q);
         return (
@@ -960,6 +965,7 @@ export function SimulationHydrogene() {
                 {verifie && <span>{ok ? '✅' : '❌'}</span>}
               </div>
             )}
+            {!ok && q.indice && <IndiceDefi>{q.indice}</IndiceDefi>}
             {verifie && q.type !== 'num' && <div style={{ fontSize: 12, marginTop: 3, color: ok ? '#15803d' : '#b91c1c' }}>
               {ok ? '✅ ' : '❌ '}{q.expl || (!ok && q.type === 'module' ? `Réponse : ${MODULES.find(m => m.id === q.bonne).role}` : '')}
             </div>}
@@ -968,7 +974,7 @@ export function SimulationHydrogene() {
                 borderRadius: 6, padding: '4px 8px', marginTop: 4 }}>{piege(q)}</div>
             )}
             {verifie && q.type === 'num' && !ok && reps[`vu_${q.id}`] && (
-              <div style={{ fontSize: 12, color: TXT2, marginTop: 3 }}>Valeur attendue : {sci(q.vrai)} {q.unite}</div>
+              <div style={{ fontSize: 12, color: TXT2, marginTop: 3 }}>Valeur attendue : {valeurAttendue(arrondiSig(q.vrai, 2))} {q.unite}</div>
             )}
             {verifie && q.type === 'num' && !ok && !reps[`vu_${q.id}`] && (
               <button onClick={() => setReps(p => ({ ...p, [`vu_${q.id}`]: true }))}

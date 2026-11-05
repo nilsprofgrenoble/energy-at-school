@@ -68,6 +68,19 @@ export function sci(x, sig = 3) {
 export const lireNombre = s => parseFloat(String(s ?? '').replace(/\s/g, '').replace(',', '.'));
 export const proche = (a, b, tol) => Math.abs(a - b) <= Math.abs(b) * tol;
 
+// ── Défis : conventions communes (harmonisation) ──
+//  • les données affichées à l'élève sont EXACTEMENT celles qui servent au calcul du corrigé (arrondir avant, pas après) ;
+//  • la « valeur attendue » est donnée avec 2 chiffres significatifs (pas plus que les données) : valeurAttendue() ;
+//  • chaque question propose un bouton « 💡 Indice » (formule à utiliser, conversion d'unités…) : <IndiceDefi/>.
+export const arrondiSig = (x, n = 2) => (isFinite(x) && x !== 0 ? Number(x.toPrecision(n)) : x);
+export const valeurAttendue = x => sci(x, 2);
+export function IndiceDefi({ children }) {
+  const [vu, setVu] = useState(false);
+  return vu
+    ? <div style={{ fontSize: 13.5, color: '#0f172a', background: '#fffbeb', border: '1px solid #fcd34d', borderRadius: 6, padding: '6px 8px', marginTop: 5, lineHeight: 1.5 }}>💡 {children}</div>
+    : <button type="button" onClick={() => setVu(true)} style={{ marginTop: 5, fontSize: 13, padding: '3px 10px', borderRadius: 8, cursor: 'pointer', fontWeight: 700, border: '1px solid #fcd34d', background: '#fffbeb', color: '#92400e' }}>💡 Indice</button>;
+}
+
 // ════════════════ PETIT GRAPHIQUE SVG ════════════════
 function pasJoli(max) {
   const brut = max / 5, p = 10 ** Math.floor(Math.log10(brut || 1));
