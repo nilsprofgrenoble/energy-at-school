@@ -3,7 +3,7 @@ import { cardStyle } from "./commun";
 // ============================================================
 //  PAGE « À PROPOS » : transparence sur la manière dont le site a été construit.
 //  Page publique (vouvoiement), sobre et courte. Les formulations sont à valider
-//  par Nils avant publication ; aucun nom propre d'enseignant-chercheur sans son accord.
+//  par Nils ; aucun nom propre d'enseignant-chercheur sans son accord.
 // ============================================================
 
 const titre = { margin: '0 0 6px', fontFamily: "'Outfit', sans-serif", fontWeight: 800, fontSize: 20, color: '#0c1a2e', letterSpacing: '-0.01em' };
@@ -25,49 +25,37 @@ function Bloc({ icone, titre: t, children }) {
 export function PageAPropos() {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12, maxWidth: 760, margin: '0 auto', textAlign: 'left' }}>
-      <Bloc icone="✍️" titre="Qui a construit ce site ?">
+      <Bloc icone="✍️" titre="Qui a fait ce site ?">
         <p style={texte}>
-          Ce site est l'œuvre de Nils Aronssohn, professeur au lycée Argouges (Grenoble). Il a été créé pour la journée
-          Energy@School à Grenoble INP – Ense³ : pour la préparer, et pour y revenir ensuite.
+          Ce site a été fait par Nils Aronssohn, professeur au lycée Argouges à Grenoble, pour préparer la journée
+          Energy@School à Grenoble INP – Ense³ et y revenir ensuite.
+        </p>
+        <p style={{ ...texte, marginTop: 8 }}>
+          Les simulations prennent appui sur les énoncés et les scénarios pédagogiques imaginés par les intervenants de la
+          journée : des enseignants-chercheurs de l'Ense³ et des ingénieurs de recherche du CEA.
         </p>
       </Bloc>
 
-      <Bloc icone="🤝" titre="Avec l'accord des équipes de la journée">
+      <Bloc icone="🤖" titre="Et l'intelligence artificielle ?">
         <p style={texte}>
-          Les simulations s'inspirent des ateliers et des manipulations de la journée. Elles sont publiées avec l'accord
-          des enseignants-chercheurs du CEA et de l'Ense³ qui les animent.
-        </p>
-      </Bloc>
-
-      <Bloc icone="🤖" titre="Une intelligence artificielle a aidé">
-        <p style={texte}>
-          Le code et les contenus pédagogiques ont été réalisés avec l'aide d'une intelligence artificielle, sous la
-          direction, la relecture et la validation de l'auteur : l'IA aide, l'enseignant décide.
+          Le code du site a été écrit par Claude, une IA d'Anthropic. Les contenus pédagogiques ne viennent pas d'elle.
         </p>
       </Bloc>
 
       <Bloc icone="🔒" titre="Vos données">
         <p style={texte}>
-          Les comptes sont anonymes et créés par le professeur : un identifiant du type <strong>ense-07</strong>, et un pseudo
-          tiré de listes fermées. Aucun nom, aucune adresse. Votre avancement est conservé sur votre appareil et, si vous
-          avez un compte, sur un serveur (Supabase) pour le retrouver ailleurs. Il n'y a aucune publicité et aucun pistage
-          par des services tiers.
+          Les comptes sont anonymes : c'est le professeur qui les crée. Vous avez un identifiant du type <strong>ense-07</strong> et
+          un pseudo choisi dans une liste. Aucun nom, aucune adresse. Votre avancement est gardé sur votre appareil, et sur un
+          serveur (Supabase) si vous avez un compte, pour le retrouver ailleurs. Pas de publicité, pas de suivi par des services extérieurs.
         </p>
       </Bloc>
 
       <Bloc icone="📜" titre="Licence et autres simulations">
         <p style={texte}>
-          Ce site est placé sous licence{' '}
+          Ce site est sous licence{' '}
           <a href="https://creativecommons.org/licenses/by-nc-nd/4.0/deed.fr" target="_blank" rel="noopener noreferrer" style={lien}>CC BY-NC-ND 4.0</a>.
-          D'autres simulations de chimie et de physique sont à découvrir sur la{' '}
+          D'autres simulations de chimie et de physique sont sur la{' '}
           <a href="https://paillasse-virtuelle.fr/" target="_blank" rel="noopener noreferrer" style={lien}>Paillasse virtuelle</a>.
-        </p>
-      </Bloc>
-
-      <Bloc icone="🙏" titre="Remerciements">
-        <p style={texte}>
-          Merci aux enseignants-chercheurs du CEA et de l'Ense³, ainsi qu'aux organisateurs de la journée, pour leur
-          accueil et pour tout ce qu'ils transmettent aux élèves.
         </p>
       </Bloc>
     </div>
