@@ -101,3 +101,24 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 .fiche-chaine-fleche::after { content: '→'; display: block; font-size: 24px; line-height: 1; }
 @media (max-width: 520px) { .fiche-chaine { flex-direction: column; align-items: center; } .fiche-chaine-fleche::after { content: '↓'; } .fiche-chaine-fleche { min-width: 0; } }
 @media print { .fiche-chaine { flex-direction: row; } .fiche-chaine-fleche::after { content: '→'; } }
+
+/* ── Fiches : nouvelle mise en page (formules sur une ligne, grandeurs définies, exemples) ── */
+.fiche-fm { display: block; overflow-x: auto; overflow-y: hidden; max-width: 100%; text-align: center; margin: 8px 0; padding: 6px 4px; background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 12px; color: var(--es-encre); }
+.fiche-grandeurs { margin: 6px 0 8px; display: grid; gap: 3px; font-size: 14px; }
+.fiche-grandeurs > div { display: grid; grid-template-columns: minmax(54px, auto) 1fr; gap: 8px; align-items: baseline; }
+.fiche-grandeurs dt { font-weight: 800; text-align: right; color: var(--es-encre); margin: 0; }
+.fiche-grandeurs dd { margin: 0; color: #334155; }
+.fiche-unite { color: #64748b; font-weight: 700; }
+.fiche-exemple { margin: 8px 0; padding: 8px 12px; border-left: 4px solid #0284c7; background: #f0f9ff; border-radius: 8px; color: #0c1a2e; }
+.fiche-memo { margin: 8px 0 2px; padding: 8px 12px; border-radius: 12px; background: var(--es-orange-clair); color: #7c2d12; font-weight: 800; }
+.fiche-fauxvrai { display: grid; gap: 4px; margin: 8px 0; }
+.fiche-fauxvrai p { margin: 0; padding: 6px 10px; border-radius: 10px; }
+.fiche-faux { background: #fef2f2; color: #7f1d1d; }
+.fiche-vrai { background: #f0fdf4; color: #14532d; }
+.fiche-flux { display: flex; flex-direction: column; align-items: center; gap: 0; margin: 6px 0; }
+.fiche-flux-etape { display: flex; flex-direction: column; align-items: center; width: 100%; max-width: 360px; }
+.fiche-flux-nom { border: 2.5px solid var(--c); border-radius: 12px; padding: 4px 14px; font: 800 15px 'Outfit', sans-serif; background: #fff; color: var(--es-encre); text-align: center; }
+.fiche-flux-f { width: 100%; }
+.fiche-flux-fleche { font-size: 22px; line-height: 1; color: #334155; margin: 2px 0; }
+.fiche-flux-etape .fiche-fm { margin: 2px 0; }
+@media print { .fiche-fm, .fiche-exemple, .fiche-memo, .fiche-faux, .fiche-vrai { -webkit-print-color-adjust: exact; print-color-adjust: exact; } .fiche-fm { overflow: visible; } }

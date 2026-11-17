@@ -1,61 +1,167 @@
-// Petits éléments de mise en forme pour écrire les fiches (sans bibliothèque de formules : HTML/SVG seulement).
-// Quatre registres à couvrir dans chaque fiche : définitions, équations, données chiffrées, schéma ou méthode.
+// ═══════════════════════════════════════════════════════════════════════════
+//  BRIQUES POUR ÉCRIRE LES FICHES (règles de Nils, novembre 2026) :
+//   • une idée par carte, un SCHÉMA légendé qui porte l'idée (c'est essentiel) ;
+//   • toute grandeur qui apparaît est DÉFINIE (nom + unité) : composant <Grandeurs> ;
+//   • formules sur UNE SEULE ligne, en notation mathématique (MathML, vraie barre de fraction) : <Fm> ;
+//   • un exemple chiffré tiré de la simulation, une phrase à retenir, et si possible « Faux / Vrai ».
+//  Formules : on écrit une petite chaîne, par exemple  <Fm>{'P_hyd = p × Q_V'}</Fm>  ou  <Fm>{'η = {P_élec|P_hyd}'}</Fm>
+//   - X_ind : indice (lettres ou chiffres) ; X^2 : exposant ; {haut|bas} : fraction ; [W] : unité (texte droit).
+// ═══════════════════════════════════════════════════════════════════════════
+import { cloneElement, useLayoutEffect, useRef, useState } from 'react';
 
-// Équation mise en forme : bloc centré, lisible à l'écran et à l'impression
-export const Eq = ({ children, legende }) => (
-  <div className="fiche-eq">
-    <div className="fiche-eq-formule">{children}</div>
-    {legende && <div className="fiche-eq-legende">{legende}</div>}
-  </div>
-);
-// Variable en italique, avec indice facultatif : <V s="P" i="élec" />
-export const V = ({ s, i }) => <i>{s}{i && <sub>{i}</sub>}</i>;
-// Définition : terme en gras + sens
-export const Def = ({ terme, children }) => <p className="fiche-def"><b>{terme}</b> : {children}</p>;
-// Dans un texte simple, « P_hyd » devient P avec l'indice « hyd » (écriture courte pour les tableaux)
-const avecIndicesTexte = t => typeof t !== 'string' ? t : t.split(/([A-Za-zηΔ]_[A-Za-zé0-9]+)/).map((m, k) => /^[A-Za-zηΔ]_/.test(m) ? <span key={k}>{m[0]}<sub>{m.slice(2)}</sub></span> : m);
-// Valeurs chiffrées : petit tableau [[libellé, valeur], …]
-export const Donnees = ({ lignes }) => (
-  <table className="fiche-donnees"><tbody>
-    {lignes.map(([a, b]) => <tr key={a}><th scope="row">{avecIndicesTexte(a)}</th><td>{avecIndicesTexte(b)}</td></tr>)}
-  </tbody></table>
-);
-// Méthode : liste numérotée courte
-export const Methode = ({ etapes }) => <ol className="fiche-methode">{etapes.map((e, k) => <li key={k}>{avecIndicesTexte(e)}</li>)}</ol>;
-// Mémo : phrase à retenir, mise en valeur
-export const Retenir = ({ children }) => <p className="fiche-retenir">{children}</p>;
-
-// Schéma d'une chaîne de conversion : cases reliées par des flèches, pertes en rouge sous la case concernée.
-// boites = [{ nom, forme }] ; fleches = [texte entre deux cases] ; pertes = [texte | ''] (une par case)
-// HTML (et non SVG) : le texte reste lisible sur mobile (les cases passent à la verticale) et à l'impression.
-export function Chaine({ boites, fleches = [], pertes = [], couleur = '#ea580c', titre }) {
+// ── Formules : mini-langage → MathML ──
+const LETTRE = /[A-Za-zÀ-ÿΑ-ωηΔρπσφλμΩ]/;
+function trouverFin(s, i) { let d = 0; for (let k = i; k < s.length; k++) { if (s[k] === '{') d++; else if (s[k] === '}' && --d === 0) return k; } return s.length - 1; }
+function scinder(s) { let d = 0; for (let k = 0; k < s.length; k++) { if (s[k] === '{') d++; else if (s[k] === '}') d--; else if (s[k] === '|' && d === 0) return [s.slice(0, k), s.slice(k + 1)]; } return [s, '']; }
+function lireScript(s, i) {   // lit un indice ou un exposant après « _ » ou « ^ » : renvoie [texte, nouvelle position]
+  if (s[i] === '{') { const f = trouverFin(s, i); return [s.slice(i + 1, f), f + 1]; }
+  let k = i; if (s[k] === '-' || s[k] === '+') k++;
+  while (k < s.length && /[A-Za-z0-9À-ÿ'η]/.test(s[k])) k++;
+  return [s.slice(i, k), k];
+}
+function mots(texte) { return <mi mathvariant="normal">{texte}</mi>; }
+function analyser(s, cle = 'm') {
+  const out = []; let i = 0, n = 0;
+  const poser = el => out.push(cloneElement(el, { key: `${cle}${n++}` }));
+  while (i < s.length) {
+    const c = s[i];
+    if (c === ' ') { i++; continue; }
+    if (c === '{') {
+      const f = trouverFin(s, i); const [h, b] = scinder(s.slice(i + 1, f));
+      poser(<mfrac><mrow>{analyser(h, `${cle}h${n}`)}</mrow><mrow>{analyser(b, `${cle}b${n}`)}</mrow></mfrac>); i = f + 1; continue;
+    }
+    if (c === '[') { const f = s.indexOf(']', i); poser(<mtext>{' ' + s.slice(i + 1, f)}</mtext>); i = f + 1; continue; }
+    let base = null;
+    if (/[0-9]/.test(c)) { let k = i; while (k < s.length && /[0-9]/.test(s[k])) k++; if (/[,.]/.test(s[k] || '') && /[0-9]/.test(s[k + 1] || '')) { k++; while (k < s.length && /[0-9]/.test(s[k])) k++; } base = <mn>{s.slice(i, k)}</mn>; i = k; }
+    else if (LETTRE.test(c)) { base = <mi>{c}</mi>; i++; }
+    else if (c === ')' ) { base = <mo>)</mo>; i++; }
+    else { const op = { '*': '×', '-': '−', '/': '/' }[c] || c; poser(<mo>{op}</mo>); i++; continue; }
+    // indice puis exposant
+    let sub = null, sup = null;
+    if (s[i] === '_') { const [t, k] = lireScript(s, i + 1); sub = t; i = k; }
+    if (s[i] === '^') { const [t, k] = lireScript(s, i + 1); sup = t; i = k; }
+    const scr = t => (/^[0-9+\-,.]+$/.test(t) ? <mn>{t.replace('-', '−')}</mn> : mots(t));
+    if (sub !== null && sup !== null) poser(<msubsup>{base}{scr(sub)}{scr(sup)}</msubsup>);
+    else if (sub !== null) poser(<msub>{base}{scr(sub)}</msub>);
+    else if (sup !== null) poser(<msup>{base}{scr(sup)}</msup>);
+    else poser(base);
+  }
+  return out;
+}
+// Formule seule sur sa ligne : une seule ligne toujours, caractères réduits si la carte est étroite
+export function Fm({ children }) {
+  const cadre = useRef(null), maths = useRef(null), pleine = useRef(0);
+  const [taille, setTaille] = useState(1.15);
+  useLayoutEffect(() => {
+    const ajuster = () => {
+      const c = cadre.current, m = maths.current; if (!c || !m) return;
+      m.style.fontSize = '1.15em'; pleine.current = m.getBoundingClientRect().width; m.style.fontSize = '';
+      const l = c.clientWidth, w = pleine.current; if (!(l > 0 && w > 0)) return;
+      const t = w > l ? Math.max(0.7, 1.15 * (l - 2) / w) : 1.15;
+      setTaille(a => (Math.abs(a - t) < 0.005 ? a : t));
+    };
+    ajuster();
+    let obs = null;
+    if (typeof ResizeObserver !== 'undefined' && cadre.current) { obs = new ResizeObserver(ajuster); obs.observe(cadre.current); }
+    if (document.fonts?.ready) document.fonts.ready.then(ajuster).catch(() => {});
+    return () => obs && obs.disconnect();
+  }, []);
   return (
-    <div className="fiche-chaine" role="img" aria-label={titre || 'Chaîne de conversion d’énergie'} style={{ '--c': couleur }}>
-      {boites.map((b, k) => (
-        <span key={k} style={{ display: 'contents' }}>
-          <div className="fiche-chaine-boite"><b>{b.nom}</b><span>{b.forme}</span>{pertes[k] && <em className="fiche-chaine-perte">↓ {pertes[k]}</em>}</div>
-          {k < boites.length - 1 && <div className="fiche-chaine-fleche">{fleches[k]}</div>}
-        </span>))}
-    </div>
+    <span ref={cadre} role="math" className="fiche-fm">
+      <math ref={maths} style={{ fontSize: `${taille}em`, whiteSpace: 'nowrap', mathStyle: 'normal' }}>{analyser(String(children))}</math>
+    </span>
   );
 }
+// Même écriture, au fil du texte
+export const Fi = ({ children }) => <math style={{ whiteSpace: 'nowrap', fontSize: '1.05em' }}>{analyser(String(children))}</math>;
 
-// Schéma d'une cellule Li-ion en décharge : ions Li⁺ à travers le séparateur, électrons par le circuit extérieur.
-export function SchemaCellule() {
-  const t = (x, y, s, o = {}) => <text x={x} y={y} textAnchor="middle" fontSize={o.f || 13} fontWeight={o.w || 700} fill={o.c || '#0c1a2e'} fontFamily="Nunito, sans-serif">{s}</text>;
+// « où » : définition de TOUTES les grandeurs qui apparaissent (symbole, nom, unité)
+export const Grandeurs = ({ lignes }) => (
+  <dl className="fiche-grandeurs">
+    {lignes.map(([s, nom, u]) => (
+      <div key={s}><dt><Fi>{s}</Fi></dt><dd>{nom}{u ? <> <span className="fiche-unite">({u})</span></> : null}</dd></div>))}
+  </dl>
+);
+// Exemple chiffré, repris de la simulation
+export const Exemple = ({ children }) => <p className="fiche-exemple"><b>Exemple</b> {children}</p>;
+// Phrase à retenir (mnémotechnique)
+export const Memo = ({ children }) => <p className="fiche-memo"><span aria-hidden="true">💡</span> {children}</p>;
+// Idée fausse / vraie
+export const FauxVrai = ({ faux, vrai }) => (
+  <div className="fiche-fauxvrai">
+    <p className="fiche-faux"><b>✗ Faux</b> {faux}</p>
+    <p className="fiche-vrai"><b>✓ Vrai</b> {vrai}</p>
+  </div>
+);
+// Définition courte
+export const Def = ({ terme, children }) => <p className="fiche-def"><b>{terme}</b> : {children}</p>;
+
+// ── Schémas SVG : toujours lisibles sur téléphone (texte ≥ 13 dans un cadre de 360 de large) ──
+export const COUL = { eau: '#0284c7', orange: '#ea580c', vert: '#16a34a', rouge: '#dc2626', encre: '#0c1a2e', gris: '#64748b', violet: '#7c3aed' };
+export function Schema({ h, titre, children }) {
+  const fl = (id, c) => <marker key={id} id={id} viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto"><path d="M0 0L10 5L0 10z" fill={c} /></marker>;
   return (
-    <svg className="fiche-schema" viewBox="0 0 440 205" role="img" aria-label="Cellule lithium-ion en décharge : les ions Li+ traversent le séparateur de l'électrode négative vers l'électrode positive, les électrons passent par le circuit extérieur" width="100%" style={{ maxWidth: 440 }}>
-      <defs><marker id="pt" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#334155" /></marker></defs>
-      <rect x="20" y="62" width="120" height="100" rx="10" fill="#e2e8f0" stroke="#475569" strokeWidth="2" />
-      <rect x="300" y="62" width="120" height="100" rx="10" fill="#dbeafe" stroke="#2563eb" strokeWidth="2" />
-      <rect x="205" y="62" width="30" height="100" fill="#fff" stroke="#64748b" strokeDasharray="4 3" strokeWidth="2" />
-      {t(80, 100, 'Électrode −')}{t(80, 118, 'graphite', { w: 600, f: 12 })}{t(80, 136, 'Li dans C₆', { w: 600, f: 12 })}
-      {t(360, 100, 'Électrode +')}{t(360, 118, 'oxyde NMC', { w: 600, f: 12 })}{t(360, 136, 'Li dans l’oxyde', { w: 600, f: 12 })}
-      {t(220, 182, 'séparateur', { w: 600, f: 12 })}{t(220, 198, '(laisse passer les ions)', { w: 600, f: 11, c: '#475569' })}
-      <line x1="150" y1="112" x2="290" y2="112" stroke="#16a34a" strokeWidth="3" markerEnd="url(#pt)" />
-      {t(220, 104, 'Li⁺', { c: '#15803d', f: 15 })}{t(220, 56, 'ions Li⁺ (décharge)', { f: 12, c: '#15803d', w: 700 })}
-      <path d="M80 62 V22 H360 V62" fill="none" stroke="#ea580c" strokeWidth="3" markerEnd="url(#pt)" />
-      {t(220, 16, 'électrons e⁻ → lampe', { c: '#c2410c', f: 13 })}
+    <svg className="fiche-schema" viewBox={`0 0 360 ${h}`} role="img" aria-label={titre} width="100%" style={{ maxWidth: 440 }}>
+      <defs>{fl('ahK', '#334155')}{fl('ahB', COUL.eau)}{fl('ahO', COUL.orange)}{fl('ahG', COUL.vert)}{fl('ahR', COUL.rouge)}{fl('ahV', COUL.violet)}</defs>
+      {children}
     </svg>
+  );
+}
+export const T = ({ x, y, s, c = COUL.encre, w = 700, f = 13, a = 'middle' }) =>
+  <text x={x} y={y} textAnchor={a} fontSize={f} fontWeight={w} fill={c} fontFamily="Nunito, sans-serif">{s}</text>;
+// Flèche : x1,y1 → x2,y2 ; couleur K (gris), B, O, G, R, V
+export const Fl = ({ x1, y1, x2, y2, c = 'K', e = 2.5, d }) => {
+  const col = { K: '#334155', B: COUL.eau, O: COUL.orange, G: COUL.vert, R: COUL.rouge, V: COUL.violet }[c];
+  return <line x1={x1} y1={y1} x2={x2} y2={y2} stroke={col} strokeWidth={e} strokeDasharray={d} markerEnd={`url(#ah${c})`} />;
+};
+// Boîte avec un ou deux libellés
+export const Boite = ({ x, y, w, h, l1, l2, c = COUL.orange, fond = '#fff', f = 13 }) => (
+  <g><rect x={x} y={y} width={w} height={h} rx="10" fill={fond} stroke={c} strokeWidth="2.5" />
+    {l2 ? <><T x={x + w / 2} y={y + h / 2 - 3} s={l1} f={f} /><T x={x + w / 2} y={y + h / 2 + 14} s={l2} f={f} w={600} c="#475569" /></> : <T x={x + w / 2} y={y + h / 2 + 5} s={l1} f={f} />}
+  </g>
+);
+// Courbe annotée : pts [[x, y]], bornes xmax/ymax, graduations, repères { x, y, texte, c }
+export function Courbe({ titre, h = 200, pts, xmax, ymax, ticksX, ticksY = [], xlab, ylab, reperes = [], couleur = COUL.eau, dessous = [], haut = 22 }) {
+  const X0 = 46, X1 = 340, Y1 = h - 66, Y0 = haut + 16, sx = x => X0 + (x / xmax) * (X1 - X0), sy = y => Y1 - (y / ymax) * (Y1 - Y0);
+  return (
+    <Schema h={h} titre={titre}>
+      <rect x={X0} y={Y0} width={X1 - X0} height={Y1 - Y0} fill="#f8fafc" stroke="#cbd5e1" />
+      {ticksY.map(v => <g key={v}><line x1={X0} x2={X1} y1={sy(v)} y2={sy(v)} stroke="#e2e8f0" /><T x={X0 - 5} y={sy(v) + 4} s={String(v).replace('.', ',')} a="end" w={600} c="#475569" /></g>)}
+      {ticksX.map(v => <g key={v}><line x1={sx(v)} x2={sx(v)} y1={Y0} y2={Y1} stroke="#e2e8f0" /><T x={sx(v)} y={Y1 + 16} s={String(v).replace('.', ',')} w={600} c="#475569" /></g>)}
+      <polyline fill="none" stroke={couleur} strokeWidth="3.5" strokeLinejoin="round" points={pts.map(([x, y]) => `${sx(x)},${sy(y)}`).join(' ')} />
+      {reperes.map((r, k) => <g key={k}><circle cx={sx(r.x)} cy={sy(r.y)} r="6" fill={r.c || COUL.orange} stroke="#fff" strokeWidth="2" />{r.texte && <T x={r.tx ?? sx(r.x)} y={r.ty ?? sy(r.y) - 12} s={r.texte} a={r.a || 'middle'} c={r.c || COUL.orange} />}</g>)}
+      <T x={X0} y={haut + 8} s={ylab} a="start" c={COUL.encre} />
+      <T x={X1} y={Y1 + 52} s={xlab} a="end" c={COUL.encre} />
+      {dessous.map((d, k) => <T key={k} x={d.x} y={Y1 + 34} s={d.texte} a={d.a || 'middle'} c={d.c || COUL.rouge} />)}
+    </Schema>
+  );
+}
+// Trois (ou deux) cas côte à côte : [{ titre, sous, verdict, bon }]  avec un dessin par cas (rendu fourni)
+export function Cas({ h = 150, titre, cas, dessin }) {
+  const n = cas.length, w = 360 / n;
+  return (
+    <Schema h={h} titre={titre}>
+      {cas.map((c, k) => (
+        <g key={k} transform={`translate(${k * w},0)`}>
+          <rect x="4" y="4" width={w - 8} height={h - 8} rx="12" fill={c.bon ? '#f0fdf4' : '#fff'} stroke={c.bon ? COUL.vert : '#cbd5e1'} strokeWidth={c.bon ? 3 : 1.5} />
+          <T x={w / 2} y="24" s={c.titre} f={13} />{c.titre2 && <T x={w / 2} y="40" s={c.titre2} f={13} />}
+          {dessin(c, k, w)}
+          <T x={w / 2} y={h - 24} s={c.verdict} c={c.bon ? COUL.vert : COUL.rouge} f={13} />
+          {c.verdict2 && <T x={w / 2} y={h - 9} s={c.verdict2} c={c.bon ? COUL.vert : COUL.rouge} f={13} w={600} />}
+        </g>))}
+    </Schema>
+  );
+}
+// Flux vertical d'étapes avec formules, pour les cartes de synthèse : [{ nom, formule }]
+export function Flux({ etapes, couleur = COUL.orange }) {
+  return (
+    <div className="fiche-flux" style={{ '--c': couleur }}>
+      {etapes.map((e, k) => (
+        <div key={k} className="fiche-flux-etape">
+          <div className="fiche-flux-nom">{e.nom}</div>
+          {e.formule && <div className="fiche-flux-f"><Fm>{e.formule}</Fm></div>}
+          {k < etapes.length - 1 && <div className="fiche-flux-fleche" aria-hidden="true">↓</div>}
+        </div>))}
+    </div>
   );
 }
