@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { cardStyle, Graphe, fmt, sci, lireNombre, proche, CarteParcours, useEtatPersistant, avecIndices, IndiceDefi, valeurAttendue } from "../commun";
 import { BoutonFiche } from "../fiches/Fiche";
-import { signalerDefi } from "../avancement";
+import { signalerDefi, ouvrirDefi } from "../avancement";
 import { Emo, Pic } from '../Pictos';
 
 // ====================================================
@@ -523,6 +523,7 @@ export function SimulationProduction3() {
   const scoreM = mission ? questionsMission.filter(justeM).length : 0;
   const defiRelevé = !!mission && mission.verifie && questionsMission.length > 0 && scoreM === questionsMission.length;
   useEffect(() => { if (defiRelevé) signalerDefi('defi-production3'); }, [defiRelevé]);
+  useEffect(() => { if (mode === 'defi') ouvrirDefi('defi-production3'); }, [mode]);
   const voletDefi = !mission ? null : (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
       <div style={{ fontSize: 15, color: TXT, lineHeight: 1.6 }}>

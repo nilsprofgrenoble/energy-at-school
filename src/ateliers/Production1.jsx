@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { cardStyle, Graphe, fmt, sci, lireNombre, proche, CarteParcours, Cadre, ORANGE_GUIDE, useEtatPersistant, avecIndices, IndiceDefi, valeurAttendue, arrondiSig } from "../commun";
 import { BoutonFiche } from "../fiches/Fiche";
-import { signalerDefi } from "../avancement";
+import { signalerDefi, ouvrirDefi } from "../avancement";
 import { Emo, Pic } from '../Pictos';
 
 // ====================================================
@@ -592,6 +592,7 @@ export function SimulationProduction1() {
   // Défi relevé (compte pour le niveau, voir avancement.js)
   const defiRelevé = mode === 'defi' && niveau >= 2 && verifie && questions.length > 0 && score === questions.length;
   useEffect(() => { if (defiRelevé) signalerDefi('defi-production1'); }, [defiRelevé]);
+  useEffect(() => { if (mode === 'defi') ouvrirDefi('defi-production1'); }, [mode]);
   function demarrer(nv) { setNiveau(nv); setReps({}); setVerifie(false); setReleve(null); }
   const releveOk = !!seau.fini && ouv > 0 && R !== Infinity && R !== 0;
   function relever() {

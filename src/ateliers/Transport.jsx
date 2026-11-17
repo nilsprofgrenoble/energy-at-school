@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { cardStyle, Graphe, fmt, sci, lireNombre, proche, CarteParcours, Cadre, ORANGE_GUIDE, useEtatPersistant, avecIndices, IndiceDefi } from "../commun";
 import { BoutonFiche } from "../fiches/Fiche";
-import { signalerDefi } from "../avancement";
+import { signalerDefi, ouvrirDefi } from "../avancement";
 import { ParcoursReseauReel } from "./ReseauReel";
 import { Emo, Pic } from '../Pictos';
 
@@ -383,6 +383,7 @@ export function SimulationTransport() {
   const meilleurCout = solutionsOk.length ? Math.min(...solutionsOk.map(x => coutLigne(x.c))) : null;
   const defiRelevé = !!mission && !!mission.valide && mission.valide.ok && mission.valide.moinsCher;
   useEffect(() => { if (defiRelevé) signalerDefi('defi-transport'); }, [defiRelevé]);
+  useEffect(() => { if (mode === 'defi') ouvrirDefi('defi-transport'); }, [mode]);
   function validerMission() {
     const ok = Math.abs(m1 * m2 - 1) < 0.01 && etaAffiche(r.eta * 100) >= mission.cible;
     const moinsCher = ok && coutLigne(cable) <= meilleurCout + 1e-9;

@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { cardStyle, Graphe, fmt, sci, lireNombre, proche, CarteParcours, Cadre, ORANGE_GUIDE, useEtatPersistant, avecIndices, IndiceDefi, valeurAttendue, arrondiSig } from "../commun";
 import { BoutonFiche } from "../fiches/Fiche";
-import { signalerDefi } from "../avancement";
+import { signalerDefi, ouvrirDefi } from "../avancement";
 import { Emo, Pic, PicSvg, ec } from '../Pictos';
 
 // ====================================================
@@ -724,6 +724,7 @@ export function SimulationStockage() {
     ? !!defi.verifie && qDefi1.length > 0 && qDefi1.every(justeD)
     : !!defi.valide && defi.valide.ok && defi.valide.leger);
   useEffect(() => { if (defiRelevé) signalerDefi('defi-stockage'); }, [defiRelevé]);
+  useEffect(() => { if (mode === 'defi') ouvrirDefi('defi-stockage'); }, [mode]);
   const missionDefi = defi && defi.mission ? MISSIONS.find(x => x.id === defi.mission) : null;
   const voletDefi = !defi ? null : atelier === 1 ? (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>

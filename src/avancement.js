@@ -93,6 +93,8 @@ async function envoyer() {
 }
 // Un défi relevé s'enregistre comme un parcours terminé (2 étapes, dernière atteinte)
 export const signalerDefi = cle => signaler(cle, 1, 2, 1);
+// Entrée en mode Défi : le serveur note l'heure d'ouverture (un défi réussi trop vite après ne compte pas au classement public)
+export const ouvrirDefi = cle => signaler(cle, 0, 2, 0);
 // Appelé par les cartes de parcours à chaque changement d'étape
 export function signaler(cle, etape, total, reussies) {
   if (!cle) return;
