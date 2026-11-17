@@ -104,7 +104,7 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 
 /* ── Fiches : nouvelle mise en page (formules sur une ligne, grandeurs définies, exemples) ── */
 .fiche-fm { display: block; overflow-x: auto; overflow-y: hidden; max-width: 100%; text-align: center; margin: 8px 0; padding: 6px 4px; background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 12px; color: var(--es-encre); }
-.fiche-grandeurs { margin: 6px 0 8px; display: grid; gap: 3px; font-size: 14px; }
+.fiche-grandeurs { margin: 6px 0 8px; display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 3px 18px; font-size: 14px; }
 .fiche-grandeurs > div { display: grid; grid-template-columns: minmax(54px, auto) 1fr; gap: 8px; align-items: baseline; }
 .fiche-grandeurs dt { font-weight: 800; text-align: right; color: var(--es-encre); margin: 0; }
 .fiche-grandeurs dd { margin: 0; color: #334155; }
@@ -122,3 +122,18 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 .fiche-flux-fleche { font-size: 22px; line-height: 1; color: #334155; margin: 2px 0; }
 .fiche-flux-etape .fiche-fm { margin: 2px 0; }
 @media print { .fiche-fm, .fiche-exemple, .fiche-memo, .fiche-faux, .fiche-vrai { -webkit-print-color-adjust: exact; print-color-adjust: exact; } .fiche-fm { overflow: visible; } }
+
+/* Impression : une fiche = un recto-verso (cartes 1-2 au recto, suivantes au verso) */
+@media print {
+  .fiches-theme { break-before: page !important; page-break-before: always !important; }
+  .fiches-theme:first-of-type { break-before: auto !important; page-break-before: auto !important; }
+  .fiches-theme-titre { break-after: avoid; page-break-after: avoid; }
+  .fiche-atelier { break-before: page; page-break-before: always; }
+  .fiches-theme-titre + .fiche-atelier { break-before: auto; page-break-before: auto; }
+  .fiche-schema { max-width: 330px !important; display: block; margin: 0 auto; }
+  .fiche-fm { margin: 4px 0; padding: 2px 4px; }
+  .fiche-carte { padding-top: 8px; padding-bottom: 8px; }
+  .fiche-atelier .fiche-carte:nth-child(3) { break-before: page; page-break-before: always; }
+  .fiche-corps { font-size: 11.5pt; }
+  .fiche-grandeurs { font-size: 11pt; }
+}

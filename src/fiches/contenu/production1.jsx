@@ -78,44 +78,24 @@ const SceneOscillo = () => (
 export const production1 = [
   { id: 'chaine', titre: 'De l’eau au courant électrique', corps: <>
     <SceneChaine />
-    <Def terme="Conduite forcée">tuyau qui amène l’eau sous pression jusqu’à l’injecteur.</Def>
-    <Def terme="Jet">l’injecteur transforme la pression en vitesse : l’eau sort très vite.</Def>
-    <Def terme="Alternateur">il transforme la rotation de la roue en électricité.</Def>
     <Memo>L’eau pousse, la roue tourne, l’alternateur éclaire.</Memo>
   </> },
-  { id: 'hydraulique', titre: 'Débit et puissance de l’eau', corps: <>
-    <SceneDebit />
-    <Fm>{'Q_V = {V|Δt}'}</Fm>
-    <Fm>{'P_hyd = p * Q_V'}</Fm>
-    <Grandeurs lignes={[['Q_V', 'débit volumique', 'm³/s'], ['V', 'volume d’eau recueilli', 'm³'], ['Δt', 'durée de remplissage', 's'], ['P_hyd', 'puissance apportée par l’eau', 'W'], ['p', 'pression dans la conduite', 'Pa']]} />
-    <Exemple>1 L = 1,0 × 10⁻³ m³ en 15 s donne <Fi>{'Q_V = 6,7 × 10^-5 [m³/s]'}</Fi>. Avec <Fi>{'p = 2,7 × 10^5 [Pa]'}</Fi> (2,7 bar) : <Fi>{'P_hyd ≈ 18 [W]'}</Fi>.</Exemple>
-    <FauxVrai faux="2,7 × 6,7 × 10⁻⁵ ≈ 1,8 × 10⁻⁴ W (on a gardé les bar)." vrai="1 bar = 10⁵ Pa et 1 L = 10⁻³ m³ : on convertit avant de calculer." />
-  </> },
-  { id: 'electrique', titre: 'Puissance électrique et rendement', corps: <>
+  { id: 'rendement', titre: 'Puissance de l’eau, puissance électrique, rendement', corps: <>
     <SceneCircuit />
+    <Fm>{'P_hyd = p * {V|Δt}'}</Fm>
     <Fm>{'P_élec = U * I'}</Fm>
     <Fm>{'η = {P_élec|P_hyd}'}</Fm>
-    <Grandeurs lignes={[['P_élec', 'puissance électrique récupérée', 'W'], ['U', 'tension aux bornes de la charge', 'V'], ['I', 'intensité du courant', 'A'], ['η', 'rendement : part de la puissance de l’eau récupérée', 'sans unité ou %']]} />
-    <Exemple><Fi>{'U = 4,8 [V]'}</Fi> et <Fi>{'I = 0,35 [A]'}</Fi> donnent <Fi>{'P_élec ≈ 1,7 [W]'}</Fi>, donc <Fi>{'η = {1,7|18} ≈ 9 [%]'}</Fi>.</Exemple>
-    <Memo>Rendement = ce qu’on récupère ÷ ce qu’on apporte. Il est toujours inférieur à 1.</Memo>
+    <Grandeurs lignes={[['P_hyd', 'puissance de l’eau', 'W'], ['p', 'pression de l’eau', 'Pa'], ['V', 'volume recueilli en Δt', 'm³'], ['Δt', 'durée de remplissage', 's'], ['P_élec', 'puissance électrique', 'W'], ['U', 'tension aux bornes de la charge', 'V'], ['I', 'intensité du courant', 'A'], ['η', 'rendement, toujours < 1', '%']]} />
+    <Exemple>1 L en 15 s et 2,7 bar : <Fi>{'P_hyd = 2,7 × 10^5 × {1,0 × 10^-3|15} ≈ 18 [W]'}</Fi>. Avec <Fi>{'U = 4,8 [V]'}</Fi> et <Fi>{'I = 0,35 [A]'}</Fi> : <Fi>{'P_élec ≈ 1,7 [W]'}</Fi>, donc <Fi>{'η ≈ {1,7|18} ≈ 9 [%]'}</Fi>.</Exemple>
+    <Memo>Rendement = ce qu’on récupère ÷ ce qu’on apporte. Convertir : 1 bar = 10⁵ Pa, 1 L = 10⁻³ m³.</Memo>
   </> },
   { id: 'maximum', titre: 'Le point de fonctionnement optimal', corps: <>
     <Courbe titre="Rendement de la turbine en fonction de la tension U : il est nul en court-circuit et en circuit ouvert, et maximal (environ 9 %) vers 5 V" h={230}
       pts={COURBE_ETA} xmax={9} ymax={11} ticksX={[0, 2, 4, 6, 8]} ticksY={[0, 5, 10]} xlab="U (V)" ylab="η (%)"
       reperes={[{ x: 5.2, y: 9.3, texte: 'maximum ≈ 9 %', ty: 40 }]}
       dessous={[{ x: 46, texte: 'court-circuit', a: 'start' }, { x: 340, texte: 'circuit ouvert', a: 'end' }]} />
-    <Grandeurs lignes={[['U', 'tension aux bornes de la charge', 'V'], ['η', 'rendement', '%']]} />
-    <Exemple>Court-circuit : <Fi>{'U = 0'}</Fi> donc <Fi>{'P = 0'}</Fi>. Circuit ouvert : <Fi>{'I = 0'}</Fi> donc <Fi>{'P = 0'}</Fi>. Maximum vers 5 V.</Exemple>
-    <FauxVrai faux="Plus la tension est grande, plus la puissance est grande." vrai="La puissance passe par un maximum, entre le court-circuit et le circuit ouvert." />
+    <FauxVrai faux="Plus la tension est grande, plus la puissance est grande." vrai="Court-circuit (U = 0) et circuit ouvert (I = 0) donnent tous deux P = 0 : le maximum est entre les deux." />
     <Memo>Ni ouvert, ni fermé : l’optimum est au milieu.</Memo>
-  </> },
-  { id: 'oscillo', titre: 'L’oscilloscope : période, fréquence, vitesse', corps: <>
-    <SceneOscillo />
-    <Fm>{'f = {1|T}'}</Fm>
-    <Fm>{'f = n * p'}</Fm>
-    <Grandeurs lignes={[['T', 'période du signal', 's'], ['f', 'fréquence du signal', 'Hz'], ['n', 'vitesse de rotation de la turbine', 'tr/s'], ['p', 'nombre de paires de pôles de l’alternateur', '4 ici']]} />
-    <Exemple><Fi>{'T = 100 [ms] = 0,100 [s]'}</Fi> donne <Fi>{'f = 10 [Hz]'}</Fi>, puis <Fi>{'n = {f|p} = 2,5 [tr/s]'}</Fi>.</Exemple>
-    <FauxVrai faux="f = 1 / 100 = 0,01 Hz (T gardée en ms)." vrai="On convertit T en secondes avant de prendre l’inverse." />
   </> },
   { id: 'pelton', titre: 'Le secret de la turbine Pelton', corps: <>
     <Cas h={176} titre="Trois cas : roue bloquée, roue à la moitié de la vitesse du jet (maximum), roue aussi rapide que le jet"
@@ -124,14 +104,10 @@ export const production1 = [
         {k === 1 && <path d={`M${w / 2 + 2} 66 A22 22 0 0 1 ${w / 2 + 30} 70`} fill="none" stroke={COUL.vert} strokeWidth="3" markerEnd="url(#ahG)" />}
         {k === 2 && <path d={`M${w / 2 + 2} 66 A22 22 0 0 1 ${w / 2 + 34} 78`} fill="none" stroke={COUL.rouge} strokeWidth="4" markerEnd="url(#ahR)" />}
         <T x={w / 2 + 14} y="92" s={k === 0 ? '0' : k === 1 ? 'v/2' : 'v'} w={800} f={13} /></g>} />
-    <Fm>{'v_auget = 2 * π * r * n'}</Fm>
     <Fm>{'v_jet = {Q_V|π * r^2}'}</Fm>
-    <Grandeurs lignes={[['v_auget', 'vitesse de l’auget', 'm/s'], ['v_jet', 'vitesse du jet (v sur le schéma)', 'm/s'], ['r', 'rayon : 4,0 cm pour la roue, 1,0 mm pour le jet', 'm'], ['n', 'vitesse de rotation', 'tr/s'], ['Q_V', 'débit volumique', 'm³/s']]} />
+    <Fm>{'v_auget = 2 * π * r * n'}</Fm>
+    <Grandeurs lignes={[['v_jet', 'vitesse du jet (v sur le schéma)', 'm/s'], ['Q_V', 'débit volumique', 'm³/s'], ['r', 'rayon : 1,0 mm (jet), 4,0 cm (roue)', 'm'], ['v_auget', 'vitesse de l’auget', 'm/s'], ['n', 'vitesse de rotation', 'tr/s']]} />
     <Exemple><Fi>{'v_jet = {6,7 × 10^-5|π × (1,0 × 10^-3)^2} ≈ 21 [m/s]'}</Fi> : au maximum, l’auget va à environ 11 m/s.</Exemple>
-    <Memo>Au rendement maximal, la roue va à peu près à la moitié de la vitesse du jet.</Memo>
-  </> },
-  { id: 'synthese', titre: 'En une minute', synthese: true, corps: <>
-    <Flux couleur={COUL.eau} etapes={[{ nom: 'Mesurer le débit et la pression', formule: 'P_hyd = p * Q_V' }, { nom: 'Mesurer U et I aux bornes de la charge', formule: 'P_élec = U * I' }, { nom: 'Comparer', formule: 'η = {P_élec|P_hyd}' }, { nom: 'Chercher le maximum', formule: 'v_auget ≈ {v_jet|2}' }]} />
-    <Memo>Débit, pression, tension, courant : quatre mesures pour un rendement.</Memo>
+    <Memo>Au rendement maximal, l’auget va à peu près à la moitié de la vitesse du jet.</Memo>
   </> },
 ];
