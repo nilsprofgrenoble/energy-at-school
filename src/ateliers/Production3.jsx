@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { cardStyle, Graphe, fmt, sci, lireNombre, proche, CarteParcours, useEtatPersistant, avecIndices, IndiceDefi, valeurAttendue } from "../commun";
+import { BoutonFiche } from "../fiches/Fiche";
 import { signalerDefi } from "../avancement";
 
 // ====================================================
@@ -570,6 +571,7 @@ export function SimulationProduction3() {
           <button onClick={() => changerMode('guide')} style={btn(mode === 'guide', COUL.focus)}>🧭 Parcours guidé</button>
           <button onClick={() => changerMode('explore')} style={btn(mode === 'explore', '#334155')}>🔍 Exploration libre</button>
           <button onClick={() => changerMode('defi')} style={btn(mode === 'defi', '#0ea5e9')}>🎯 Défi</button>
+          <BoutonFiche page="production-3" couleur="#0891b2" style={btn(false, '#ea580c')} />
         </div>
       </div>
 
