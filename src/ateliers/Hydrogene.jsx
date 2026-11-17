@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useMemo } from "react";
 import { cardStyle, Graphe, fmt, sci, lireNombre, proche, CarteParcours, Cadre, ORANGE_GUIDE, useEtatPersistant, avecIndices, IndiceDefi, valeurAttendue, arrondiSig } from "../commun";
 import { BoutonFiche } from "../fiches/Fiche";
-import { signalerDefi } from "../avancement";
+import { signalerDefi, ouvrirDefi } from "../avancement";
 import { Emo, Pic } from '../Pictos';
 
 // ====================================================
@@ -874,6 +874,7 @@ export function SimulationHydrogene() {
   const score = questions.filter(juste).length;
   const defiRelevé = mode === 'defi' && niveau >= 2 && verifie && questions.length > 0 && score === questions.length;
   useEffect(() => { if (defiRelevé) signalerDefi('defi-hydrogene'); }, [defiRelevé]);
+  useEffect(() => { if (mode === 'defi') ouvrirDefi('defi-hydrogene'); }, [mode]);
 
   function demarrer(n) {
     setNiveau(n); setReps({}); setVerifie(false);

@@ -30,3 +30,14 @@ export const jourLundi = donnees => {
   const d = donnees?.lundi ? new Date(donnees.lundi) : null;
   return d && !Number.isNaN(d.getTime()) ? d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' }) : '';
 };
+
+// ── Fins « vérifiées » : MÊMES règles que energy_classement_calcul (supabase/19-energy-anti-triche.sql) ──
+//  Le serveur note quand il voit commencer un parcours ou s'ouvrir un défi (debut, debut_etape) et quand il le voit fini (fini).
+//  Parcours : vu dès le début (étape ≤ 2), fini au plus tôt 8 s par étape restante après. Défi : vu ouvert, réussi au plus tôt 40 s après.
+//  Une fin non vérifiée (travail fait sans être connecté, ou trop rapide) compte pour les niveaux de l'élève, pas pour le classement public.
+export const S_PAR_ETAPE = 8, S_DEFI = 40;
+export function finVerifiee(l, defi) {
+  if (!l?.fini || !l?.debut || l.debut_etape == null) return false;
+  const duree = (new Date(l.fini) - new Date(l.debut)) / 1000;
+  return defi ? l.debut_etape === 0 && duree >= S_DEFI : l.debut_etape <= 2 && duree >= S_PAR_ETAPE * (l.total - 1 - l.debut_etape);
+}

@@ -7,6 +7,7 @@ import { cardStyle, KIT, styleBouton, styleBoite } from './commun';
 import { useSession, estEleve, estProf, connexion, deconnexion, changerMotDePasse, rest, toutLire, getSession } from './serveur';
 import { FAMILLES, TOUS_PARCOURS, DEFIS, NIVEAUX, bilan, termine, useSuivi, synchroniser, oublierLocal } from './avancement';
 import { pseudo, propositions, ADJECTIFS, NOMS } from './pseudos';
+import { finVerifiee } from './classement';
 import { Emo, Pic } from './Pictos';
 
 const CLE_PROPRIO = 'es-proprietaire';
@@ -216,6 +217,7 @@ export function PageProfil({ aller }) {
             {p.classement
               ? <>Tout le monde peut alors voir : votre pseudo, l’établissement, votre classe et votre score. Jamais votre nom ni votre identifiant. Décochez pour disparaître immédiatement.</>
               : <>Désactivé par défaut. Si vous cochez, tout le monde pourra voir votre pseudo, l’établissement, votre classe et votre score. Jamais votre nom ni votre identifiant.</>}
+            <span style={{ display: 'block', marginTop: 4 }}>Comptent dans le classement les parcours et défis faits en étant connecté, à votre rythme : un parcours fini en quelques secondes ne compte pas.</span>
             {p.classement && etab === '' && <strong style={{ display: 'block', color: '#9a3412', marginTop: 4 }}>Votre professeur n’a pas encore indiqué l’établissement de la classe : vous n’apparaîtrez pas tant que ce n’est pas fait.</strong>}
           </div>
           <a href="?atelier=classement" onClick={e => { e.preventDefault(); aller('classement'); }} style={{ display: 'inline-block', marginTop: 6, fontSize: 13.5, fontWeight: 800, color: '#9a3412' }}>Voir le classement →</a>
@@ -253,7 +255,8 @@ export function PageSuivi({ aller }) {
         setEleves(el);
         if (!el.length) { setProg([]); setPseud([]); return; }
         const ids = el.map(e => e.user_id).join(',');
-        setProg(await toutLire(`energy_progres?select=user_id,cle,etape,total,reussies&user_id=in.(${ids})`));
+        try { setProg(await toutLire(`energy_progres?select=user_id,cle,etape,total,reussies,debut,debut_etape,fini&user_id=in.(${ids})`)); }
+        catch { setProg(await toutLire(`energy_progres?select=user_id,cle,etape,total,reussies&user_id=in.(${ids})`)); }     // script SQL 19 pas encore appliqué
         try { setPseud(await toutLire(`energy_pseudos?select=user_id,adj,nom,classement,exclu&user_id=in.(${ids})`)); }
         catch { setPseud(await toutLire(`energy_pseudos?select=user_id,adj,nom&user_id=in.(${ids})`)); }     // script SQL 18 pas encore appliqué
       } catch (e) { setErr(e.message); }
@@ -262,7 +265,9 @@ export function PageSuivi({ aller }) {
   const lignes = useMemo(() => eleves.map(e => {
     const suivi = {}; prog.filter(l => l.user_id === e.user_id).forEach(l => { suivi[l.cle] = l; });
     const p = pseud.find(x => x.user_id === e.user_id);
-    return { ...e, suivi, pseudo: p ? pseudo(p.adj, p.nom) : null, classement: p?.classement, exclu: !!p?.exclu, bilan: bilan(suivi) };
+    const fins = [...TOUS_PARCOURS.map(x => [x.cle, false]), ...DEFIS.map(x => [x.cle, true])].filter(([c]) => termine(suivi[c]) && suivi[c].debut !== undefined);
+    const nonVerif = fins.filter(([c, d]) => !finVerifiee(suivi[c], d)).length;
+    return { ...e, suivi, pseudo: p ? pseudo(p.adj, p.nom) : null, classement: p?.classement, exclu: !!p?.exclu, bilan: bilan(suivi), nonVerif };
   }), [eleves, prog, pseud]);
   if (!estProf(s)) return <div style={cardStyle}>Page réservée aux professeurs connectés. <button onClick={() => aller('presentation')} style={styleBouton(false)}>Retour</button></div>;
   const [msgClassement, setMsgClassement] = useState('');
@@ -307,7 +312,7 @@ export function PageSuivi({ aller }) {
               <tr key={r.user_id} style={{ borderTop: '1px solid #e2e8f0' }}>
                 <td style={td}><strong>{r.identifiant}</strong></td>
                 <td style={td}>{r.pseudo ? <><Emo e={r.pseudo.icone}/> {r.pseudo.texte}</> : <span style={{ color: '#94a3b8' }}>—</span>}</td>
-                <td style={td}><Emo e={r.bilan.niveau.icone}/> {r.bilan.niveau.nom} <span style={{ color: '#64748b' }}>({r.bilan.points}/{r.bilan.max})</span></td>
+                <td style={td}><Emo e={r.bilan.niveau.icone}/> {r.bilan.niveau.nom} <span style={{ color: '#64748b' }}>({r.bilan.points}/{r.bilan.max})</span>{r.nonVerif > 0 && <span title="Parcours ou défis terminés sans que le serveur les ait vus se dérouler à un rythme normal (trop rapides, ou faits sans être connecté). Ils ne comptent pas dans le classement public. Ce n’est pas une preuve de triche." style={{ marginLeft: 6, fontSize: 12, fontWeight: 700, color: '#9a3412', background: '#ffedd5', borderRadius: 10, padding: '1px 7px', whiteSpace: 'nowrap' }}>{r.nonVerif} non vérifié{r.nonVerif > 1 ? 's' : ''}</span>}</td>
                 <td style={{ ...td, textAlign: 'center' }} title={DEFIS.filter(d => termine(r.suivi[d.cle])).map(d => d.nom).join(', ')}>{r.bilan.defis}/{r.bilan.totalDefis}</td>
                 {lignes.some(x => x.classement !== undefined) && <td style={td}>
                   {r.exclu ? <span style={{ color: '#b91c1c', fontWeight: 700 }}>retiré</span> : r.classement ? <span style={{ color: '#166534', fontWeight: 700 }}>visible</span> : <span style={{ color: '#94a3b8' }}>—</span>}
@@ -320,7 +325,7 @@ export function PageSuivi({ aller }) {
           </table>
           {!lignes.length && <div style={{ fontSize: 14, color: KIT.txt2, padding: 8 }}>Cette classe n’a pas encore d’élèves.</div>}
         </div>)}
-      <div style={{ fontSize: 12.5, color: KIT.txt2 }}>« <Emo e="✅"/> » : parcours terminé (dernière étape atteinte). Pourcentage : étape la plus avancée atteinte. « Défis » : défis relevés en entier. Points = parcours terminés + défis relevés ; l’ordre est libre.</div>
+      <div style={{ fontSize: 12.5, color: KIT.txt2 }}>« non vérifié » : terminé trop vite, ou sans être connecté ; ne compte pas dans le classement public (ce n’est pas une preuve de triche). « <Emo e="✅"/> » : parcours terminé (dernière étape atteinte). Pourcentage : étape la plus avancée atteinte. « Défis » : défis relevés en entier. Points = parcours terminés + défis relevés ; l’ordre est libre.</div>
     </div>
   );
 }

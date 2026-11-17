@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { cardStyle, Graphe, fmt, sci, lireNombre, proche, CarteParcours, Cadre, ORANGE_GUIDE, useEtatPersistant, avecIndices, IndiceDefi, valeurAttendue } from "../commun";
 import { BoutonFiche } from "../fiches/Fiche";
-import { signalerDefi } from "../avancement";
+import { signalerDefi, ouvrirDefi } from "../avancement";
 import { Emo, Pic } from '../Pictos';
 
 // ====================================================
@@ -490,6 +490,7 @@ export function SimulationProduction2() {
   const score = questions.filter(juste).length;
   const defiRelevé = mode === 'defi' && niveau >= 2 && verifie && questions.length > 0 && score === questions.length;
   useEffect(() => { if (defiRelevé) signalerDefi('defi-production2'); }, [defiRelevé]);
+  useEffect(() => { if (mode === 'defi') ouvrirDefi('defi-production2'); }, [mode]);
   function demarrer(nv) { setNiveau(nv); setReps({}); setVerifie(false); setReleve(null); setReleveVide(null); }
   const r2 = (x, d) => Math.round(x * 10 ** d) / 10 ** d;
   const mesureActuelle = () => ({ q: qL, pBar: r2(e.p / 1e5, 2), F1: r2(F1, 1), n: Math.round(e.n) });
