@@ -72,7 +72,9 @@ function usePseudo() {
   useEffect(() => {
     if (!estEleve(s)) { setP(undefined); return; }
     let vivant = true;
-    rest('energy_pseudos?select=adj,nom').then(l => { if (vivant) setP(l[0] || null); }).catch(() => { if (vivant) setP(null); });
+    rest('energy_pseudos?select=adj,nom,classement')
+      .catch(() => rest('energy_pseudos?select=adj,nom').then(l => l.map(x => ({ ...x, classement: undefined }))))     // script SQL 18 pas encore appliqué
+      .then(l => { if (vivant) setP(l[0] || null); }).catch(() => { if (vivant) setP(null); });
     return () => { vivant = false; };
   }, [s?.user?.id, s?.profil?.role]);
   return [p, setP];
@@ -105,7 +107,14 @@ export function PageProfil({ aller }) {
   const [p, setP] = usePseudo();
   const [props, setProps] = useState(() => propositions(4));
   const [msg, setMsg] = useState(''), [mdp, setMdp] = useState(''), [changer, setChanger] = useState(false);
+  const [etab, setEtab] = useState(undefined);
   const b = bilan(suivi);
+  useEffect(() => {
+    if (!estEleve(s)) return undefined;
+    let vivant = true;
+    rest('classes?select=etablissement').then(c => { if (vivant) setEtab((c[0]?.etablissement || '').trim()); }).catch(() => { if (vivant) setEtab(''); });
+    return () => { vivant = false; };
+  }, [s?.user?.id, s?.profil?.role]);
   if (!estEleve(s)) return <div style={cardStyle}>Cette page est réservée aux élèves connectés. <button onClick={() => aller('presentation')} style={styleBouton(false)}>Retour</button></div>;
   const choisir = async ([adj, nom]) => {
     setMsg('');
@@ -118,6 +127,13 @@ export function PageProfil({ aller }) {
       setMsg(e.statut === 409 ? 'Ce pseudo est déjà pris dans votre classe : choisissez-en un autre.' : 'Impossible d’enregistrer le pseudo pour le moment.');
       setProps(propositions(4, Math.random, p ? [[p.adj, p.nom]] : []));
     }
+  };
+  const accord = async oui => {
+    setMsg('');
+    try {
+      await rest('energy_pseudos?user_id=eq.' + s.user.id, { method: 'PATCH', corps: { classement: oui }, entetes: { Prefer: 'return=minimal' } });
+      setP({ ...p, classement: oui });
+    } catch { setMsg('Impossible d’enregistrer ce choix pour le moment.'); }
   };
   const nouveauMdp = async () => {
     setMsg('');
@@ -181,12 +197,28 @@ export function PageProfil({ aller }) {
 
       <div style={styleBoite}>
         <div style={{ fontSize: 15, fontWeight: 800, color: KIT.txt, marginBottom: 6 }}>{p ? 'Changer de pseudo' : 'Choisissez votre pseudo'}</div>
-        <div style={{ fontSize: 13, color: KIT.txt2, marginBottom: 6 }}>Votre pseudo est tiré d’une liste : il n’y a ni nom ni prénom. Seul votre professeur le voit.</div>
+        <div style={{ fontSize: 13, color: KIT.txt2, marginBottom: 6 }}>Votre pseudo est tiré d’une liste : il n’y a ni nom ni prénom. Seul votre professeur le voit, sauf si vous choisissez d’apparaître dans le classement public ci-dessous.</div>
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
           {props.map(([a, n]) => { const q = pseudo(a, n); return <button key={`${a}-${n}`} onClick={() => choisir([a, n])} style={styleBouton(false, '#ea580c')}>{q.icone} {q.texte}</button>; })}
           <button onClick={() => setProps(propositions(4))} style={styleBouton(false, '#475569')}>🎲 D’autres idées</button>
         </div>
       </div>
+
+      {p && p.classement !== undefined && (
+        <div style={styleBoite}>
+          <div style={{ fontSize: 15, fontWeight: 800, color: KIT.txt, marginBottom: 6 }}>🏆 Classement public</div>
+          <label style={{ display: 'flex', gap: 10, alignItems: 'flex-start', fontSize: 14.5, color: KIT.txt, lineHeight: 1.5, cursor: 'pointer' }}>
+            <input type="checkbox" checked={!!p.classement} onChange={e => accord(e.target.checked)} style={{ width: 20, height: 20, marginTop: 2, flex: 'none' }} />
+            <span>Apparaître dans le classement public d’Energy@School</span>
+          </label>
+          <div style={{ fontSize: 13, color: KIT.txt2, marginTop: 6, lineHeight: 1.5 }}>
+            {p.classement
+              ? <>Tout le monde peut alors voir : votre pseudo, l’établissement, votre classe et votre score. Jamais votre nom ni votre identifiant. Décochez pour disparaître immédiatement.</>
+              : <>Désactivé par défaut. Si vous cochez, tout le monde pourra voir votre pseudo, l’établissement, votre classe et votre score. Jamais votre nom ni votre identifiant.</>}
+            {p.classement && etab === '' && <strong style={{ display: 'block', color: '#9a3412', marginTop: 4 }}>Votre professeur n’a pas encore indiqué l’établissement de la classe : vous n’apparaîtrez pas tant que ce n’est pas fait.</strong>}
+          </div>
+          <a href="?atelier=classement" onClick={e => { e.preventDefault(); aller('classement'); }} style={{ display: 'inline-block', marginTop: 6, fontSize: 13.5, fontWeight: 800, color: '#9a3412' }}>Voir le classement →</a>
+        </div>)}
 
       {msg && <div role="status" style={{ fontSize: 14, color: msg.startsWith('Mot de passe modifié') ? '#15803d' : '#b91c1c', fontWeight: 700 }}>{msg}</div>}
       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
@@ -207,7 +239,8 @@ export function PageSuivi({ aller }) {
   const [classes, setClasses] = useState(null), [classeId, setClasseId] = useState(''), [eleves, setEleves] = useState([]), [prog, setProg] = useState([]), [pseud, setPseud] = useState([]), [err, setErr] = useState('');
   useEffect(() => {
     if (!estProf(s)) return;
-    rest('classes?select=id,nom,prefixe,site&site=eq.energy&order=cree_le')
+    rest('classes?select=id,nom,prefixe,site,etablissement&site=in.(energy,deux)&order=cree_le')
+      .catch(() => rest('classes?select=id,nom,prefixe,site&site=in.(energy,deux)&order=cree_le'))
       .then(c => { setClasses(c); setClasseId(c[0]?.id || ''); })
       .catch(() => { setClasses([]); setErr('Le serveur n’est pas encore prêt pour Energy@School (script SQL 11 à lancer).'); });
   }, [s?.user?.id, s?.profil?.role]);
@@ -220,16 +253,25 @@ export function PageSuivi({ aller }) {
         if (!el.length) { setProg([]); setPseud([]); return; }
         const ids = el.map(e => e.user_id).join(',');
         setProg(await toutLire(`energy_progres?select=user_id,cle,etape,total,reussies&user_id=in.(${ids})`));
-        setPseud(await toutLire(`energy_pseudos?select=user_id,adj,nom&user_id=in.(${ids})`));
+        try { setPseud(await toutLire(`energy_pseudos?select=user_id,adj,nom,classement,exclu&user_id=in.(${ids})`)); }
+        catch { setPseud(await toutLire(`energy_pseudos?select=user_id,adj,nom&user_id=in.(${ids})`)); }     // script SQL 18 pas encore appliqué
       } catch (e) { setErr(e.message); }
     })();
   }, [classeId]);
   const lignes = useMemo(() => eleves.map(e => {
     const suivi = {}; prog.filter(l => l.user_id === e.user_id).forEach(l => { suivi[l.cle] = l; });
     const p = pseud.find(x => x.user_id === e.user_id);
-    return { ...e, suivi, pseudo: p ? pseudo(p.adj, p.nom) : null, bilan: bilan(suivi) };
+    return { ...e, suivi, pseudo: p ? pseudo(p.adj, p.nom) : null, classement: p?.classement, exclu: !!p?.exclu, bilan: bilan(suivi) };
   }), [eleves, prog, pseud]);
   if (!estProf(s)) return <div style={cardStyle}>Page réservée aux professeurs connectés. <button onClick={() => aller('presentation')} style={styleBouton(false)}>Retour</button></div>;
+  const [msgClassement, setMsgClassement] = useState('');
+  const basculerExclusion = async r => {
+    setMsgClassement('');
+    try {
+      await rest('rpc/exclure_energy_du_classement', { method: 'POST', corps: { eleve: r.user_id, retirer: !r.exclu } });
+      setPseud(l => l.map(x => (x.user_id === r.user_id ? { ...x, exclu: !r.exclu } : x)));
+    } catch { setMsgClassement('Impossible de modifier le classement pour le moment (le script SQL 18 est-il lancé ?).'); }
+  };
   const exporter = () => {
     const tete = ['identifiant', 'pseudo', 'niveau', 'points', 'parcours terminés', 'défis relevés', ...TOUS_PARCOURS.map(p => p.nom), ...DEFIS.map(d => 'défi ' + d.nom)];
     const l = lignes.map(r => [r.identifiant, r.pseudo?.texte || '', r.bilan.niveau.nom, r.bilan.points, r.bilan.faits, r.bilan.defis, ...TOUS_PARCOURS.map(p => (r.suivi[p.cle] ? `${Math.min(r.suivi[p.cle].etape + 1, r.suivi[p.cle].total)}/${r.suivi[p.cle].total}` : '')), ...DEFIS.map(d => (termine(r.suivi[d.cle]) ? 'oui' : ''))]);
@@ -247,6 +289,7 @@ export function PageSuivi({ aller }) {
         <button onClick={seDeconnecter} style={{ ...styleBouton(false, '#b91c1c'), marginLeft: 'auto' }}>Se déconnecter</button>
       </div>
       {err && <div role="alert" style={{ color: '#b91c1c', fontWeight: 700, fontSize: 14 }}>{err}</div>}
+      {msgClassement && <div role="alert" style={{ color: '#b91c1c', fontWeight: 700, fontSize: 14 }}>{msgClassement}</div>}
       {classes && !classes.length && !err && (
         <div style={{ ...styleBoite, fontSize: 14, lineHeight: 1.55 }}>
           Aucune classe n’est réglée sur Energy@School. Créez la classe et ses comptes dans le suivi de la Paillasse virtuelle
@@ -256,7 +299,7 @@ export function PageSuivi({ aller }) {
         <div style={{ overflowX: 'auto' }}>
           <table style={{ borderCollapse: 'collapse', fontSize: 13.5, minWidth: 640, width: '100%' }}>
             <thead><tr style={{ background: '#f1f5f9' }}>
-              <th style={th}>Élève</th><th style={th}>Pseudo</th><th style={th}>Niveau</th><th style={th}>Défis</th>
+              <th style={th}>Élève</th><th style={th}>Pseudo</th><th style={th}>Niveau</th><th style={th}>Défis</th>{lignes.some(r => r.classement !== undefined) && <th style={th}>Classement public</th>}
               {TOUS_PARCOURS.map(p => <th key={p.cle} style={{ ...th, fontSize: 11.5, maxWidth: 90 }} title={p.nom}>{FAMILLES.find(f => f.id === p.famille).icone} {p.nom}</th>)}
             </tr></thead>
             <tbody>{lignes.map(r => (
@@ -265,6 +308,10 @@ export function PageSuivi({ aller }) {
                 <td style={td}>{r.pseudo ? `${r.pseudo.icone} ${r.pseudo.texte}` : <span style={{ color: '#94a3b8' }}>—</span>}</td>
                 <td style={td}>{r.bilan.niveau.icone} {r.bilan.niveau.nom} <span style={{ color: '#64748b' }}>({r.bilan.points}/{r.bilan.max})</span></td>
                 <td style={{ ...td, textAlign: 'center' }} title={DEFIS.filter(d => termine(r.suivi[d.cle])).map(d => d.nom).join(', ')}>{r.bilan.defis}/{r.bilan.totalDefis}</td>
+                {lignes.some(x => x.classement !== undefined) && <td style={td}>
+                  {r.exclu ? <span style={{ color: '#b91c1c', fontWeight: 700 }}>retiré</span> : r.classement ? <span style={{ color: '#166534', fontWeight: 700 }}>visible</span> : <span style={{ color: '#94a3b8' }}>—</span>}
+                  {(r.classement || r.exclu) && <button onClick={() => basculerExclusion(r)} style={{ ...styleBouton(false, '#475569'), marginLeft: 6, padding: '2px 8px', fontSize: 12 }}>{r.exclu ? 'Rétablir' : 'Retirer'}</button>}
+                </td>}
                 {TOUS_PARCOURS.map(p => { const v = r.suivi[p.cle]; return (
                   <td key={p.cle} style={{ ...td, textAlign: 'center' }}>{termine(v) ? '✅' : v ? <span style={{ color: '#64748b' }}>{Math.round(100 * Math.min(v.etape, v.total - 1) / (v.total - 1))} %</span> : <span style={{ color: '#cbd5e1' }}>·</span>}</td>); })}
               </tr>))}

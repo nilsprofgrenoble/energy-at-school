@@ -8,6 +8,7 @@ import { SimulationStockage } from "./ateliers/Stockage";
 import { SimulationHydrogene } from "./ateliers/Hydrogene";
 import { BoutonCompte, PageProfil, PageSuivi } from "./Compte";
 import { PageAPropos } from "./APropos";
+import { PageClassement } from "./Classement";
 import { PageMesFiches } from "./fiches/Fiche";
 import { ATELIERS, nbFichesDebloquees } from "./fiches/regles";
 import { aFiche } from "./fiches/contenu";
@@ -33,6 +34,7 @@ const PAGES = [
   { slug: 'profil', nom: 'Mon profil', groupe: null, icone: '👤', couleur: '#ea580c', composant: PageProfil, compte: true },
   { slug: 'suivi', nom: 'Suivi des classes', groupe: null, icone: '👩‍🏫', couleur: '#ea580c', composant: PageSuivi, compte: true },
   { slug: 'mes-fiches', nom: 'Mes fiches', groupe: null, icone: '📚', couleur: '#ea580c', composant: PageMesFiches, description: "Vos fiches de révision « À retenir » : définitions, équations, valeurs et schémas, à relire et à imprimer." },
+  { slug: 'classement', nom: 'Classement', groupe: null, icone: '🏆', couleur: '#c2410c', composant: PageClassement, description: "Le classement public d'Energy@School : points, défis relevés et activité de la semaine, pour les élèves qui ont choisi d'apparaître." },
   // Page d'information (hors de la barre d'ateliers : accessible depuis l'en-tête et le pied de page)
   { slug: 'a-propos', nom: 'À propos', groupe: null, icone: 'ℹ️', couleur: '#ea580c', composant: PageAPropos, description: "Qui a construit ce site, avec quelle aide, et comment vos données sont traitées : transparence sur Energy@School." },
 ];
