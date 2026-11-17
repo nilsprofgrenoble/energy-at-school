@@ -43,7 +43,7 @@ export const production3 = [
     <Fm>{'v_a = {Q_V|S}'}</Fm>
     <Grandeurs lignes={[['Q_V', 'débit volumique', 'm³/s'], ['m', 'masse d’eau recueillie', 'kg'], ['ρ', 'masse volumique : 1 000', 'kg/m³'], ['Δt', 'durée', 's'], ['S', 'section du canal', 'm²'], ['v_a', 'vitesse de l’eau', 'm/s']]} />
     <Exemple><Fi>{'Q_V = 2,6 [L/s] = 2,6 × 10^-3 [m³/s]'}</Fi> et <Fi>{'S = 3,75 × 10^-3 [m²]'}</Fi> donnent <Fi>{'v_a = {2,6 × 10^-3|3,75 × 10^-3} ≈ 0,69 [m/s]'}</Fi>.</Exemple>
-    <Memo>Les masses se pèsent, les volumes se calculent : 15 kg d’eau = 0,015 m³.</Memo>
+    <Memo>Les masses se pèsent, les volumes se calculent : on convertit la masse d’eau en volume avec ρ (15 kg d’eau → 0,015 m³).</Memo>
   </> },
   { id: 'puissances', titre: 'Puissance de l’eau, puissance électrique, rendement', corps: <>
     <BarrePertes titre="De 0,62 W apportés par l'eau, 0,074 W sont récupérés sur une charge de 10 ohms, soit un rendement d'environ 12 %" haut="0,62 W apportés par l'eau" utile="0,074 W utiles (≈ 12 %)" perdu="≈ 0,55 W perdus" frac={0.12} />

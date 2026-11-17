@@ -82,9 +82,8 @@ export const stockage = [
     <Fm>{'E = U * Q'}</Fm>
     <Fm>{'[densité] = {E|m}'}</Fm>
     <Fm>{'t = {Q|I}'}</Fm>
-    <Fm>{'n_Li = {3600 * Q|F}'}</Fm>
-    <Grandeurs lignes={[['E', 'énergie stockée', 'Wh'], ['U', 'tension de la cellule', 'V'], ['Q', 'capacité : 1 Ah = 3 600 C', 'Ah'], ['m', 'masse de la cellule', 'kg'], ['t', 'durée de décharge', 'h'], ['I', 'courant débité', 'A'], ['n_Li', 'quantité de lithium qui circule', 'mol'], ['F', 'constante de Faraday : 96 485', 'C/mol']]} />
-    <Exemple><Fi>{'E = 3,7 × 2,03 ≈ 7,5 [Wh]'}</Fi> ; <Fi>{'{7,5|0,0454} ≈ 165 [Wh/kg]'}</Fi> ; <Fi>{'n_Li = {3600 × 2,03|96 485} ≈ 0,076 [mol]'}</Fi>.</Exemple>
+    <Grandeurs lignes={[['E', 'énergie stockée', 'Wh'], ['U', 'tension de la cellule', 'V'], ['Q', 'capacité de la cellule', 'Ah'], ['m', 'masse de la cellule', 'kg'], ['t', 'durée de décharge', 'h'], ['I', 'courant débité', 'A']]} />
+    <Exemple><Fi>{'E = 3,7 × 2,03 ≈ 7,5 [Wh]'}</Fi> ; <Fi>{'{7,5|0,0454} ≈ 165 [Wh/kg]'}</Fi>.</Exemple>
     <Memo>La capacité est une charge électrique (Ah ou C), pas celle d’un condensateur (F).</Memo>
   </> },
   { id: 'assemblage', titre: 'Assembler des cellules', corps: <>
