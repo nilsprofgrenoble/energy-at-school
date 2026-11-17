@@ -8,6 +8,10 @@ import { SimulationStockage } from "./ateliers/Stockage";
 import { SimulationHydrogene } from "./ateliers/Hydrogene";
 import { BoutonCompte, PageProfil, PageSuivi } from "./Compte";
 import { PageAPropos } from "./APropos";
+import { PageMesFiches } from "./fiches/Fiche";
+import { ATELIERS, nbFichesDebloquees } from "./fiches/regles";
+import { aFiche } from "./fiches/contenu";
+import { useSuivi } from "./avancement";
 import { restaurer } from "./serveur";
 import { synchroniser } from "./avancement";
 
@@ -28,6 +32,7 @@ const PAGES = [
   // Pages de compte (hors de la barre d'onglets : on y accède par le bouton en haut à droite)
   { slug: 'profil', nom: 'Mon profil', groupe: null, icone: '👤', couleur: '#ea580c', composant: PageProfil, compte: true },
   { slug: 'suivi', nom: 'Suivi des classes', groupe: null, icone: '👩‍🏫', couleur: '#ea580c', composant: PageSuivi, compte: true },
+  { slug: 'mes-fiches', nom: 'Mes fiches', groupe: null, icone: '📚', couleur: '#ea580c', composant: PageMesFiches, description: "Vos fiches de révision « À retenir » : définitions, équations, valeurs et schémas, à relire et à imprimer." },
   // Page d'information (hors de la barre d'ateliers : accessible depuis l'en-tête et le pied de page)
   { slug: 'a-propos', nom: 'À propos', groupe: null, icone: 'ℹ️', couleur: '#ea580c', composant: PageAPropos, description: "Qui a construit ce site, avec quelle aide, et comment vos données sont traitées : transparence sur Energy@School." },
 ];
@@ -41,6 +46,8 @@ const lirePage = () => {
 export default function App() {
   const [slug, setSlug] = useState(lirePage);
   const [copie, setCopie] = useState(false);
+  const suivi = useSuivi();
+  const nbFiches = nbFichesDebloquees(ATELIERS.filter(a => aFiche(a.page)).map(a => a.page), suivi);
   const page = PAGES.find(p => p.slug === slug);
   const Composant = page.composant;
   // Reprend la session enregistrée (si l'élève est resté connecté) puis resynchronise l'avancement
@@ -84,7 +91,7 @@ export default function App() {
 
   return (
     <div style={{ minHeight: '100vh', background: '#fffaf3', display: 'flex', flexDirection: 'column', fontFamily: "'Nunito', 'Segoe UI', system-ui, sans-serif" }}>
-      <header style={{ background: 'white', borderBottom: '1px solid #eadfd2', padding: '10px 20px 12px' }}>
+      <header className="no-print" style={{ background: 'white', borderBottom: '1px solid #eadfd2', padding: '10px 20px 12px' }}>
         <div style={{ maxWidth: 1400, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 10 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
             <button onClick={() => aller('presentation')} aria-label="Energy@School, retour à la présentation"
@@ -98,6 +105,7 @@ export default function App() {
                 <img src={`${import.meta.env.BASE_URL}paillasse-logo.png`} alt="Paillasse virtuelle" height="28" style={{ height: 28, width: 'auto' }} />
               </a>
               <BoutonCompte aller={aller} />
+              {nbFiches > 0 && slug !== 'mes-fiches' && <button onClick={() => aller('mes-fiches')} style={pilule} title="Mes fiches de révision">📚 Mes fiches</button>}
               {slug !== 'a-propos' && <button onClick={() => aller('a-propos')} style={pilule} title="À propos de ce site" aria-label="À propos de ce site">ℹ️ À propos</button>}
               {slug === 'presentation' && <button onClick={partager} style={pilule}>{copie ? '✅ Lien copié' : '🔗 Partager'}</button>}
             </div>
@@ -116,7 +124,7 @@ export default function App() {
 
       <main style={{ flex: 1, width: '100%', maxWidth: 1400, margin: '0 auto', padding: '16px 20px 24px', boxSizing: 'border-box' }}>
         {slug !== 'presentation' && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 14, margin: '4px 0 14px', flexWrap: 'wrap' }}>
+          <div className="no-print" style={{ display: 'flex', alignItems: 'center', gap: 14, margin: '4px 0 14px', flexWrap: 'wrap' }}>
             <span aria-hidden="true" style={{ width: 56, height: 56, borderRadius: 18, background: `${page.couleur}22`, display: 'grid', placeItems: 'center', fontSize: 30, flexShrink: 0 }}>{page.icone}</span>
             <h1 style={{ margin: 0, flex: 1, fontFamily: "'Outfit', sans-serif", fontWeight: 800, letterSpacing: '-0.02em', color: '#0c1a2e', fontSize: 'clamp(26px, 3.8vw, 40px)', lineHeight: 1.1, textWrap: 'balance' }}>{page.nom}</h1>
             <button onClick={partager} style={pilule}>{copie ? '✅ Lien copié' : '🔗 Partager'}</button>
@@ -124,7 +132,7 @@ export default function App() {
         <Composant key={slug} aller={aller} />
       </main>
 
-      <footer style={{ textAlign: 'center', fontSize: '0.82rem', color: '#3d4d63', padding: '18px 12px', borderTop: '1px solid #eadfd2', background: 'white' }}>
+      <footer className="no-print" style={{ textAlign: 'center', fontSize: '0.82rem', color: '#3d4d63', padding: '18px 12px', borderTop: '1px solid #eadfd2', background: 'white' }}>
         © {new Date().getFullYear()} Nils Aronssohn — Lycée Argouges, Grenoble ·{' '}
         <a href="https://creativecommons.org/licenses/by-nc-nd/4.0/deed.fr" target="_blank" rel="noopener noreferrer" style={{ color: 'inherit' }}>CC BY-NC-ND 4.0</a>
         {' '}· libre d'accès, reproduction et modification non autorisées ·{' '}

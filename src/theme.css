@@ -52,3 +52,52 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   .ea-hero { grid-template-columns: minmax(0, 1fr); }
   .ea-tuiles, .ea-modes { grid-template-columns: minmax(0, 1fr); }
 }
+
+/* ── Fiches « À retenir » (fenêtre, page « Mes fiches », impression) ── */
+.fiche-fenetre { position: fixed; inset: 0; z-index: 1000; background: rgba(15,23,42,.55); display: flex; align-items: flex-start; justify-content: center; padding: 4vh 12px; overflow-y: auto; }
+.fiche-fenetre-boite { background: #fff; border-radius: 24px; max-width: 660px; width: 100%; padding: 18px 20px 20px; box-shadow: 0 12px 40px rgba(0,0,0,.3); text-align: left; }
+@media (max-width: 520px) { .fiche-fenetre { padding: 0; } .fiche-fenetre-boite { border-radius: 0; min-height: 100%; padding: 14px 12px 18px; } }
+.fiche-points { list-style: none; margin: 12px 0 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.fiche-carte { background: #fff; border: 1px solid var(--es-bord); border-left: 6px solid var(--c, var(--es-orange)); border-radius: 18px; padding: 12px 14px; break-inside: avoid; page-break-inside: avoid; }
+.fiche-synthese { background: var(--es-orange-clair); }
+.fiche-titre { margin: 0 0 6px; font: 800 17px 'Outfit', sans-serif; color: var(--es-encre); }
+.fiche-corps { font: 600 15px/1.55 'Nunito', sans-serif; color: #334155; }
+.fiche-def { margin: 6px 0; }
+.fiche-eq { margin: 8px 0; text-align: center; }
+.fiche-eq-formule { display: inline-block; padding: 6px 16px; background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 12px; font: 600 18px 'Nunito', serif; color: var(--es-encre); }
+.fiche-eq-legende { margin-top: 3px; font-size: 12.5px; color: #64748b; }
+.fiche-donnees { border-collapse: collapse; width: 100%; margin: 8px 0; font-size: 14px; }
+.fiche-donnees th, .fiche-donnees td { border-bottom: 1px dashed var(--es-bord); padding: 4px 6px; text-align: left; vertical-align: top; }
+.fiche-donnees th { width: 38%; color: #475569; font-weight: 700; }
+.fiche-methode { margin: 6px 0; padding-left: 22px; }
+.fiche-retenir { margin: 8px 0 2px; padding: 8px 12px; border-radius: 12px; background: var(--es-orange-clair); color: #7c2d12; font-weight: 700; }
+.fiche-synthese .fiche-retenir { background: #fff; }
+.fiche-schema { display: block; margin: 6px auto 10px; height: auto; }
+.fiches-couverture { display: none; }
+.fiches-theme-titre { font: 800 24px 'Outfit', sans-serif; margin: 6px 0 8px; }
+.fiche-atelier { margin-bottom: 18px; }
+.fiche-atelier-titre { font: 800 19px 'Outfit', sans-serif; margin: 0 0 6px; padding-bottom: 4px; border-bottom: 3px solid; color: var(--es-encre); }
+@media print {
+  .no-print, header, footer { display: none !important; }
+  body, #root > div { background: #fff !important; }
+  main { padding: 0 !important; max-width: none !important; }
+  .fiches-couverture { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; min-height: 90vh; break-after: page; page-break-after: always; }
+  .fiches-couverture h1 { font: 800 44px 'Outfit', sans-serif; margin: 10px 0; color: var(--es-encre); }
+  .fiches-couverture-etiquette { font: 800 16px 'Nunito', sans-serif; letter-spacing: .1em; text-transform: uppercase; color: var(--es-orange-fonce); }
+  .fiches-couverture-date { color: #475569; }
+  .fiches-theme { break-before: page; page-break-before: always; }
+  .fiches-theme:first-of-type { break-before: auto; page-break-before: auto; }
+  .fiche-carte, .fiche-eq, .fiche-schema { break-inside: avoid; page-break-inside: avoid; }
+  .fiche-corps { font-size: 12.5pt; }
+  .fiche-carte, .fiche-eq-formule, .fiche-retenir, .fiche-synthese { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+}
+
+.fiche-chaine { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: center; gap: 4px 6px; margin: 8px 0 10px; }
+.fiche-chaine-boite { border: 2.5px solid var(--c, var(--es-orange)); border-radius: 14px; padding: 6px 12px; text-align: center; background: #fff; min-width: 120px; }
+.fiche-chaine-boite b { display: block; font: 800 15px 'Outfit', sans-serif; color: var(--es-encre); }
+.fiche-chaine-boite span { font-size: 13px; color: #3d4d63; }
+.fiche-chaine-perte { display: block; margin-top: 4px; font-size: 13px; font-weight: 800; color: #b91c1c; }
+.fiche-chaine-fleche { align-self: center; text-align: center; font-size: 12px; color: #334155; font-weight: 700; min-width: 54px; }
+.fiche-chaine-fleche::after { content: '→'; display: block; font-size: 24px; line-height: 1; }
+@media (max-width: 520px) { .fiche-chaine { flex-direction: column; align-items: center; } .fiche-chaine-fleche::after { content: '↓'; } .fiche-chaine-fleche { min-width: 0; } }
+@media print { .fiche-chaine { flex-direction: row; } .fiche-chaine-fleche::after { content: '→'; } }
