@@ -11,7 +11,7 @@ import { rest, toutLire, getSession, estEleve } from './serveur';
 
 // Les parcours guidés, regroupés comme dans la journée
 export const FAMILLES = [
-  { id: 'produire', nom: 'Produire', icone: '🌊', couleur: '#0284c7', badge: 'Producteur·rice', parcours: [
+  { id: 'produire', nom: 'Produire', icone: '🌀', couleur: '#0284c7', badge: 'Producteur·rice', parcours: [
     { cle: 'es1-production1', nom: 'Turbine Pelton', page: 'production-1' },
     { cle: 'es1-production2', nom: 'Banc Pelton', page: 'production-2' },
     { cle: 'es1-production3', nom: 'Au fil de l’eau', page: 'production-3' } ] },

@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { cardStyle, Graphe, fmt, sci, lireNombre, proche, CarteParcours, Cadre, ORANGE_GUIDE, useEtatPersistant, avecIndices, IndiceDefi, valeurAttendue, arrondiSig } from "../commun";
 import { BoutonFiche } from "../fiches/Fiche";
 import { signalerDefi } from "../avancement";
+import { Emo, Pic, PicSvg, ec } from '../Pictos';
 
 // ====================================================
 // ENERGY@SCHOOL — ATELIER STOCKAGE
@@ -493,7 +494,7 @@ export function SimulationStockage() {
             <rect x="3.5" y="3.5" width={77 * etat.soc} height="23" rx="3.5" fill={c}/>
             <text x="42" y="21" fontSize="15" fontWeight="800" fill={TXT} textAnchor="middle"
               stroke="white" strokeWidth="3" paintOrder="stroke">{pc} %</text>
-            {sens === 'charge' && enCours && <text x="100" y="22" fontSize="18">⚡</text>}
+            {sens === 'charge' && enCours && <PicSvg n="bolt" x="97" y="6" t="20" color="#ca8a04"/>}
           </g>
         );
       })()}
@@ -615,12 +616,12 @@ export function SimulationStockage() {
       {!rev1.commandes && <div style={{ fontSize: 13, color: TXT2 }}>Les commandes apparaîtront au fil du parcours.</div>}
       {rev1.commandes && <>
         <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8 }}>
-          <button onClick={() => changerSens('decharge')} style={petitBtn(sens === 'decharge', '#ca8a04')}>💡 Lampe (décharge)</button>
-          {rev1.chargeur && <button onClick={() => changerSens('charge')} style={petitBtn(sens === 'charge', '#16a34a')}>🔌 Chargeur (charge)</button>}
+          <button onClick={() => changerSens('decharge')} style={petitBtn(sens === 'decharge', '#ca8a04')}><Emo e="💡"/> Lampe (décharge)</button>
+          {rev1.chargeur && <button onClick={() => changerSens('charge')} style={petitBtn(sens === 'charge', '#16a34a')}><Emo e="🔌"/> Chargeur (charge)</button>}
         </div>
         <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8 }}>
           <button onClick={lancer} disabled={bloque} style={{ ...btn(!bloque, marche ? '#d97706' : '#2563eb'), opacity: bloque ? 0.5 : 1 }}>
-            {marche ? '⏸ Pause' : sens === 'decharge' ? '▶ Lancer la décharge' : '▶ Lancer la charge'}</button>
+            {marche ? <><Emo e="⏸"/> Pause</> : sens === 'decharge' ? <><Emo e="▶"/> Lancer la décharge</> : <><Emo e="▶"/> Lancer la charge</>}</button>
         </div>
         {bloque && <div style={{ fontSize: 13, color: '#b45309', marginBottom: 8 }}>
           {sens === 'decharge' ? 'La cellule est vide : il n’y a plus de lithium dans le graphite. Passez en charge.'
@@ -685,7 +686,7 @@ export function SimulationStockage() {
       </div>
       <div style={{ fontSize: 14, color: TXT, lineHeight: 1.5 }}><strong>{mission.nom}</strong> : {mission.texte}.</div>
       <div style={{ fontSize: 15, fontWeight: 700, marginTop: 6, color: mission.ok(bat) ? '#15803d' : '#b91c1c' }}>
-        {mission.ok(bat) ? '✅ Mission réussie !' : '❌ Pas encore'}
+        {mission.ok(bat) ? <><Emo e="✅"/> Mission réussie !</> : <><Emo e="❌"/> Pas encore</>}
       </div>
       {mission.ok(bat) && (() => {
         const autres = solutionsMission(mission, 8).filter(b => !(b.cel.id === cel.id && b.s === nS && b.p === nP)).slice(0, 3);
@@ -738,7 +739,7 @@ export function SimulationStockage() {
                 onChange={x => { const v = x.target.value; setDefi(d => ({ ...d, verifie: false, reps: { ...d.reps, [q.id]: v } })); }}
                 style={{ fontSize: 14, padding: '4px 8px', border: `1.5px solid ${BORDER}`, borderRadius: 6, width: 120 }}/>
               <span style={{ fontSize: 13, color: TXT2 }}>{q.unite}</span>
-              {defi.verifie && <span>{ok ? '✅' : '❌'}</span>}
+              {defi.verifie && <span>{ok ? <><Emo e="✅"/></> : <><Emo e="❌"/></>}</span>}
             </div>
             {defi.verifie && !ok && <div style={{ fontSize: 12.5, color: TXT2, marginTop: 3 }}>Valeur attendue : {attendu2(q.vrai)} {q.unite}</div>}
             {!ok && q.indice && <IndiceDefi>{q.indice}</IndiceDefi>}
@@ -746,8 +747,8 @@ export function SimulationStockage() {
         );
       })}
       <div style={{ display: 'flex', gap: 8 }}>
-        <button onClick={() => setDefi(d => ({ ...d, verifie: true }))} style={btn(true, '#16a34a')}>✓ Vérifier</button>
-        <button onClick={nouveauDefi} style={btn(false)}>🔄 Nouvelle cellule</button>
+        <button onClick={() => setDefi(d => ({ ...d, verifie: true }))} style={btn(true, '#16a34a')}><Emo e="✓"/> Vérifier</button>
+        <button onClick={nouveauDefi} style={btn(false)}><Emo e="🔄"/> Nouvelle cellule</button>
       </div>
     </div>
   ) : (
@@ -764,13 +765,13 @@ export function SimulationStockage() {
           const best = sols.length ? sols[0].m : Infinity;
           // à 2 % près, plusieurs solutions sont aussi bonnes l'une que l'autre
           setDefi(d => ({ ...d, valide: { ok, leger: ok && bat.m <= best * 1.02, best, sols } }));
-        }} style={btn(true, '#16a34a')}>✓ Valider</button>
-        <button onClick={nouveauDefi} style={btn(false)}>🔄 Nouvelle mission</button>
+        }} style={btn(true, '#16a34a')}><Emo e="✓"/> Valider</button>
+        <button onClick={nouveauDefi} style={btn(false)}><Emo e="🔄"/> Nouvelle mission</button>
       </div>
       {defi.valide && <div style={{ fontSize: 14, lineHeight: 1.55, color: defi.valide.ok && defi.valide.leger ? '#15803d' : '#b91c1c' }}>
-        {!defi.valide.ok ? '❌ Une contrainte n’est pas respectée.'
-          : defi.valide.leger ? `✅ Parfait : c’est la solution la plus légère (${bat.m >= 1000 ? `${fmt(bat.m / 1000, 2)} kg` : `${fmt(bat.m, 0)} g`}) ! 🎉`
-            : `⚠️ Contrat rempli, mais on peut faire plus léger (meilleure solution : ${defi.valide.best >= 1000 ? `${fmt(defi.valide.best / 1000, 2)} kg` : `${fmt(defi.valide.best, 0)} g`}).`}
+        {!defi.valide.ok ? <><Emo e="❌"/> Une contrainte n’est pas respectée.</>
+          : defi.valide.leger ? ec(`✅ Parfait : c’est la solution la plus légère (${bat.m >= 1000 ? `${fmt(bat.m / 1000, 2)} kg` : `${fmt(bat.m, 0)} g`}) ! 🎉`)
+            : ec(`⚠️ Contrat rempli, mais on peut faire plus léger (meilleure solution : ${defi.valide.best >= 1000 ? `${fmt(defi.valide.best / 1000, 2)} kg` : `${fmt(defi.valide.best, 0)} g`}).`)}
         {defi.valide.ok && defi.valide.sols && <div style={{ fontSize: 13, color: TXT2, marginTop: 4 }}>
           Les assemblages les plus légers : {defi.valide.sols.slice(0, 3).map((b, k) => <span key={k}>{k > 0 && ' ; '}{b.s} × {b.p} « {b.cel.nom} » ({b.m >= 1000 ? `${fmt(b.m / 1000, 2)} kg` : `${fmt(b.m, 0)} g`})</span>)}.
           Plusieurs solutions sont très proches : il n'y a pas qu'une seule bonne réponse.
@@ -785,9 +786,9 @@ export function SimulationStockage() {
   useEffect(() => { if (mode === 'defi' && !defi) nouveauDefi(); }, [mode, atelier, defi]);
   const finParcours = (
     <span style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-      {atelier === 1 && <button onClick={() => changerAtelier(2)} style={btn(true, '#7c3aed')}>Atelier 2 ▶</button>}
-      <button onClick={() => changerMode('explore')} style={btn(true, '#334155')}>🔍 Explorer</button>
-      <button onClick={() => changerMode('defi')} style={btn(true, '#0ea5e9')}>🎯 Défi</button>
+      {atelier === 1 && <button onClick={() => changerAtelier(2)} style={btn(true, '#7c3aed')}>Atelier 2 <Emo e="▶"/></button>}
+      <button onClick={() => changerMode('explore')} style={btn(true, '#334155')}><Emo e="🔍"/> Explorer</button>
+      <button onClick={() => changerMode('defi')} style={btn(true, '#0ea5e9')}><Emo e="🎯"/> Défi</button>
     </span>
   );
   return (
@@ -803,9 +804,9 @@ export function SimulationStockage() {
           <button onClick={() => changerAtelier(2)} style={btn(atelier === 2, '#7c3aed')}>Atelier 2 · Assembler une batterie</button>
         </div>
         <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-          <button onClick={() => changerMode('guide')} style={btn(mode === 'guide', ORANGE_GUIDE)}>🧭 Parcours guidé</button>
-          <button onClick={() => changerMode('explore')} style={btn(mode === 'explore', '#334155')}>🔍 Exploration libre</button>
-          <button onClick={() => changerMode('defi')} style={btn(mode === 'defi', '#0ea5e9')}>🎯 Défi</button>
+          <button onClick={() => changerMode('guide')} style={btn(mode === 'guide', ORANGE_GUIDE)}><Emo e="🧭"/> Parcours guidé</button>
+          <button onClick={() => changerMode('explore')} style={btn(mode === 'explore', '#334155')}><Emo e="🔍"/> Exploration libre</button>
+          <button onClick={() => changerMode('defi')} style={btn(mode === 'defi', '#0ea5e9')}><Emo e="🎯"/> Défi</button>
           <BoutonFiche page="stockage" couleur="#2563eb" style={btn(false, '#ea580c')} />
         </div>
       </div>

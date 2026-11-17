@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { cardStyle, Graphe, fmt, sci, lireNombre, proche, CarteParcours, useEtatPersistant, avecIndices, IndiceDefi, valeurAttendue } from "../commun";
 import { BoutonFiche } from "../fiches/Fiche";
 import { signalerDefi } from "../avancement";
+import { Emo, Pic } from '../Pictos';
 
 // ====================================================
 // ENERGY@SCHOOL — ATELIER PRODUCTION 3
@@ -428,8 +429,8 @@ export function SimulationProduction3() {
         </div>
       )}
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-        {revele.balance && <button onClick={() => setPesee({ actif: true, t: 0, m: 0, fini: null })} disabled={pesee.actif} style={petitBtn(true, '#2563eb')}>⚖️ Pesée</button>}
-        {revele.chrono && <button onClick={() => setChrono({ actif: true, t: 0, tours: 0, fini: null })} disabled={chrono.actif} style={petitBtn(true, '#7c3aed')}>⏱️ 5 tours</button>}
+        {revele.balance && <button onClick={() => setPesee({ actif: true, t: 0, m: 0, fini: null })} disabled={pesee.actif} style={petitBtn(true, '#2563eb')}><Emo e="⚖"/> Pesée</button>}
+        {revele.chrono && <button onClick={() => setChrono({ actif: true, t: 0, tours: 0, fini: null })} disabled={chrono.actif} style={petitBtn(true, '#7c3aed')}><Emo e="⏱"/> 5 tours</button>}
       </div>
       {enGuide && !revele.balance && <div style={{ fontSize: 13, color: TXT2 }}>Les commandes apparaîtront au fil du parcours.</div>}
     </>
@@ -457,7 +458,7 @@ export function SimulationProduction3() {
     <>
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8 }}>
         <button onClick={() => setPoints(l => [...l.filter(q => Math.abs(q.u - e.u) > 0.003), { u: e.u, P: e.P, eta: e.eta * 100, R }])}
-          style={petitBtn(true, '#0284c7')}>➕ Ajouter ce point</button>
+          style={petitBtn(true, '#0284c7')}><Emo e="➕"/> Ajouter ce point</button>
         <button onClick={() => setPoints([])} style={petitBtn(false)}>Effacer</button>
       </div>
       {points.length === 0 ? <div style={{ fontSize: 12.5, color: TXT2 }}>Aucun point pour l'instant.</div> : (
@@ -489,8 +490,8 @@ export function SimulationProduction3() {
   // ════════════════ CARTE DU PARCOURS (composant commun) ════════════════
   const finParcours = (
     <span style={{ display: 'flex', gap: 6 }}>
-      <button onClick={() => setMode('explore')} style={btn(true, '#334155')}>🔍 Explorer</button>
-      <button onClick={() => { setMode('defi'); nouvelleMission(); }} style={btn(true, '#0ea5e9')}>🎯 Défi</button>
+      <button onClick={() => setMode('explore')} style={btn(true, '#334155')}><Emo e="🔍"/> Explorer</button>
+      <button onClick={() => { setMode('defi'); nouvelleMission(); }} style={btn(true, '#0ea5e9')}><Emo e="🎯"/> Défi</button>
     </span>
   );
   const carteEtape = <CarteParcours cle="es1-production3" etapes={ETAPES} etat={guide} setEtat={setGuide} fin={finParcours}/>;
@@ -538,7 +539,7 @@ export function SimulationProduction3() {
               <input value={mission.reps[q.id] || ''} placeholder="?" aria-label={`Réponse ${k + 1}`}
                 onChange={x => { const v = x.target.value; setMission(m => ({ ...m, verifie: false, reps: { ...m.reps, [q.id]: v } })); }} style={{ ...inp, width: 120 }}/>
               <span style={{ fontSize: 13, color: TXT2 }}>{q.unite}</span>
-              {mission.verifie && <span>{ok ? '✅' : '❌'}</span>}
+              {mission.verifie && <span>{ok ? <><Emo e="✅"/></> : <><Emo e="❌"/></>}</span>}
             </div>
             {mission.verifie && !ok && <div style={{ fontSize: 12.5, color: TXT2, marginTop: 3 }}>Valeur attendue : {valeurAttendue(q.vrai)} {q.unite}</div>}
             {!ok && q.indice && <IndiceDefi>{q.indice}</IndiceDefi>}
@@ -546,9 +547,9 @@ export function SimulationProduction3() {
         );
       })}
       <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
-        <button onClick={() => setMission(m => ({ ...m, verifie: true }))} style={btn(true, '#16a34a')}>✓ Vérifier</button>
-        <button onClick={nouvelleMission} style={btn(false)}>🔄 Nouvelle mission</button>
-        {mission.verifie && <strong style={{ color: scoreM === questionsMission.length ? '#15803d' : TXT }}>{scoreM} / {questionsMission.length}{scoreM === questionsMission.length ? ' 🎉' : ''}</strong>}
+        <button onClick={() => setMission(m => ({ ...m, verifie: true }))} style={btn(true, '#16a34a')}><Emo e="✓"/> Vérifier</button>
+        <button onClick={nouvelleMission} style={btn(false)}><Emo e="🔄"/> Nouvelle mission</button>
+        {mission.verifie && <strong style={{ color: scoreM === questionsMission.length ? '#15803d' : TXT }}>{scoreM} / {questionsMission.length}{scoreM === questionsMission.length ? <> <Emo e="🎉"/></> : ''}</strong>}
       </div>
     </div>
   );
@@ -568,9 +569,9 @@ export function SimulationProduction3() {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8, marginBottom: 10 }}>
         <h2 style={{ margin: 0, fontSize: 18, color: TXT }}>Production 3 · Une centrale « au fil de l'eau »</h2>
         <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-          <button onClick={() => changerMode('guide')} style={btn(mode === 'guide', COUL.focus)}>🧭 Parcours guidé</button>
-          <button onClick={() => changerMode('explore')} style={btn(mode === 'explore', '#334155')}>🔍 Exploration libre</button>
-          <button onClick={() => changerMode('defi')} style={btn(mode === 'defi', '#0ea5e9')}>🎯 Défi</button>
+          <button onClick={() => changerMode('guide')} style={btn(mode === 'guide', COUL.focus)}><Emo e="🧭"/> Parcours guidé</button>
+          <button onClick={() => changerMode('explore')} style={btn(mode === 'explore', '#334155')}><Emo e="🔍"/> Exploration libre</button>
+          <button onClick={() => changerMode('defi')} style={btn(mode === 'defi', '#0ea5e9')}><Emo e="🎯"/> Défi</button>
           <BoutonFiche page="production-3" couleur="#0891b2" style={btn(false, '#ea580c')} />
         </div>
       </div>

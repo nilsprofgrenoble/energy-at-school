@@ -17,7 +17,7 @@ export const LAMES = [
 ];
 
 export const libelleScore = (lame, n) => `${n} ${n > 1 ? lame.unite[1] : lame.unite[0]}`;
-export const medaille = rang => (rang === 1 ? '🥇' : rang === 2 ? '🥈' : rang === 3 ? '🥉' : null);
+export const medaille = rang => (rang === 1 ? 'or' : rang === 2 ? 'argent' : rang === 3 ? 'bronze' : null);
 
 // Une ligne du classement est-elle celle de l'élève connecté ? moi = { adj, nom, classe, etab } (ou null)
 export const estMoi = (ligne, moi) => !!moi && ligne.adj === moi.adj && ligne.nom === moi.nom && ligne.classe === moi.classe && ligne.etab === (moi.etab || '').trim();

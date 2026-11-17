@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { cardStyle, Graphe, fmt, sci, lireNombre, proche, CarteParcours, Cadre, ORANGE_GUIDE, useEtatPersistant, avecIndices, IndiceDefi, valeurAttendue, arrondiSig } from "../commun";
 import { BoutonFiche } from "../fiches/Fiche";
 import { signalerDefi } from "../avancement";
+import { Emo, Pic } from '../Pictos';
 
 // ====================================================
 // ENERGY@SCHOOL — ATELIER PRODUCTION 1
@@ -442,7 +443,7 @@ export function SimulationProduction1() {
         </div>
       </div>}
       {revele.seau ? <><button onClick={lancerSeau} disabled={seau.actif || ouv === 0} style={{ ...btn(!seau.actif, '#2563eb'), opacity: seau.actif || ouv === 0 ? 0.6 : 1 }}>
-        🪣 Mesurer le débit (seau de 1 L)
+        <Emo e="🪣"/> Mesurer le débit (seau de 1 L)
       </button>
       <div style={{ fontSize: 12, color: TXT2, marginTop: 5 }}>
         {seau.fini ? <>Seau rempli en <strong>{fmt(seau.fini, 1)} s</strong>.</> : seau.actif ? 'Remplissage en cours…' : 'Le chronomètre s’arrête quand le seau est plein.'}
@@ -469,7 +470,7 @@ export function SimulationProduction1() {
     <>
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8 }}>
         <button onClick={() => setPoints(l => [...l.filter(q => Math.abs(q.U - pt.U) > 0.02), { U: pt.U, I: pt.I, eta: eta * 100 }])}
-          disabled={ouv === 0} style={petitBtn(true, '#0284c7')}>➕ Ajouter ce point</button>
+          disabled={ouv === 0} style={petitBtn(true, '#0284c7')}><Emo e="➕"/> Ajouter ce point</button>
         <button onClick={() => setPoints([])} style={petitBtn(false)}>Effacer</button>
         <button onClick={() => setMontrerRef(v => !v)} style={petitBtn(montrerRef, '#94a3b8')}>Courbe de l'activité</button>
       </div>
@@ -606,7 +607,7 @@ export function SimulationProduction1() {
         {niveau === 3 ? ' qui donne le rendement maximal (tracez votre courbe !)' : ''}. Relevez alors vos mesures.
         <strong> Ne touchez plus au robinet ensuite.</strong>
       </div>
-      <button onClick={relever} disabled={!releveOk} style={{ ...btn(releveOk, '#0ea5e9'), opacity: releveOk ? 1 : 0.5 }}>📋 Relever mes mesures</button>
+      <button onClick={relever} disabled={!releveOk} style={{ ...btn(releveOk, '#0ea5e9'), opacity: releveOk ? 1 : 0.5 }}><Emo e="📋"/> Relever mes mesures</button>
       {!releveOk && <div style={{ fontSize: 12, color: TXT2, marginTop: 5 }}>
         Il faut avoir mesuré le débit au seau, et une charge qui n'est ni un court-circuit ni un circuit ouvert.
       </div>}
@@ -636,10 +637,10 @@ export function SimulationProduction1() {
                 <input value={reps[q.id] || ''} placeholder="?" aria-label={`Réponse ${k + 1}`}
                   onChange={e => { const v = e.target.value; setReps(pr => ({ ...pr, [q.id]: v })); setVerifie(false); }} style={{ ...inp, width: 120 }}/>
                 <span style={{ fontSize: 13, color: TXT2 }}>{q.unite}</span>
-                {verifie && <span>{ok ? '✅' : '❌'}</span>}
+                {verifie && <span>{ok ? <><Emo e="✅"/></> : <><Emo e="❌"/></>}</span>}
               </div>
             )}
-            {verifie && q.type === 'choix' && <span style={{ fontSize: 13 }}>{ok ? ' ✅' : ' ❌'}</span>}
+            {verifie && q.type === 'choix' && <span style={{ fontSize: 13 }}>{ok ? <> <Emo e="✅"/></> : <> <Emo e="❌"/></>}</span>}
             {q.type === 'num' && !ok && q.indice && <IndiceDefi>{q.indice}</IndiceDefi>}
             {q.aide && !verifie && <div style={{ fontSize: 12, color: TXT2, marginTop: 3 }}>{q.aide}</div>}
             {verifie && q.type === 'num' && !ok && piege(q) && (
@@ -654,8 +655,8 @@ export function SimulationProduction1() {
       })}
       {questions.length > 0 && (
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <button onClick={() => setVerifie(true)} style={btn(true, '#16a34a')}>✓ Vérifier</button>
-          {verifie && <strong style={{ color: score === questions.length ? '#15803d' : TXT }}>{score} / {questions.length}{score === questions.length ? ' 🎉' : ''}</strong>}
+          <button onClick={() => setVerifie(true)} style={btn(true, '#16a34a')}><Emo e="✓"/> Vérifier</button>
+          {verifie && <strong style={{ color: score === questions.length ? '#15803d' : TXT }}>{score} / {questions.length}{score === questions.length ? <> <Emo e="🎉"/></> : ''}</strong>}
         </div>
       )}
       {niveau === 2 && releve && <div style={{ fontSize: 12.5, color: TXT2 }}>
@@ -693,8 +694,8 @@ export function SimulationProduction1() {
   function changerMode(m) { setMode(m); if (m === 'guide') setOuv(80); }
   const finParcours = (
     <span style={{ display: 'flex', gap: 6 }}>
-      <button onClick={() => changerMode('explore')} style={btn(true, '#334155')}>🔍 Explorer</button>
-      <button onClick={() => changerMode('defi')} style={btn(true, '#0ea5e9')}>🎯 Défi</button>
+      <button onClick={() => changerMode('explore')} style={btn(true, '#334155')}><Emo e="🔍"/> Explorer</button>
+      <button onClick={() => changerMode('defi')} style={btn(true, '#0ea5e9')}><Emo e="🎯"/> Défi</button>
     </span>
   );
   const onglets = [['rendement', 'Rendement', revele.graphe], ['oscillo', 'Oscilloscope', revele.oscillo], ['vitesses', 'Vitesses', revele.vitesses]].filter(o => o[2]);
@@ -718,9 +719,9 @@ export function SimulationProduction1() {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8, marginBottom: 10 }}>
         <h2 style={{ margin: 0, fontSize: 18, color: TXT }}>Production 1 · Conduite forcée, turbine Pelton et alternateur</h2>
         <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-          <button onClick={() => changerMode('guide')} style={btn(mode === 'guide', ORANGE_GUIDE)}>🧭 Parcours guidé</button>
-          <button onClick={() => changerMode('explore')} style={btn(mode === 'explore', '#334155')}>🔍 Exploration libre</button>
-          <button onClick={() => changerMode('defi')} style={btn(mode === 'defi', '#0ea5e9')}>🎯 Défi</button>
+          <button onClick={() => changerMode('guide')} style={btn(mode === 'guide', ORANGE_GUIDE)}><Emo e="🧭"/> Parcours guidé</button>
+          <button onClick={() => changerMode('explore')} style={btn(mode === 'explore', '#334155')}><Emo e="🔍"/> Exploration libre</button>
+          <button onClick={() => changerMode('defi')} style={btn(mode === 'defi', '#0ea5e9')}><Emo e="🎯"/> Défi</button>
           <BoutonFiche page="production-1" couleur="#0284c7" style={btn(false, '#ea580c')} />
         </div>
       </div>

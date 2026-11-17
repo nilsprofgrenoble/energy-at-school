@@ -1,4 +1,5 @@
 import { cardStyle } from "./commun";
+import { Emo } from './Pictos';
 
 // ============================================================
 //  PAGE « À PROPOS » : transparence sur la manière dont le site a été construit.
@@ -13,7 +14,7 @@ const lien = { color: '#c2410c', fontWeight: 800 };
 function Bloc({ icone, titre: t, children }) {
   return (
     <section style={{ ...cardStyle, display: 'flex', gap: 14, alignItems: 'flex-start' }}>
-      <span aria-hidden="true" style={{ width: 44, height: 44, borderRadius: 14, background: '#ffedd5', display: 'grid', placeItems: 'center', fontSize: 24, flexShrink: 0 }}>{icone}</span>
+      <span aria-hidden="true" style={{ width: 32, height: 32, color: '#c2410c', display: 'grid', placeItems: 'center', flexShrink: 0 }}><Emo e={icone} t={28}/></span>
       <div style={{ flex: 1, minWidth: 0 }}>
         <h2 style={titre}>{t}</h2>
         {children}

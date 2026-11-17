@@ -15,6 +15,7 @@ import { aFiche } from "./fiches/contenu";
 import { useSuivi } from "./avancement";
 import { restaurer } from "./serveur";
 import { synchroniser } from "./avancement";
+import { Emo, Pic, PictosSprite } from './Pictos';
 
 // ============================================================
 //  SITE ENERGY@SCHOOL
@@ -24,7 +25,7 @@ import { synchroniser } from "./avancement";
 
 const PAGES = [
   { slug: 'presentation', nom: 'Présentation', groupe: null, icone: '🧭', couleur: '#ea580c', composant: EnergyAccueil },
-  { slug: 'production-1', nom: 'Turbine Pelton', groupe: 'Produire', icone: '🌊', couleur: '#0284c7', composant: SimulationProduction1 },
+  { slug: 'production-1', nom: 'Turbine Pelton', groupe: 'Produire', icone: '🌀', couleur: '#0284c7', composant: SimulationProduction1 },
   { slug: 'production-2', nom: 'Banc Pelton', groupe: 'Produire', icone: '⚙️', couleur: '#7c3aed', composant: SimulationProduction2 },
   { slug: 'production-3', nom: "Au fil de l'eau", groupe: 'Produire', icone: '🏞️', couleur: '#0891b2', composant: SimulationProduction3 },
   { slug: 'transport', nom: 'Réseau électrique', groupe: 'Transporter', icone: '🗼', couleur: '#7c3aed', composant: SimulationTransport },
@@ -86,13 +87,14 @@ export default function App() {
         fontWeight: 800, fontSize: 14, whiteSpace: 'nowrap',
         border: `1.5px solid ${p.slug === slug ? p.couleur : '#eadfd2'}`,
         background: p.slug === slug ? p.couleur : 'white', color: p.slug === slug ? 'white' : '#334155' }}>
-      <span aria-hidden="true">{p.icone}</span>{p.nom}
+      <Emo e={p.icone}/>{p.nom}
     </button>
   );
   const pilule = { padding: '8px 16px', borderRadius: 999, border: '1.5px solid #eadfd2', background: 'white', cursor: 'pointer', fontWeight: 800, fontSize: 13.5, color: '#334155' };
 
   return (
     <div style={{ minHeight: '100vh', background: '#fffaf3', display: 'flex', flexDirection: 'column', fontFamily: "'Nunito', 'Segoe UI', system-ui, sans-serif" }}>
+      <PictosSprite />
       <header className="no-print" style={{ background: 'white', borderBottom: '1px solid #eadfd2', padding: '10px 20px 12px' }}>
         <div style={{ maxWidth: 1400, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 10 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
@@ -107,9 +109,9 @@ export default function App() {
                 <img src={`${import.meta.env.BASE_URL}paillasse-logo.png`} alt="Paillasse virtuelle" height="28" style={{ height: 28, width: 'auto' }} />
               </a>
               <BoutonCompte aller={aller} />
-              {nbFiches > 0 && slug !== 'mes-fiches' && <button onClick={() => aller('mes-fiches')} style={pilule} title="Mes fiches de révision">📚 Mes fiches</button>}
-              {slug !== 'a-propos' && <button onClick={() => aller('a-propos')} style={pilule} title="À propos de ce site" aria-label="À propos de ce site">ℹ️ À propos</button>}
-              {slug === 'presentation' && <button onClick={partager} style={pilule}>{copie ? '✅ Lien copié' : '🔗 Partager'}</button>}
+              {nbFiches > 0 && slug !== 'mes-fiches' && <button onClick={() => aller('mes-fiches')} style={pilule} title="Mes fiches de révision"><Emo e="📚"/> Mes fiches</button>}
+              {slug !== 'a-propos' && <button onClick={() => aller('a-propos')} style={pilule} title="À propos de ce site" aria-label="À propos de ce site"><Emo e="ℹ"/> À propos</button>}
+              {slug === 'presentation' && <button onClick={partager} style={pilule}>{copie ? <><Emo e="✅"/> Lien copié</> : <><Emo e="🔗"/> Partager</>}</button>}
             </div>
           </div>
           <nav aria-label="Ateliers" style={{ display: 'flex', gap: 14, flexWrap: 'wrap', alignItems: 'flex-end' }}>
@@ -127,9 +129,9 @@ export default function App() {
       <main style={{ flex: 1, width: '100%', maxWidth: 1400, margin: '0 auto', padding: '16px 20px 24px', boxSizing: 'border-box' }}>
         {slug !== 'presentation' && (
           <div className="no-print" style={{ display: 'flex', alignItems: 'center', gap: 14, margin: '4px 0 14px', flexWrap: 'wrap' }}>
-            <span aria-hidden="true" style={{ width: 56, height: 56, borderRadius: 18, background: `${page.couleur}22`, display: 'grid', placeItems: 'center', fontSize: 30, flexShrink: 0 }}>{page.icone}</span>
+            <span aria-hidden="true" style={{ color: page.couleur, display: 'flex', flexShrink: 0 }}><Emo e={page.icone} t={36}/></span>
             <h1 style={{ margin: 0, flex: 1, fontFamily: "'Outfit', sans-serif", fontWeight: 800, letterSpacing: '-0.02em', color: '#0c1a2e', fontSize: 'clamp(26px, 3.8vw, 40px)', lineHeight: 1.1, textWrap: 'balance' }}>{page.nom}</h1>
-            <button onClick={partager} style={pilule}>{copie ? '✅ Lien copié' : '🔗 Partager'}</button>
+            <button onClick={partager} style={pilule}>{copie ? <><Emo e="✅"/> Lien copié</> : <><Emo e="🔗"/> Partager</>}</button>
           </div>)}
         <Composant key={slug} aller={aller} />
       </main>

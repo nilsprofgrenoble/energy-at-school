@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useMemo } from "react";
 import { cardStyle, Graphe, fmt, sci, lireNombre, proche, CarteParcours, Cadre, ORANGE_GUIDE, useEtatPersistant, avecIndices, IndiceDefi, valeurAttendue, arrondiSig } from "../commun";
 import { BoutonFiche } from "../fiches/Fiche";
 import { signalerDefi } from "../avancement";
+import { Emo, Pic } from '../Pictos';
 
 // ====================================================
 // ENERGY@SCHOOL — ATELIER HYDROGÈNE (ENSE3)
@@ -579,7 +580,7 @@ export function SimulationHydrogene() {
       {rev1.lampe && curseur("Éclairement de la lampe", ecl, setEcl, 0, 100, 5, '%')}
       {rev1.chrono && <><div style={{ display: 'flex', gap: 6, marginBottom: 8, flexWrap: 'wrap' }}>
         <button onClick={() => setMarche(m => !m)} style={btn(true, marche ? '#d97706' : '#16a34a')}>
-          {marche ? '⏸ Pause' : '▶ Lancer le chrono'}
+          {marche ? <><Emo e="⏸"/> Pause</> : <><Emo e="▶"/> Lancer le chrono</>}
         </button>
         <button onClick={reinitialiser} style={btn(false)}>↺ Vider les tubes</button>
       </div>
@@ -589,10 +590,10 @@ export function SimulationHydrogene() {
       </div></>}
       {rev1.pile && <><div style={{ display: 'flex', flexDirection: 'column', gap: 5, marginBottom: 10 }}>
         <button onClick={() => setElecOn(v => !v)} style={petitBtn(elecOn, COUL.elec)}>
-          {elecOn ? '🔌 Électrolyseur branché' : '🔌 Électrolyseur débranché'}
+          {elecOn ? <><Emo e="🔌"/> Électrolyseur branché</> : <><Emo e="🔌"/> Électrolyseur débranché</>}
         </button>
         <button onClick={() => setPacOn(v => !v)} style={petitBtn(pacOn, COUL.pile)}>
-          {pacOn ? '🔌 Pile branchée sur la charge' : '🔌 Pile débranchée'}
+          {pacOn ? <><Emo e="🔌"/> Pile branchée sur la charge</> : <><Emo e="🔌"/> Pile débranchée</>}
         </button>
       </div>
       <div style={{ fontSize: 12, color: TXT2, fontWeight: 700, marginBottom: 3 }}>Charge branchée sur la pile</div>
@@ -913,7 +914,7 @@ export function SimulationHydrogene() {
         Au bout de quelques minutes (au moins 1), relevez vos mesures. Elles serviront aux calculs.
       </div>
       <button onClick={relever} disabled={!releveOk} style={{ ...btn(releveOk, '#0ea5e9'), opacity: releveOk ? 1 : 0.5 }}>
-        📋 Relever mes mesures
+        <Emo e="📋"/> Relever mes mesures
       </button>
       {!releveOk && <div style={{ fontSize: 11.5, color: TXT2, marginTop: 5 }}>
         Il faut au moins 1 min d'électrolyse, un tube qui n'est pas plein, et la pile débranchée
@@ -963,12 +964,12 @@ export function SimulationHydrogene() {
                   onChange={e => { const v = e.target.value; setReps(p => ({ ...p, [q.id]: v })); setVerifie(false); }}
                   style={{ ...inp, width: 110 }}/>
                 <span style={{ fontSize: 12, color: TXT2 }}>{q.unite}</span>
-                {verifie && <span>{ok ? '✅' : '❌'}</span>}
+                {verifie && <span>{ok ? <><Emo e="✅"/></> : <><Emo e="❌"/></>}</span>}
               </div>
             )}
             {!ok && q.indice && <IndiceDefi>{q.indice}</IndiceDefi>}
             {verifie && q.type !== 'num' && <div style={{ fontSize: 12, marginTop: 3, color: ok ? '#15803d' : '#b91c1c' }}>
-              {ok ? '✅ ' : '❌ '}{q.expl || (!ok && q.type === 'module' ? `Réponse : ${MODULES.find(m => m.id === q.bonne).role}` : '')}
+              <Emo e={ok ? '✅' : '❌'}/> {q.expl || (!ok && q.type === 'module' ? `Réponse : ${MODULES.find(m => m.id === q.bonne).role}` : '')}
             </div>}
             {verifie && q.type === 'num' && !ok && piege(q) && (
               <div style={{ fontSize: 12, color: '#9a3412', background: '#fff7ed', border: '1px solid #fdba74',
@@ -987,9 +988,9 @@ export function SimulationHydrogene() {
       })}
       {questions.length > 0 && (
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 4 }}>
-          <button onClick={() => setVerifie(true)} style={btn(true, '#16a34a')}>✓ Vérifier</button>
+          <button onClick={() => setVerifie(true)} style={btn(true, '#16a34a')}><Emo e="✓"/> Vérifier</button>
           {verifie && <strong style={{ color: score === questions.length ? '#15803d' : TXT }}>
-            {score} / {questions.length}{score === questions.length ? ' 🎉' : ''}
+            {score} / {questions.length}{score === questions.length ? <> <Emo e="🎉"/></> : ''}
           </strong>}
         </div>
       )}
@@ -1026,9 +1027,9 @@ export function SimulationHydrogene() {
   function changerMode(m) { setMode(m); if (m === 'guide') setEcl(100); }
   const finParcours = (
     <span style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-      {atelier === 1 && <button onClick={() => changerAtelier(2)} style={btn(true, '#dc2626')}>Atelier 2 ▶</button>}
-      <button onClick={() => changerMode('explore')} style={btn(true, '#334155')}>🔍 Explorer</button>
-      <button onClick={() => changerMode('defi')} style={btn(true, '#0ea5e9')}>🎯 Défi</button>
+      {atelier === 1 && <button onClick={() => changerAtelier(2)} style={btn(true, '#dc2626')}>Atelier 2 <Emo e="▶"/></button>}
+      <button onClick={() => changerMode('explore')} style={btn(true, '#334155')}><Emo e="🔍"/> Explorer</button>
+      <button onClick={() => changerMode('defi')} style={btn(true, '#0ea5e9')}><Emo e="🎯"/> Défi</button>
     </span>
   );
 
@@ -1078,9 +1079,9 @@ export function SimulationHydrogene() {
           <button onClick={() => changerAtelier(2)} style={btn(atelier === 2, '#dc2626')}>Atelier 2 · Le banc de la pile</button>
         </div>
         <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-          <button onClick={() => changerMode('guide')} style={btn(mode === 'guide', ORANGE_GUIDE)}>🧭 Parcours guidé</button>
-          <button onClick={() => changerMode('explore')} style={btn(mode === 'explore', '#334155')}>🔍 Exploration libre</button>
-          <button onClick={() => changerMode('defi')} style={btn(mode === 'defi', '#0ea5e9')}>🎯 Défi</button>
+          <button onClick={() => changerMode('guide')} style={btn(mode === 'guide', ORANGE_GUIDE)}><Emo e="🧭"/> Parcours guidé</button>
+          <button onClick={() => changerMode('explore')} style={btn(mode === 'explore', '#334155')}><Emo e="🔍"/> Exploration libre</button>
+          <button onClick={() => changerMode('defi')} style={btn(mode === 'defi', '#0ea5e9')}><Emo e="🎯"/> Défi</button>
           <BoutonFiche page="hydrogene" couleur="#16a34a" style={btn(false, '#ea580c')} />
         </div>
       </div>

@@ -8,6 +8,7 @@
 //   - X_ind : indice (lettres ou chiffres) ; X^2 : exposant ; {haut|bas} : fraction ; [W] : unité (texte droit).
 // ═══════════════════════════════════════════════════════════════════════════
 import { cloneElement, useLayoutEffect, useRef, useState } from 'react';
+import { Emo, Pic } from '../Pictos';
 
 // ── Formules : mini-langage → MathML ──
 const LETTRE = /[A-Za-zÀ-ÿΑ-ωηΔρπσφλμΩ]/;
@@ -86,12 +87,12 @@ export const Grandeurs = ({ lignes }) => (
 // Exemple chiffré, repris de la simulation
 export const Exemple = ({ children }) => <p className="fiche-exemple"><b>Exemple</b> {children}</p>;
 // Phrase à retenir (mnémotechnique)
-export const Memo = ({ children }) => <p className="fiche-memo"><span aria-hidden="true">💡</span> {children}</p>;
+export const Memo = ({ children }) => <p className="fiche-memo"><span aria-hidden="true"><Emo e="💡"/></span> {children}</p>;
 // Idée fausse / vraie
 export const FauxVrai = ({ faux, vrai }) => (
   <div className="fiche-fauxvrai">
-    <p className="fiche-faux"><b>✗ Faux</b> {faux}</p>
-    <p className="fiche-vrai"><b>✓ Vrai</b> {vrai}</p>
+    <p className="fiche-faux"><b><Emo e="✗"/> Faux</b> {faux}</p>
+    <p className="fiche-vrai"><b><Emo e="✓"/> Vrai</b> {vrai}</p>
   </div>
 );
 // Définition courte
@@ -192,9 +193,9 @@ export function BarrePertes({ haut, utile, perdu, frac, titre }) {
 // Trois cas avec le même jet : roue bloquée, vitesse de l'auget = moitié de celle du jet (maximum), auget aussi rapide que le jet
 export function TroisVitesses({ sousJ = 'jet', sousA = 'auget', bloquee = 'roue bloquée', trop = 'roue trop rapide', titre }) {
   const lignes = [
-    { cy: 60, long: 0, col: '#64748b', l1: '✗ P = 0', l2: bloquee },
-    { cy: 158, long: 57, col: COUL.vert, l1: '✓ maximum', l2: 'bon compromis', bon: true },
-    { cy: 256, long: 114, col: COUL.rouge, l1: '✗ P = 0', l2: trop },
+    { cy: 60, long: 0, col: '#64748b', l1: <><Emo e="✗"/> P = 0</>, l2: bloquee },
+    { cy: 158, long: 57, col: COUL.vert, l1: <><Emo e="✓"/> maximum</>, l2: 'bon compromis', bon: true },
+    { cy: 256, long: 114, col: COUL.rouge, l1: <><Emo e="✗"/> P = 0</>, l2: trop },
   ];
   return (
     <Schema h={306} titre={titre}>

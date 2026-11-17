@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { cardStyle, Graphe, fmt, sci, lireNombre, proche, CarteParcours, Cadre, ORANGE_GUIDE, useEtatPersistant, avecIndices, IndiceDefi, valeurAttendue } from "../commun";
 import { BoutonFiche } from "../fiches/Fiche";
 import { signalerDefi } from "../avancement";
+import { Emo, Pic } from '../Pictos';
 
 // ====================================================
 // ENERGY@SCHOOL — ATELIER PRODUCTION 2
@@ -364,7 +365,7 @@ export function SimulationProduction2() {
     <>
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8 }}>
         <button onClick={() => setPoints(l => [...l.filter(q => Math.abs(q.n - e.n) > 5), { n: e.n, F1, eta: eta * 100, P: e.Pmeca }])}
-          style={petitBtn(true, '#0284c7')}>➕ Ajouter ce point</button>
+          style={petitBtn(true, '#0284c7')}><Emo e="➕"/> Ajouter ce point</button>
         <button onClick={() => setPoints([])} style={petitBtn(false)}>Effacer</button>
         <button onClick={() => setMontrerRef(v => !v)} style={petitBtn(montrerRef, '#94a3b8')}>Courbe de l'activité</button>
       </div>
@@ -501,7 +502,7 @@ export function SimulationProduction2() {
         panneau et des dynamomètres.
       </div>
       <button onClick={() => { setReleve(mesureActuelle()); setReps({}); setVerifie(false); }} disabled={!releveOk}
-        style={{ ...btn(releveOk, '#0ea5e9'), opacity: releveOk ? 1 : 0.5 }}>📋 Relever mes mesures</button>
+        style={{ ...btn(releveOk, '#0ea5e9'), opacity: releveOk ? 1 : 0.5 }}><Emo e="📋"/> Relever mes mesures</button>
       {releve && <div style={{ fontSize: 13, marginTop: 6, fontFamily: 'monospace', lineHeight: 1.6 }}>
         Q = {fmt(releve.q, 1)} L/min ; p = {fmt(releve.pBar, 2)} bar ; n = {releve.n} tr/min<br/>F₁ = {fmt(releve.F1, 1)} N ; F₂ = {fmt(Math.round(releve.F1 / P2_RAPPORT_F * 10) / 10, 1)} N
         <br/><span style={{ fontFamily: 'inherit', color: TXT2 }}>Donnez vos résultats avec 2 ou 3 chiffres significatifs.</span>
@@ -537,14 +538,14 @@ export function SimulationProduction2() {
               <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
                 {q.options.map((o, i) => <button key={i} onClick={() => { setReps(pr => ({ ...pr, [q.id]: i })); setVerifie(false); }}
                   style={petitBtn(reps[q.id] === i, '#0ea5e9')}>{o}</button>)}
-                {verifie && <span style={{ fontSize: 13 }}>{ok ? '✅' : '❌'}</span>}
+                {verifie && <span style={{ fontSize: 13 }}>{ok ? <><Emo e="✅"/></> : <><Emo e="❌"/></>}</span>}
               </div>
             ) : (
               <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                 <input value={reps[q.id] || ''} placeholder="?" aria-label={`Réponse ${k + 1}`}
                   onChange={x => { const v = x.target.value; setReps(pr => ({ ...pr, [q.id]: v })); setVerifie(false); }} style={{ ...inp, width: 120 }}/>
                 <span style={{ fontSize: 13, color: TXT2 }}>{q.unite}</span>
-                {verifie && <span>{ok ? '✅' : '❌'}</span>}
+                {verifie && <span>{ok ? <><Emo e="✅"/></> : <><Emo e="❌"/></>}</span>}
               </div>
             )}
             {q.type === 'num' && !ok && q.indice && <IndiceDefi>{q.indice}</IndiceDefi>}
@@ -561,8 +562,8 @@ export function SimulationProduction2() {
       })}
       {questions.length > 0 && (
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <button onClick={() => setVerifie(true)} style={btn(true, '#16a34a')}>✓ Vérifier</button>
-          {verifie && <strong style={{ color: score === questions.length ? '#15803d' : TXT }}>{score} / {questions.length}{score === questions.length ? ' 🎉' : ''}</strong>}
+          <button onClick={() => setVerifie(true)} style={btn(true, '#16a34a')}><Emo e="✓"/> Vérifier</button>
+          {verifie && <strong style={{ color: score === questions.length ? '#15803d' : TXT }}>{score} / {questions.length}{score === questions.length ? <> <Emo e="🎉"/></> : ''}</strong>}
         </div>
       )}
     </div>
@@ -594,8 +595,8 @@ export function SimulationProduction2() {
   function changerMode(m) { setMode(m); if (m === 'guide') setQL(15); }
   const finParcours = (
     <span style={{ display: 'flex', gap: 6 }}>
-      <button onClick={() => changerMode('explore')} style={btn(true, '#334155')}>🔍 Explorer</button>
-      <button onClick={() => changerMode('defi')} style={btn(true, '#0ea5e9')}>🎯 Défi</button>
+      <button onClick={() => changerMode('explore')} style={btn(true, '#334155')}><Emo e="🔍"/> Explorer</button>
+      <button onClick={() => changerMode('defi')} style={btn(true, '#0ea5e9')}><Emo e="🎯"/> Défi</button>
     </span>
   );
   const onglets = [['rendement', 'Rendement', revele.graphe], ['puissance', 'Puissance', revele.puissance], ['vitesses', 'Vitesses', revele.vitesses]].filter(o => o[2]);
@@ -621,9 +622,9 @@ export function SimulationProduction2() {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8, marginBottom: 10 }}>
         <h2 style={{ margin: 0, fontSize: 18, color: TXT }}>Production 2 · Étude d'une turbine Pelton (banc HM 150.19)</h2>
         <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-          <button onClick={() => changerMode('guide')} style={btn(mode === 'guide', ORANGE_GUIDE)}>🧭 Parcours guidé</button>
-          <button onClick={() => changerMode('explore')} style={btn(mode === 'explore', '#334155')}>🔍 Exploration libre</button>
-          <button onClick={() => changerMode('defi')} style={btn(mode === 'defi', '#0ea5e9')}>🎯 Défi</button>
+          <button onClick={() => changerMode('guide')} style={btn(mode === 'guide', ORANGE_GUIDE)}><Emo e="🧭"/> Parcours guidé</button>
+          <button onClick={() => changerMode('explore')} style={btn(mode === 'explore', '#334155')}><Emo e="🔍"/> Exploration libre</button>
+          <button onClick={() => changerMode('defi')} style={btn(mode === 'defi', '#0ea5e9')}><Emo e="🎯"/> Défi</button>
           <BoutonFiche page="production-2" couleur="#7c3aed" style={btn(false, '#ea580c')} />
         </div>
       </div>

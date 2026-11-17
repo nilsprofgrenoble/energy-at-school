@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { lireClassementPublic, rest, useSession, estEleve } from './serveur';
 import { LAMES, libelleScore, medaille, estMoi, lignesDe, jourLundi } from './classement';
 import { pseudo } from './pseudos';
+import { Emo } from './Pictos';
 
 // ═════════════════════════════════════════════════════════════════
 //  CLASSEMENT PUBLIC (ouvert à tous, même sans compte) : trois classements sur des lames qu'on fait glisser
@@ -61,7 +62,7 @@ function Lame({ lame, lignes, moi, lundi, max }) {
   return (
     <section className="cl-lame" id={`cl-lame-${lame.code}`} role="tabpanel" aria-labelledby={`cl-onglet-${lame.code}`} style={{ '--c': lame.couleur, '--f': lame.fond }}>
       <header className="cl-tete">
-        <h3><span aria-hidden="true">{lame.icone}</span>{lame.titre}</h3>
+        <h3><Emo e={lame.icone} t={22}/>{lame.titre}</h3>
         <p>{lame.sous}{lame.code === 'semaine' && lundi ? ` (depuis lundi ${lundi})` : ''}</p>
       </header>
       {lignes.length === 0
@@ -73,8 +74,8 @@ function Lame({ lame, lignes, moi, lundi, max }) {
               const p = pseudo(l.adj, l.nom), m = estMoi(l, moi), med = medaille(l.rang);
               return (
                 <li key={`${l.etab}|${l.classe}|${l.adj}|${l.nom}|${i}`} className={`cl-ligne${m ? ' cl-moi' : ''}`}>
-                  <span className="cl-rang" aria-label={`Rang ${l.rang}`}>{med || l.rang}</span>
-                  <span className="cl-pseudo"><span aria-hidden="true">{p.icone}</span> {p.texte}{m && <b className="cl-toi">c’est moi</b>}</span>
+                  <span className="cl-rang" aria-label={`Rang ${l.rang}`}>{med ? <span className={`cl-medaille cl-${med}`}>{l.rang}</span> : l.rang}</span>
+                  <span className="cl-pseudo"><Emo e={p.icone}/> {p.texte}{m && <b className="cl-toi">c’est moi</b>}</span>
                   <span className="cl-etab">{l.etab}</span>
                   <span className="cl-classe">{l.classe}</span>
                   <span className="cl-sous">{l.etab} · {l.classe}</span>
@@ -151,7 +152,7 @@ export function Classement({ aller, accueil = false }) {
             {LAMES.map((l, i) => (
               <button key={l.code} id={`cl-onglet-${l.code}`} type="button" role="tab" className="cl-onglet" style={{ '--c': l.couleur }}
                 aria-selected={idx === i} aria-controls={`cl-lame-${l.code}`} tabIndex={idx === i ? 0 : -1} onClick={() => aller1(i)}>
-                <span aria-hidden="true">{l.icone}</span>{l.titre}
+                <Emo e={l.icone}/>{l.titre}
               </button>))}
           </div>
           <div className="cl-piste" ref={piste} onScroll={surDefilement} aria-busy={charge}>

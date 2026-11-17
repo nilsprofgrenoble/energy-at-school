@@ -22,32 +22,33 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 /* Page d'accueil « blocs » */
 .ea { display: flex; flex-direction: column; gap: 14px; text-align: left; }
 .ea-hero { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); gap: 30px; align-items: end; padding: 14px 4px 10px; }
-.ea-etiquette { display: block; font: 800 13px 'Nunito', sans-serif; letter-spacing: .09em; text-transform: uppercase; color: var(--es-orange-fonce); margin-bottom: 12px; }
+.ea-etiquette { display: block; font: 800 13px 'Nunito', sans-serif; letter-spacing: .02em; color: var(--es-orange-fonce); margin-bottom: 12px; }
 .ea h1 { font: 800 clamp(38px, 7vw, 76px)/1.1 'Outfit', sans-serif; letter-spacing: -.035em; margin: 0 0 16px; color: var(--es-encre); text-wrap: balance; }
-.ea h1 mark { background: var(--es-ambre); color: #3a2500; padding: 0 .12em; border-radius: .16em; -webkit-box-decoration-break: clone; box-decoration-break: clone; }
+.ea h1 mark { background: none; color: var(--es-orange); padding: 0; }
 .ea-lead { font: 600 clamp(16px, 1.9vw, 19px)/1.55 'Nunito', sans-serif; color: var(--es-encre-2); max-width: 52ch; margin: 0; }
-.ea-compte { background: var(--es-orange); color: #fff; border-radius: 28px; padding: 24px; }
+.ea-compte { background: var(--es-orange); color: #fff; border-radius: 14px; padding: 22px; }
 .ea-compte h2 { font: 800 21px 'Outfit', sans-serif; margin: 0 0 6px; color: #fff; }
 .ea-compte p { margin: 0 0 12px; font-size: 14.5px; line-height: 1.5; opacity: .95; }
-.ea-bouton { display: inline-flex; align-items: center; gap: 8px; border: 0; border-radius: 999px; padding: 11px 20px; font: 800 15px 'Nunito', sans-serif; cursor: pointer; text-decoration: none; background: #fff; color: var(--es-orange-fonce); }
+.ea-bouton { display: inline-flex; align-items: center; gap: 8px; border: 0; border-radius: 10px; padding: 10px 18px; font: 800 15px 'Nunito', sans-serif; cursor: pointer; text-decoration: none; background: #fff; color: var(--es-orange-fonce); }
 .ea-bouton:hover { background: var(--es-orange-clair); }
 .ea-titre-section { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin: 18px 4px 0; }
 .ea-titre-section h2 { font: 800 clamp(26px, 3.6vw, 36px)/1.1 'Outfit', sans-serif; letter-spacing: -.02em; margin: 0; color: var(--es-encre); }
 .ea-titre-section span { color: var(--es-encre-2); font-size: 14.5px; }
 .ea-tuiles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
-.ea-tuile { border-radius: 28px; padding: 24px; display: flex; flex-direction: column; gap: 6px; min-width: 0; background: color-mix(in srgb, var(--ea-fond) 9%, #fff); border: 1px solid color-mix(in srgb, var(--ea-fond) 22%, #fff); color: var(--es-encre); }
-.ea-tuile .ea-mot { color: var(--ea-fond); font: 800 clamp(34px, 4.6vw, 50px)/.95 'Outfit', sans-serif; letter-spacing: -.04em; }
+.ea-tuile { border-radius: 14px; padding: 22px; display: flex; flex-direction: column; gap: 6px; min-width: 0; background: #fff; border: 1px solid var(--es-bord); border-top: 5px solid var(--ea-fond); color: var(--es-encre); }
+.ea-tuile .ea-mot { display: flex; align-items: center; gap: 10px; color: var(--es-encre); font: 800 clamp(24px, 3vw, 30px)/1.1 'Outfit', sans-serif; letter-spacing: -.02em; }
+.ea-tuile .ea-mot .ic { color: var(--ea-fond); flex: none; }
 .ea-tuile .ea-q { font-size: 14.5px; font-weight: 700; line-height: 1.4; margin: 6px 0 12px; color: var(--es-encre-2); }
 .ea-puces { display: flex; flex-direction: column; gap: 8px; margin: 0; padding: 0; list-style: none; }
-.ea-puces a { display: block; padding: 10px 14px; border-radius: 18px; background: #fff; border: 1px solid color-mix(in srgb, var(--ea-fond) 22%, #fff); color: var(--es-encre); text-decoration: none; font: 700 14px/1.35 'Nunito', sans-serif; }
+.ea-puces a { display: block; padding: 10px 14px; border-radius: 10px; background: var(--es-fond); border: 1px solid var(--es-bord); color: var(--es-encre); text-decoration: none; font: 700 14px/1.35 'Nunito', sans-serif; }
 .ea-puces a small { display: block; font-weight: 600; font-size: 12.5px; color: var(--es-encre-2); margin-top: 2px; }
 .ea-puces a:hover { background: var(--ea-fond); color: #fff; }
 .ea-puces a:hover small { color: #fff; }
-.ea-lame { background: #fff; border: 1px solid var(--es-bord); border-radius: 28px; padding: 24px; }
+.ea-lame { background: #fff; border: 1px solid var(--es-bord); border-radius: 14px; padding: 22px; }
 .ea-lame h3 { font: 800 21px 'Outfit', sans-serif; margin: 0 0 8px; color: var(--es-encre); }
 .ea-modes { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin: 10px 0 12px; }
-.ea-mode { border-radius: 20px; padding: 14px 16px; background: #f8fafc; border: 1px solid var(--es-bord); font-size: 14.5px; line-height: 1.5; color: var(--es-encre-2); }
-.ea-mode b { display: block; font: 800 17px 'Outfit', sans-serif; color: var(--es-encre); margin-bottom: 2px; }
+.ea-mode { border-radius: 10px; padding: 14px 16px; background: #f8fafc; border: 1px solid var(--es-bord); font-size: 14.5px; line-height: 1.5; color: var(--es-encre-2); }
+.ea-mode b { display: flex; align-items: center; gap: 6px; font: 800 17px 'Outfit', sans-serif; color: var(--es-encre); margin-bottom: 2px; }
 @media (max-width: 900px) {
   .ea-hero { grid-template-columns: minmax(0, 1fr); }
   .ea-tuiles, .ea-modes { grid-template-columns: minmax(0, 1fr); }
@@ -139,3 +140,10 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 }
 
 @media print { .fiche-titre { font-size: 17pt; } }
+
+/* Médailles du classement : pastille numérotée (remplace les emojis 🥇🥈🥉) */
+.cl-medaille { display: inline-grid; place-items: center; width: 26px; height: 26px; border-radius: 50%; font: 800 13px 'Outfit', sans-serif; color: #fff; }
+.cl-or { background: #c98a0b; }
+.cl-argent { background: #8794a5; }
+.cl-bronze { background: #a8643a; }
+.ea-compte .ic, .ea-bouton .ic, .ea-mode .ic, .cl-onglet .ic, .cl-tete .ic { flex: none; }

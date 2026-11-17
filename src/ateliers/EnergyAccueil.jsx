@@ -4,6 +4,7 @@ import { useSession, estEleve, estProf } from "../serveur";
 import { useSuivi, bilan } from "../avancement";
 import { FormulaireConnexion } from "../Compte";
 import { Classement } from "../Classement";
+import { Emo, Pic, PicSvg } from '../Pictos';
 
 // ====================================================
 // ENERGY@SCHOOL — PAGE D'ENTRÉE
@@ -12,10 +13,11 @@ import { Classement } from "../Classement";
 
 const PAILLASSE_URL = 'https://paillasse-virtuelle.fr/';
 
+const ICONES_CHAINE = { 'Produire': 'turbine', 'Transporter': 'pylon', 'Stocker et restituer': ['battery', 'drop'] };
 const FONDS = { 'Produire': '#0369a1', 'Transporter': '#7c3aed', 'Stocker et restituer': '#2563eb' };
 
 const THEMES = [
-  { nom: 'Produire', icone: '🌊', couleur: '#0284c7', question: 'Comment transformer l’énergie de l’eau en électricité ?',
+  { nom: 'Produire', icone: '🌀', couleur: '#0284c7', question: 'Comment transformer l’énergie de l’eau en électricité ?',
     pages: [
       { id: 'production-1', nom: 'Production 1 · Turbine Pelton', texte: 'Une conduite forcée, une turbine Pelton et un alternateur : puissance de l’eau, puissance électrique, rendement, oscilloscope.' },
       { id: 'production-2', nom: 'Production 2 · Banc Pelton', texte: 'Une vraie turbine de laboratoire, freinée pour mesurer sa puissance mécanique et trouver sa vitesse optimale.' },
@@ -46,7 +48,9 @@ export function EnergyAccueil({ aller }) {
         return (
           <g key={t.nom}>
             <rect x={x} y="14" width={w} height="86" rx="22" fill="white" stroke={t.couleur} strokeWidth="3"/>
-            <text x={x + w / 2} y="52" fontSize="30" textAnchor="middle">{t.icone}{t.nom.startsWith('Stocker') ? '💧' : ''}</text>
+            {t.nom.startsWith('Stocker')
+              ? <><PicSvg n={ICONES_CHAINE[t.nom][0]} x={x + w / 2 - 30} y="22" t={32} color={t.couleur}/><PicSvg n={ICONES_CHAINE[t.nom][1]} x={x + w / 2 + 2} y="22" t={32} color={t.couleur}/></>
+              : <PicSvg n={ICONES_CHAINE[t.nom]} x={x + w / 2 - 16} y="22" t={32} color={t.couleur}/>}
             <text x={x + w / 2} y="84" fontSize={t.nom.length > 12 ? 14.5 : 17} fontWeight="800" fill={t.couleur} textAnchor="middle" fontFamily="Outfit, sans-serif">{t.nom}</text>
             {k < n - 1 && (
               <g>
@@ -73,7 +77,7 @@ export function EnergyAccueil({ aller }) {
         </div>
         <div className="ea-compte">
           {estEleve(s) ? <>
-            <h2>{b.niveau.icone} {b.niveau.nom}</h2>
+            <h2><Emo e={b.niveau.icone}/> {b.niveau.nom}</h2>
             <p>{b.points} point{b.points > 1 ? 's' : ''} sur {b.max}. Continuez : chaque parcours terminé et chaque défi relevé comptent.</p>
             <a className="ea-bouton" href="?atelier=profil" onClick={e => va(e, 'profil')}>Mon profil et mes niveaux ›</a>
           </> : estProf(s) ? <>
@@ -83,7 +87,7 @@ export function EnergyAccueil({ aller }) {
           </> : <>
             <h2>Vous avez un compte ?</h2>
             <p>Connectez-vous avec l'identifiant donné par votre professeur : votre avancement est enregistré, vous choisissez un pseudo et vous débloquez des niveaux. Sans compte, tout reste utilisable.</p>
-            <button className="ea-bouton" onClick={() => setConnexionOuverte(true)}>🔑 Se connecter</button>
+            <button className="ea-bouton" onClick={() => setConnexionOuverte(true)}><Emo e="🔑"/> Se connecter</button>
           </>}
         </div>
       </section>
@@ -93,7 +97,7 @@ export function EnergyAccueil({ aller }) {
       <div className="ea-tuiles">
         {THEMES.map(t => (
           <div key={t.nom} className="ea-tuile" style={{ '--ea-fond': FONDS[t.nom] }}>
-            <div className="ea-mot"><span aria-hidden="true">{t.icone}</span> {t.nom}</div>
+            <div className="ea-mot"><Emo e={t.icone} t={30}/>{t.nom}</div>
             <div className="ea-q">{t.question}</div>
             <ul className="ea-puces">
               {t.pages.map(pg => (
@@ -118,9 +122,9 @@ export function EnergyAccueil({ aller }) {
         <div style={{ fontSize: 15, color: TXT, lineHeight: 1.6 }}>
           Chaque page propose trois modes, accessibles à tout moment :
           <div className="ea-modes">
-            <div className="ea-mode"><b>🧭 Parcours guidé</b>On vous accompagne étape par étape, comme pendant le TP. Commencez par là.</div>
-            <div className="ea-mode"><b>🔍 Exploration libre</b>Tous les réglages, pour tester vos propres idées.</div>
-            <div className="ea-mode"><b>🎯 Défi</b>Une mission à réussir sans aide.</div>
+            <div className="ea-mode"><b><Emo e="🧭"/> Parcours guidé</b>On vous accompagne étape par étape, comme pendant le TP. Commencez par là.</div>
+            <div className="ea-mode"><b><Emo e="🔍"/> Exploration libre</b>Tous les réglages, pour tester vos propres idées.</div>
+            <div className="ea-mode"><b><Emo e="🎯"/> Défi</b>Une mission à réussir sans aide.</div>
           </div>
           <strong>Avant la journée</strong> : faites le parcours guidé des deux ateliers auxquels vous participerez.
           <strong> Après la journée</strong> : revenez explorer, relevez les défis, et découvrez les ateliers que vous n'avez pas faits.
@@ -129,7 +133,7 @@ export function EnergyAccueil({ aller }) {
       </div>
 
       <div className="ea-lame">
-        <h3>🏆 Le classement</h3>
+        <h3><Emo e="🏆"/> Le classement</h3>
         <div style={{ fontSize: 15, color: TXT2, lineHeight: 1.6, marginBottom: 8 }}>
           Points, défis, activité de la semaine : seuls les élèves qui l’ont choisi apparaissent, sous un pseudo.
         </div>

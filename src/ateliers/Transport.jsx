@@ -3,6 +3,7 @@ import { cardStyle, Graphe, fmt, sci, lireNombre, proche, CarteParcours, Cadre, 
 import { BoutonFiche } from "../fiches/Fiche";
 import { signalerDefi } from "../avancement";
 import { ParcoursReseauReel } from "./ReseauReel";
+import { Emo, Pic } from '../Pictos';
 
 // ====================================================
 // ENERGY@SCHOOL — ATELIER TRANSPORT
@@ -329,7 +330,7 @@ export function SimulationTransport() {
           {[10, 50, 100, 300, 1000].map(l => <button key={l} onClick={() => setL(l)} style={petitBtn(L === l, '#334155')}>{l >= 1000 ? '1 km' : `${l} m`}</button>)}
         </div>
       </>}
-      {revele.tableau && <button onClick={ajouterMesure} style={{ ...btn(true, '#0284c7'), marginTop: 10 }}>➕ Enregistrer cette mesure</button>}
+      {revele.tableau && <button onClick={ajouterMesure} style={{ ...btn(true, '#0284c7'), marginTop: 10 }}><Emo e="➕"/> Enregistrer cette mesure</button>}
     </>
   );
   const mesures = (
@@ -397,15 +398,15 @@ export function SimulationTransport() {
       </div>
       <div style={{ fontSize: 14, color: TXT2 }}>Coût de la ligne actuelle (2 × 10 m) : <strong>{fmt(coutLigne(cable), 0)} €</strong></div>
       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-        <button onClick={validerMission} style={btn(true, '#16a34a')}>✓ Valider ma solution</button>
-        <button onClick={nouvelleMission} style={btn(false)}>🔄 Nouvelle mission</button>
+        <button onClick={validerMission} style={btn(true, '#16a34a')}><Emo e="✓"/> Valider ma solution</button>
+        <button onClick={nouvelleMission} style={btn(false)}><Emo e="🔄"/> Nouvelle mission</button>
       </div>
       {mission.valide && (
         <div style={{ fontSize: 14, lineHeight: 1.55, color: mission.valide.ok && mission.valide.moinsCher ? '#15803d' : '#b91c1c' }}>
-          {!mission.valide.ok ? <>❌ Contrat non respecté : {Math.abs(m1 * m2 - 1) > 0.01 ? 'les habitations ne reçoivent pas la bonne tension (m₁ × m₂ ≠ 1).'
+          {!mission.valide.ok ? <><Emo e="❌"/> Contrat non respecté : {Math.abs(m1 * m2 - 1) > 0.01 ? 'les habitations ne reçoivent pas la bonne tension (m₁ × m₂ ≠ 1).'
             : `rendement de ${fmt(mission.valide.eta, 1)} %, inférieur à ${mission.cible} %.`}</>
-            : mission.valide.moinsCher ? <>✅ Bravo : contrat respecté ({fmt(mission.valide.eta, 1)} %) au coût le plus bas ({fmt(mission.valide.cout, 0)} €) ! 🎉</>
-              : <>⚠️ Contrat respecté ({fmt(mission.valide.eta, 1)} %), mais il existe une solution moins chère. Cherchez encore !</>}
+            : mission.valide.moinsCher ? <><Emo e="✅"/> Bravo : contrat respecté ({fmt(mission.valide.eta, 1)} %) au coût le plus bas ({fmt(mission.valide.cout, 0)} €) ! <Emo e="🎉"/></>
+              : <><Emo e="⚠"/> Contrat respecté ({fmt(mission.valide.eta, 1)} %), mais il existe une solution moins chère. Cherchez encore !</>}
         </div>
       )}
       <div style={{ fontSize: 12.5, color: TXT2 }}>Le rendement lu dans « Mesures » (au dixième de %) est celui qui est comparé à la cible.</div>
@@ -427,8 +428,8 @@ export function SimulationTransport() {
   }
   const finParcours = (
     <span style={{ display: 'flex', gap: 6 }}>
-      <button onClick={() => changerMode('explore')} style={btn(true, '#334155')}>🔍 Explorer</button>
-      <button onClick={() => changerMode('defi')} style={btn(true, '#0ea5e9')}>🎯 Défi</button>
+      <button onClick={() => changerMode('explore')} style={btn(true, '#334155')}><Emo e="🔍"/> Explorer</button>
+      <button onClick={() => changerMode('defi')} style={btn(true, '#0ea5e9')}><Emo e="🎯"/> Défi</button>
     </span>
   );
   return (
@@ -441,17 +442,17 @@ export function SimulationTransport() {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8, marginBottom: 10 }}>
         <h2 style={{ margin: 0, fontSize: 18, color: TXT }}>Transport · De l'éolienne aux habitations</h2>
         <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-          <button onClick={() => changerMode('guide')} style={btn(mode === 'guide', ORANGE_GUIDE)}>🧭 Parcours guidé</button>
-          <button onClick={() => changerMode('explore')} style={btn(mode === 'explore', '#334155')}>🔍 Exploration libre</button>
-          <button onClick={() => changerMode('defi')} style={btn(mode === 'defi', '#0ea5e9')}>🎯 Défi</button>
+          <button onClick={() => changerMode('guide')} style={btn(mode === 'guide', ORANGE_GUIDE)}><Emo e="🧭"/> Parcours guidé</button>
+          <button onClick={() => changerMode('explore')} style={btn(mode === 'explore', '#334155')}><Emo e="🔍"/> Exploration libre</button>
+          <button onClick={() => changerMode('defi')} style={btn(mode === 'defi', '#0ea5e9')}><Emo e="🎯"/> Défi</button>
           <BoutonFiche page="transport" couleur="#7c3aed" style={btn(false, '#ea580c')} />
         </div>
       </div>
       {enGuide && (
         <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center', marginBottom: 10 }}>
           <span style={{ fontSize: 13.5, fontWeight: 700, color: TXT2 }}>Parcours :</span>
-          <button onClick={() => setParcours('preparer')} style={btn(parcours === 'preparer', ORANGE_GUIDE)}>⚡ Préparer l'atelier : un vrai réseau</button>
-          <button onClick={() => setParcours('revoir')} style={btn(parcours === 'revoir', ORANGE_GUIDE)}>🔁 Revoir l'atelier : la maquette</button>
+          <button onClick={() => setParcours('preparer')} style={btn(parcours === 'preparer', ORANGE_GUIDE)}><Emo e="⚡"/> Préparer l'atelier : un vrai réseau</button>
+          <button onClick={() => setParcours('revoir')} style={btn(parcours === 'revoir', ORANGE_GUIDE)}><Emo e="🔁"/> Revoir l'atelier : la maquette</button>
         </div>
       )}
       {enGuide && parcours === 'preparer' ? <ParcoursReseauReel fin={finParcours}/> : <>

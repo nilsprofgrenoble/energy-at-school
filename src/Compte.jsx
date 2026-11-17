@@ -7,6 +7,7 @@ import { cardStyle, KIT, styleBouton, styleBoite } from './commun';
 import { useSession, estEleve, estProf, connexion, deconnexion, changerMotDePasse, rest, toutLire, getSession } from './serveur';
 import { FAMILLES, TOUS_PARCOURS, DEFIS, NIVEAUX, bilan, termine, useSuivi, synchroniser, oublierLocal } from './avancement';
 import { pseudo, propositions, ADJECTIFS, NOMS } from './pseudos';
+import { Emo, Pic } from './Pictos';
 
 const CLE_PROPRIO = 'es-proprietaire';
 const lireProprio = () => { try { return window.localStorage.getItem(CLE_PROPRIO); } catch { return null; } };
@@ -44,7 +45,7 @@ export function FormulaireConnexion({ onFermer }) {
     <div role="dialog" aria-modal="true" aria-label="Connexion" onClick={onFermer}
       style={{ position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.5)', zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
       <form onSubmit={envoyer} onClick={e => e.stopPropagation()} style={{ ...cardStyle, maxWidth: 380, width: '100%', display: 'grid', gap: 10, textAlign: 'left' }}>
-        <div style={{ fontSize: 18, fontWeight: 800, color: KIT.txt }}>🔑 Se connecter</div>
+        <div style={{ fontSize: 18, fontWeight: 800, color: KIT.txt }}><Emo e="🔑"/> Se connecter</div>
         <div style={{ fontSize: 13.5, color: KIT.txt2, lineHeight: 1.5 }}>
           Avec le compte donné par votre professeur, votre avancement est enregistré et vos niveaux se débloquent.
           Sans compte, toutes les simulations restent utilisables.
@@ -87,11 +88,11 @@ export function BoutonCompte({ aller }) {
   const style = { padding: '8px 16px', borderRadius: 999, border: '1.5px solid #eadfd2', background: 'white', cursor: 'pointer', fontWeight: 800, fontSize: 13.5, color: '#334155' };
   if (estEleve(s)) {
     const b = bilan(suivi), pp = p ? pseudo(p.adj, p.nom) : null;
-    return <button onClick={() => aller('profil')} style={style} title="Mon profil et mes niveaux">{pp ? `${pp.icone} ${pp.texte}` : `👤 ${s.profil.identifiant}`} · {b.niveau.icone} {b.niveau.nom}</button>;
+    return <button onClick={() => aller('profil')} style={style} title="Mon profil et mes niveaux">{pp ? <><Emo e={pp.icone}/> {pp.texte}</> : <><Emo e="👤"/> {s.profil.identifiant}</>} · <Emo e={b.niveau.icone}/> {b.niveau.nom}</button>;
   }
-  if (estProf(s)) return <button onClick={() => aller('suivi')} style={style}>👩‍🏫 {s.profil.nom} · suivi des classes</button>;
+  if (estProf(s)) return <button onClick={() => aller('suivi')} style={style}><Emo e="👩‍🏫"/> {s.profil.nom} · suivi des classes</button>;
   return <>
-    <button onClick={() => setOuvert(true)} style={style}>🔑 Se connecter</button>
+    <button onClick={() => setOuvert(true)} style={style}><Emo e="🔑"/> Se connecter</button>
     {ouvert && <FormulaireConnexion onFermer={() => setOuvert(false)} />}
   </>;
 }
@@ -144,13 +145,13 @@ export function PageProfil({ aller }) {
   return (
     <div style={{ ...cardStyle, textAlign: 'left', display: 'grid', gap: 14 }}>
       <div style={{ display: 'flex', gap: 14, alignItems: 'center', flexWrap: 'wrap' }}>
-        <div style={{ fontSize: 46 }} aria-hidden="true">{pp ? pp.icone : '👤'}</div>
+        <div style={{ fontSize: 46 }} aria-hidden="true">{pp ? <Emo e={pp.icone} t={46}/> : <Emo e="👤" t={46}/>}</div>
         <div>
           <div style={{ fontSize: 22, fontWeight: 900, color: KIT.txt }}>{pp ? pp.texte : s.profil.identifiant}</div>
           <div style={{ fontSize: 14, color: KIT.txt2 }}>Classe {s.profil.classe} · identifiant {s.profil.identifiant}</div>
         </div>
         <div style={{ marginLeft: 'auto', textAlign: 'right' }}>
-          <div style={{ fontSize: 28 }} aria-hidden="true">{b.niveau.icone}</div>
+          <div style={{ fontSize: 28 }} aria-hidden="true"><Emo e={b.niveau.icone} t={28}/></div>
           <div style={{ fontSize: 16, fontWeight: 800, color: '#ea580c' }}>Niveau {b.indice} · {b.niveau.nom}</div>
         </div>
       </div>
@@ -158,14 +159,14 @@ export function PageProfil({ aller }) {
       <div style={styleBoite}>
         <div style={{ fontSize: 14.5, color: KIT.txt, marginBottom: 6 }}>
           <strong>{b.points} point{b.points > 1 ? 's' : ''} sur {b.max}</strong> : {b.faits} parcours terminé{b.faits > 1 ? 's' : ''} sur {b.total} et {b.defis} défi{b.defis > 1 ? 's' : ''} relevé{b.defis > 1 ? 's' : ''} sur {b.totalDefis}.{' '}
-          {b.suivant ? <>Encore {b.suivant.seuil - b.points} point{b.suivant.seuil - b.points > 1 ? 's' : ''} pour le niveau « {b.suivant.icone} {b.suivant.nom} ».</> : <>Niveau maximal atteint : bravo !</>}
+          {b.suivant ? <>Encore {b.suivant.seuil - b.points} point{b.suivant.seuil - b.points > 1 ? 's' : ''} pour le niveau « <Emo e={b.suivant.icone}/> {b.suivant.nom} ».</> : <>Niveau maximal atteint : bravo !</>}
         </div>
         <Barre valeur={b.points} max={b.max} couleur="#ea580c" />
         <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 8 }}>
           {NIVEAUX.map((n, i) => (
             <span key={n.nom} style={{ fontSize: 12.5, padding: '3px 8px', borderRadius: 12, fontWeight: 700,
               background: i <= b.indice ? '#ffedd5' : '#f1f5f9', color: i <= b.indice ? '#9a3412' : '#64748b', border: `1px solid ${i <= b.indice ? '#fdba74' : '#e2e8f0'}` }}>
-              {n.icone} {n.nom} · {n.seuil}
+              <Emo e={n.icone}/> {n.nom} · {n.seuil}
             </span>))}
         </div>
         <div style={{ fontSize: 12.5, color: KIT.txt2, marginTop: 6 }}>Chaque parcours terminé (dernière étape atteinte) et chaque défi relevé (réussi en entier) rapporte 1 point. Les deux derniers niveaux demandent de relever des défis. Vous pouvez tout faire dans l’ordre que vous voulez.</div>
@@ -173,25 +174,25 @@ export function PageProfil({ aller }) {
 
       {FAMILLES.map(f => (
         <div key={f.id} style={{ border: `1.5px solid ${f.couleur}`, borderLeft: `6px solid ${f.couleur}`, borderRadius: 10, padding: '8px 12px' }}>
-          <div style={{ fontWeight: 800, color: f.couleur, fontSize: 16 }}>{f.icone} {f.nom} {b.badges.includes(f) && <span style={{ fontSize: 12.5, background: f.couleur, color: 'white', borderRadius: 12, padding: '2px 8px', marginLeft: 6 }}>🏅 {f.badge}</span>}</div>
+          <div style={{ fontWeight: 800, color: f.couleur, fontSize: 16 }}><Emo e={f.icone}/> {f.nom} {b.badges.includes(f) && <span style={{ fontSize: 12.5, background: f.couleur, color: 'white', borderRadius: 12, padding: '2px 8px', marginLeft: 6 }}><Emo e="🏅"/> {f.badge}</span>}</div>
           {f.parcours.map(pc => {
             const v = suivi[pc.cle], fait = termine(v), max = v ? v.total - 1 : 1;
             return (
               <div key={pc.cle} style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1fr) 120px 30px', gap: 8, alignItems: 'center', padding: '5px 0', fontSize: 14 }}>
                 <a href={`?atelier=${pc.page}`} onClick={e => { e.preventDefault(); aller(pc.page); }} style={{ color: KIT.txt, fontWeight: 600 }}>{pc.nom}</a>
                 <Barre valeur={v ? Math.min(v.etape, max) : 0} max={max} couleur={fait ? '#16a34a' : f.couleur} />
-                <span aria-label={fait ? 'terminé' : 'à faire'}>{fait ? '✅' : ''}</span>
+                <span aria-label={fait ? 'terminé' : 'à faire'}>{fait ? <><Emo e="✅"/></> : ''}</span>
               </div>);
           })}
         </div>))}
 
       <div style={{ border: '1.5px solid #ea580c', borderLeft: '6px solid #ea580c', borderRadius: 10, padding: '8px 12px' }}>
-        <div style={{ fontWeight: 800, color: '#ea580c', fontSize: 16 }}>🎯 Défis relevés {b.tousDefis && <span style={{ fontSize: 12.5, background: '#ea580c', color: 'white', borderRadius: 12, padding: '2px 8px', marginLeft: 6 }}>🏅 Relève-défis</span>}</div>
+        <div style={{ fontWeight: 800, color: '#ea580c', fontSize: 16 }}><Emo e="🎯"/> Défis relevés {b.tousDefis && <span style={{ fontSize: 12.5, background: '#ea580c', color: 'white', borderRadius: 12, padding: '2px 8px', marginLeft: 6 }}><Emo e="🏅"/> Relève-défis</span>}</div>
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 6 }}>
           {DEFIS.map(d => { const fait = termine(suivi[d.cle]); return (
             <a key={d.cle} href={`?atelier=${d.page}`} onClick={e => { e.preventDefault(); aller(d.page); }}
               style={{ fontSize: 13.5, fontWeight: 700, padding: '4px 10px', borderRadius: 14, textDecoration: 'none',
-                background: fait ? '#dcfce7' : '#f1f5f9', color: fait ? '#166534' : '#475569', border: `1px solid ${fait ? '#86efac' : '#e2e8f0'}` }}>{fait ? '✅' : '🎯'} {d.nom}</a>); })}
+                background: fait ? '#dcfce7' : '#f1f5f9', color: fait ? '#166534' : '#475569', border: `1px solid ${fait ? '#86efac' : '#e2e8f0'}` }}><Emo e={fait ? '✅' : '🎯'}/> {d.nom}</a>); })}
         </div>
       </div>
 
@@ -199,14 +200,14 @@ export function PageProfil({ aller }) {
         <div style={{ fontSize: 15, fontWeight: 800, color: KIT.txt, marginBottom: 6 }}>{p ? 'Changer de pseudo' : 'Choisissez votre pseudo'}</div>
         <div style={{ fontSize: 13, color: KIT.txt2, marginBottom: 6 }}>Votre pseudo est tiré d’une liste : il n’y a ni nom ni prénom. Seul votre professeur le voit, sauf si vous choisissez d’apparaître dans le classement public ci-dessous.</div>
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-          {props.map(([a, n]) => { const q = pseudo(a, n); return <button key={`${a}-${n}`} onClick={() => choisir([a, n])} style={styleBouton(false, '#ea580c')}>{q.icone} {q.texte}</button>; })}
-          <button onClick={() => setProps(propositions(4))} style={styleBouton(false, '#475569')}>🎲 D’autres idées</button>
+          {props.map(([a, n]) => { const q = pseudo(a, n); return <button key={`${a}-${n}`} onClick={() => choisir([a, n])} style={styleBouton(false, '#ea580c')}><Emo e={q.icone}/> {q.texte}</button>; })}
+          <button onClick={() => setProps(propositions(4))} style={styleBouton(false, '#475569')}><Emo e="🎲"/> D’autres idées</button>
         </div>
       </div>
 
       {p && p.classement !== undefined && (
         <div style={styleBoite}>
-          <div style={{ fontSize: 15, fontWeight: 800, color: KIT.txt, marginBottom: 6 }}>🏆 Classement public</div>
+          <div style={{ fontSize: 15, fontWeight: 800, color: KIT.txt, marginBottom: 6 }}><Emo e="🏆"/> Classement public</div>
           <label style={{ display: 'flex', gap: 10, alignItems: 'flex-start', fontSize: 14.5, color: KIT.txt, lineHeight: 1.5, cursor: 'pointer' }}>
             <input type="checkbox" checked={!!p.classement} onChange={e => accord(e.target.checked)} style={{ width: 20, height: 20, marginTop: 2, flex: 'none' }} />
             <span>Apparaître dans le classement public d’Energy@School</span>
@@ -226,7 +227,7 @@ export function PageProfil({ aller }) {
           <input type="password" value={mdp} onChange={e => setMdp(e.target.value)} placeholder="Nouveau mot de passe" autoComplete="new-password" style={{ ...champ, width: 220 }} aria-label="Nouveau mot de passe" />
           <button onClick={nouveauMdp} style={styleBouton(true, '#475569')}>Enregistrer</button>
           <button onClick={() => { setChanger(false); setMdp(''); }} style={styleBouton(false)}>Annuler</button>
-        </> : <button onClick={() => setChanger(true)} style={styleBouton(false, '#475569')}>🔒 Changer mon mot de passe</button>}
+        </> : <button onClick={() => setChanger(true)} style={styleBouton(false, '#475569')}><Emo e="🔒"/> Changer mon mot de passe</button>}
         <button onClick={seDeconnecter} style={{ ...styleBouton(false, '#b91c1c'), marginLeft: 'auto' }}>Se déconnecter</button>
       </div>
     </div>
@@ -282,10 +283,10 @@ export function PageSuivi({ aller }) {
   return (
     <div style={{ ...cardStyle, textAlign: 'left', display: 'grid', gap: 12 }}>
       <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center' }}>
-        <div style={{ fontSize: 20, fontWeight: 900, color: KIT.txt }}>👩‍🏫 Suivi Energy@School</div>
+        <div style={{ fontSize: 20, fontWeight: 900, color: KIT.txt }}><Emo e="👩‍🏫"/> Suivi Energy@School</div>
         {classes?.length > 0 && <select value={classeId} onChange={e => setClasseId(e.target.value)} style={{ ...champ, width: 'auto' }} aria-label="Classe">
           {classes.map(c => <option key={c.id} value={c.id}>{c.nom}</option>)}</select>}
-        {lignes.length > 0 && <button onClick={exporter} style={styleBouton(false, '#475569')}>⬇️ Export CSV</button>}
+        {lignes.length > 0 && <button onClick={exporter} style={styleBouton(false, '#475569')}><Emo e="⬇"/> Export CSV</button>}
         <button onClick={seDeconnecter} style={{ ...styleBouton(false, '#b91c1c'), marginLeft: 'auto' }}>Se déconnecter</button>
       </div>
       {err && <div role="alert" style={{ color: '#b91c1c', fontWeight: 700, fontSize: 14 }}>{err}</div>}
@@ -293,33 +294,33 @@ export function PageSuivi({ aller }) {
       {classes && !classes.length && !err && (
         <div style={{ ...styleBoite, fontSize: 14, lineHeight: 1.55 }}>
           Aucune classe n’est réglée sur Energy@School. Créez la classe et ses comptes dans le suivi de la Paillasse virtuelle
-          (<a href="https://paillasse-virtuelle.fr/" style={{ color: 'inherit' }}>paillasse-virtuelle.fr</a>, connexion professeur), puis, dans « ⚙️ Gérer la classe », choisissez le site des élèves : <strong>Energy@School</strong>.
+          (<a href="https://paillasse-virtuelle.fr/" style={{ color: 'inherit' }}>paillasse-virtuelle.fr</a>, connexion professeur), puis, dans « <Emo e="⚙"/> Gérer la classe », choisissez le site des élèves : <strong>Energy@School</strong>.
         </div>)}
       {classe && (
         <div style={{ overflowX: 'auto' }}>
           <table style={{ borderCollapse: 'collapse', fontSize: 13.5, minWidth: 640, width: '100%' }}>
             <thead><tr style={{ background: '#f1f5f9' }}>
               <th style={th}>Élève</th><th style={th}>Pseudo</th><th style={th}>Niveau</th><th style={th}>Défis</th>{lignes.some(r => r.classement !== undefined) && <th style={th}>Classement public</th>}
-              {TOUS_PARCOURS.map(p => <th key={p.cle} style={{ ...th, fontSize: 11.5, maxWidth: 90 }} title={p.nom}>{FAMILLES.find(f => f.id === p.famille).icone} {p.nom}</th>)}
+              {TOUS_PARCOURS.map(p => <th key={p.cle} style={{ ...th, fontSize: 11.5, maxWidth: 90 }} title={p.nom}><Emo e={FAMILLES.find(f => f.id === p.famille).icone}/> {p.nom}</th>)}
             </tr></thead>
             <tbody>{lignes.map(r => (
               <tr key={r.user_id} style={{ borderTop: '1px solid #e2e8f0' }}>
                 <td style={td}><strong>{r.identifiant}</strong></td>
-                <td style={td}>{r.pseudo ? `${r.pseudo.icone} ${r.pseudo.texte}` : <span style={{ color: '#94a3b8' }}>—</span>}</td>
-                <td style={td}>{r.bilan.niveau.icone} {r.bilan.niveau.nom} <span style={{ color: '#64748b' }}>({r.bilan.points}/{r.bilan.max})</span></td>
+                <td style={td}>{r.pseudo ? <><Emo e={r.pseudo.icone}/> {r.pseudo.texte}</> : <span style={{ color: '#94a3b8' }}>—</span>}</td>
+                <td style={td}><Emo e={r.bilan.niveau.icone}/> {r.bilan.niveau.nom} <span style={{ color: '#64748b' }}>({r.bilan.points}/{r.bilan.max})</span></td>
                 <td style={{ ...td, textAlign: 'center' }} title={DEFIS.filter(d => termine(r.suivi[d.cle])).map(d => d.nom).join(', ')}>{r.bilan.defis}/{r.bilan.totalDefis}</td>
                 {lignes.some(x => x.classement !== undefined) && <td style={td}>
                   {r.exclu ? <span style={{ color: '#b91c1c', fontWeight: 700 }}>retiré</span> : r.classement ? <span style={{ color: '#166534', fontWeight: 700 }}>visible</span> : <span style={{ color: '#94a3b8' }}>—</span>}
                   {(r.classement || r.exclu) && <button onClick={() => basculerExclusion(r)} style={{ ...styleBouton(false, '#475569'), marginLeft: 6, padding: '2px 8px', fontSize: 12 }}>{r.exclu ? 'Rétablir' : 'Retirer'}</button>}
                 </td>}
                 {TOUS_PARCOURS.map(p => { const v = r.suivi[p.cle]; return (
-                  <td key={p.cle} style={{ ...td, textAlign: 'center' }}>{termine(v) ? '✅' : v ? <span style={{ color: '#64748b' }}>{Math.round(100 * Math.min(v.etape, v.total - 1) / (v.total - 1))} %</span> : <span style={{ color: '#cbd5e1' }}>·</span>}</td>); })}
+                  <td key={p.cle} style={{ ...td, textAlign: 'center' }}>{termine(v) ? <><Emo e="✅"/></> : v ? <span style={{ color: '#64748b' }}>{Math.round(100 * Math.min(v.etape, v.total - 1) / (v.total - 1))} %</span> : <span style={{ color: '#cbd5e1' }}>·</span>}</td>); })}
               </tr>))}
             </tbody>
           </table>
           {!lignes.length && <div style={{ fontSize: 14, color: KIT.txt2, padding: 8 }}>Cette classe n’a pas encore d’élèves.</div>}
         </div>)}
-      <div style={{ fontSize: 12.5, color: KIT.txt2 }}>« ✅ » : parcours terminé (dernière étape atteinte). Pourcentage : étape la plus avancée atteinte. « Défis » : défis relevés en entier. Points = parcours terminés + défis relevés ; l’ordre est libre.</div>
+      <div style={{ fontSize: 12.5, color: KIT.txt2 }}>« <Emo e="✅"/> » : parcours terminé (dernière étape atteinte). Pourcentage : étape la plus avancée atteinte. « Défis » : défis relevés en entier. Points = parcours terminés + défis relevés ; l’ordre est libre.</div>
     </div>
   );
 }

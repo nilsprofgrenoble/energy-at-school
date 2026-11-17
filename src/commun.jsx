@@ -1,5 +1,6 @@
-import { useState, useEffect, useRef, useMemo } from "react";
+import { useState, useEffect, useRef, useMemo, Fragment } from "react";
 import { signaler } from "./avancement";
+import { Emo, Pic, ec } from './Pictos';
 
 // ============================================================
 //  UTILITAIRES PARTAGÉS
@@ -77,8 +78,8 @@ export const valeurAttendue = x => sci(x, 2);
 export function IndiceDefi({ children }) {
   const [vu, setVu] = useState(false);
   return vu
-    ? <div style={{ fontSize: 13.5, color: '#0f172a', background: '#fffbeb', border: '1px solid #fcd34d', borderRadius: 6, padding: '6px 8px', marginTop: 5, lineHeight: 1.5 }}>💡 {children}</div>
-    : <button type="button" onClick={() => setVu(true)} style={{ marginTop: 5, fontSize: 13, padding: '3px 10px', borderRadius: 8, cursor: 'pointer', fontWeight: 700, border: '1px solid #fcd34d', background: '#fffbeb', color: '#92400e' }}>💡 Indice</button>;
+    ? <div style={{ fontSize: 13.5, color: '#0f172a', background: '#fffbeb', border: '1px solid #fcd34d', borderRadius: 6, padding: '6px 8px', marginTop: 5, lineHeight: 1.5 }}><Emo e="💡"/> {children}</div>
+    : <button type="button" onClick={() => setVu(true)} style={{ marginTop: 5, fontSize: 13, padding: '3px 10px', borderRadius: 8, cursor: 'pointer', fontWeight: 700, border: '1px solid #fcd34d', background: '#fffbeb', color: '#92400e' }}><Emo e="💡"/> Indice</button>;
 }
 
 // ════════════════ PETIT GRAPHIQUE SVG ════════════════
@@ -175,7 +176,8 @@ export function Cadre({ actif, x, y, w, h }) {
 // Les identifiants de code (deux tirets bas d'affilée dans un même mot, comme Qv_pompe_MIN) restent tels quels.
 const RE_INDICE = /_([A-Za-zÀ-ÿ0-9−]+(?:,[A-Za-zÀ-ÿ]+)?)/g;
 export function avecIndices(t) {
-  if (typeof t !== 'string' || !t.includes('_')) return t;
+  if (typeof t !== 'string') return t;
+  if (!t.includes('_')) return ec(t);
   const morceaux = [];
   t.split(/(\s+)/).forEach((mot, k) => {
     if (!mot.includes('_') || /[A-Za-z0-9]_[A-Za-z0-9]+_[A-Za-z0-9]/.test(mot)) { morceaux.push(mot); return; }
@@ -188,7 +190,7 @@ export function avecIndices(t) {
     }
     if (dernier < mot.length) morceaux.push(mot.slice(dernier));
   });
-  return <>{morceaux}</>;
+  return <>{morceaux.map((m, i) => <Fragment key={i}>{typeof m === 'string' ? ec(m) : m}</Fragment>)}</>;
 }
 
 export function CarteParcours({ etapes, etat, setEtat, fin, cle }) {
@@ -298,10 +300,10 @@ export function CarteParcours({ etapes, etat, setEtat, fin, cle }) {
       {tache && tache.type === 'action' && (
         <div>
           {tache.bloque ? <div style={{ fontSize: 14, color: '#b45309' }}>{tache.bloque}</div>
-            : tache.label && !tache.ok && <button onClick={tache.faire} disabled={!!tache.attente} style={btn(true)}>{tache.label}</button>}
+            : tache.label && !tache.ok && <button onClick={tache.faire} disabled={!!tache.attente} style={btn(true)}>{ec(tache.label)}</button>}
           {tache.consigne && <div style={{ fontSize: 14, fontWeight: 700, color: TXT, marginTop: 6, whiteSpace: 'pre-wrap' }}>{avecIndices(tache.consigne)}</div>}
           {tache.attente && <div style={{ fontSize: 14, color: TXT2, marginTop: 6 }}>{tache.attente}</div>}
-          {tache.ok && <div style={{ fontSize: 14, color: '#15803d', fontWeight: 700, marginTop: 6 }}>✅ C'est fait !</div>}
+          {tache.ok && <div style={{ fontSize: 14, color: '#15803d', fontWeight: 700, marginTop: 6 }}><Emo e="✅"/> C'est fait !</div>}
         </div>
       )}
       {tache && tache.type === 'qcm' && (
@@ -328,16 +330,16 @@ export function CarteParcours({ etapes, etat, setEtat, fin, cle }) {
         </div>
       )}
       {dejaReussie && !reussieMaintenant && (
-        <div style={{ fontSize: 14, color: '#15803d', fontWeight: 700 }}>✅ Étape déjà réussie.</div>
+        <div style={{ fontSize: 14, color: '#15803d', fontWeight: 700 }}><Emo e="✅"/> Étape déjà réussie.</div>
       )}
       {tache && tache.type !== 'action' && !tache.bloque && (
         <div>
-          {!reussie && <button onClick={verifier} style={btn(true, '#16a34a')}>✓ Vérifier</button>}
+          {!reussie && <button onClick={verifier} style={btn(true, '#16a34a')}><Emo e="✓"/> Vérifier</button>}
           {verifie && juste && <div style={{ fontSize: 14, color: '#15803d', fontWeight: 700, marginTop: 6 }}>
-            ✅ Bravo ! <span style={{ fontWeight: 400, color: TXT }}>{avecIndices(tache.expl)}</span></div>}
+            <Emo e="✅"/> Bravo ! <span style={{ fontWeight: 400, color: TXT }}>{avecIndices(tache.expl)}</span></div>}
           {verifie && !juste && (
             <div style={{ marginTop: 6 }}>
-              <div style={{ fontSize: 14, color: '#b91c1c', fontWeight: 700 }}>❌ Pas encore.</div>
+              <div style={{ fontSize: 14, color: '#b91c1c', fontWeight: 700 }}><Emo e="❌"/> Pas encore.</div>
               {tache.type === 'num' && piege() && <div style={{ fontSize: 13.5, color: '#9a3412', background: '#fff7ed',
                 border: '1px solid #fdba74', borderRadius: 6, padding: '4px 8px', marginTop: 4 }}>{avecIndices(piege())}</div>}
               {vuRep ? (
@@ -357,21 +359,21 @@ export function CarteParcours({ etapes, etat, setEtat, fin, cle }) {
           style={{ ...btn(false), opacity: etape === 0 ? 0.4 : 1 }}>◀ Précédent</button>
         {etape < etapes.length - 1 ? (
           <button onClick={() => maj(e => ({ etape: e.etape + 1 }))} disabled={!peutSuivre}
-            style={{ ...btn(peutSuivre, ORANGE_GUIDE), opacity: peutSuivre ? 1 : 0.45 }}>Suivant ▶</button>
+            style={{ ...btn(peutSuivre, ORANGE_GUIDE), opacity: peutSuivre ? 1 : 0.45 }}>Suivant <Emo e="▶"/></button>
         ) : fin}
       </div>
       {!carteVisible && (
         <div role="status" style={{ position: 'fixed', right: 14, top: 14, zIndex: 50, maxWidth: 'min(360px, calc(100vw - 28px))',
           background: 'white', border: `2px solid ${ORANGE_GUIDE}`, borderRadius: 10, padding: '8px 10px',
           boxShadow: '0 6px 20px rgba(15,23,42,0.25)', display: 'flex', flexDirection: 'column', gap: 6 }}>
-          <div style={{ fontSize: 12, fontWeight: 700, color: TXT2 }}>🧭 Étape {etape + 1} / {etapes.length}</div>
+          <div style={{ fontSize: 12, fontWeight: 700, color: TXT2 }}><Emo e="🧭"/> Étape {etape + 1} / {etapes.length}</div>
           <div style={{ fontSize: 14.5, fontWeight: 700, color: TXT }}>{et.titre}</div>
           {tache && tache.type === 'action' && tache.consigne && <div style={{ fontSize: 13, color: TXT, whiteSpace: 'pre-wrap' }}>{avecIndices(tache.consigne)}</div>}
-          {reussie && tache && <div style={{ fontSize: 13, color: '#15803d', fontWeight: 700 }}>✅ C'est fait !</div>}
+          {reussie && tache && <div style={{ fontSize: 13, color: '#15803d', fontWeight: 700 }}><Emo e="✅"/> C'est fait !</div>}
           <div style={{ display: 'flex', gap: 6, justifyContent: 'flex-end' }}>
             <button onClick={() => refCarte.current && refCarte.current.scrollIntoView({ behavior: 'smooth', block: 'start' })} style={{ ...btn(false), padding: '5px 10px', fontSize: 13 }}>⤴ Voir la consigne</button>
             {etape < etapes.length - 1 && <button onClick={() => { maj(e => ({ etape: e.etape + 1 })); refCarte.current && refCarte.current.scrollIntoView({ behavior: 'smooth', block: 'start' }); }}
-              disabled={!peutSuivre} style={{ ...btn(peutSuivre, ORANGE_GUIDE), padding: '5px 10px', fontSize: 13, opacity: peutSuivre ? 1 : 0.45 }}>Suivant ▶</button>}
+              disabled={!peutSuivre} style={{ ...btn(peutSuivre, ORANGE_GUIDE), padding: '5px 10px', fontSize: 13, opacity: peutSuivre ? 1 : 0.45 }}>Suivant <Emo e="▶"/></button>}
           </div>
         </div>
       )}
@@ -408,7 +410,7 @@ export function BandeauContexte({ id, contexte, couleur = '#0284c7' }) {
     <button onClick={() => setReplie(false)} style={{ display: 'flex', alignItems: 'center', gap: 6, margin: '0 0 10px',
       padding: '6px 12px', borderRadius: 8, border: `1.5px solid ${couleur}`, background: 'white', color: couleur,
       fontWeight: 700, fontSize: 13.5, cursor: 'pointer' }}>
-      ℹ️ Mode d'emploi de cette simulation
+      <Emo e="ℹ"/> Mode d'emploi de cette simulation
     </button>
   );
   const ligneB = (emoji, titre, contenu) => (
@@ -424,13 +426,13 @@ export function BandeauContexte({ id, contexte, couleur = '#0284c7' }) {
     <div style={{ textAlign: 'left', background: 'white', border: `1.5px solid ${couleur}`, borderLeft: `6px solid ${couleur}`,
       borderRadius: 10, padding: '12px 14px', margin: '0 0 12px', display: 'flex', flexDirection: 'column', gap: 10 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8 }}>
-        <span style={{ fontSize: 15.5, fontWeight: 800, color: TXT }}>ℹ️ À propos de cette simulation</span>
+        <span style={{ fontSize: 15.5, fontWeight: 800, color: TXT }}><Emo e="ℹ"/> À propos de cette simulation</span>
         <button onClick={() => setReplie(true)} style={{ background: 'none', border: 'none', color: TXT2, cursor: 'pointer',
           fontSize: 13, textDecoration: 'underline' }}>masquer</button>
       </div>
-      {ligneB('🎯', 'À quoi ça sert', contexte.but)}
-      {ligneB('📚', 'Vous allez apprendre', contexte.apprendre)}
-      {ligneB('👣', 'Par où commencer', (
+      {ligneB(<><Emo e="🎯"/></>, 'À quoi ça sert', contexte.but)}
+      {ligneB(<><Emo e="📚"/></>, 'Vous allez apprendre', contexte.apprendre)}
+      {ligneB(<><Emo e="👣"/></>, 'Par où commencer', (
         <ol style={{ margin: '2px 0 0', paddingLeft: 20 }}>
           {contexte.etapes.map((e, k) => <li key={k} style={{ marginBottom: 2 }}>{e}</li>)}
         </ol>
@@ -486,7 +488,7 @@ export function Curseur({ nom, valeur, onChange, min, max, pas, unite = '', deci
 
 // Les trois boutons de mode, identiques sur toutes les pages
 export function BoutonsModes({ mode, setMode, modes = ['guide', 'explore', 'defi'] }) {
-  const def = { guide: ['🧭 Parcours guidé', ORANGE_GUIDE], explore: ['🔍 Exploration libre', '#334155'], defi: ['🎯 Défi', '#0ea5e9'] };
+  const def = { guide: [<><Emo e="🧭"/> Parcours guidé</>, ORANGE_GUIDE], explore: [<><Emo e="🔍"/> Exploration libre</>, '#334155'], defi: [<><Emo e="🎯"/> Défi</>, '#0ea5e9'] };
   return (
     <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
       {modes.map(m => <button key={m} onClick={() => setMode(m)} style={styleBouton(mode === m, def[m][1])}>{def[m][0]}</button>)}

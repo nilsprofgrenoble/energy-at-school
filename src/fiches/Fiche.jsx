@@ -11,6 +11,7 @@ import { cardStyle } from '../commun';
 import { useSuivi } from '../avancement';
 import { FICHES, aFiche } from './contenu';
 import { ATELIERS, ficheDebloquee, nbFichesDebloquees } from './regles';
+import { Emo, Pic } from '../Pictos';
 
 const allerA = slug => { window.history.pushState({}, '', `?atelier=${slug}`); window.dispatchEvent(new PopStateEvent('popstate')); };
 // Va au parcours guidé en cliquant sur son bouton (chaque atelier gère ses modes lui-même)
@@ -45,24 +46,24 @@ function FenetreFiche({ page, nom, couleur, debloquee, onFermer }) {
             <div style={{ fontSize: 12.5, fontWeight: 800, color: '#c2410c', letterSpacing: '.08em', textTransform: 'uppercase' }}>Fiche de révision</div>
             <div style={{ fontFamily: "'Outfit', sans-serif", fontSize: 22, fontWeight: 800, color: '#0c1a2e' }}>{nom}</div>
           </div>
-          <button type="button" onClick={onFermer} aria-label="Fermer la fiche" style={{ ...bouton, padding: '4px 12px' }}>✕</button>
+          <button type="button" onClick={onFermer} aria-label="Fermer la fiche" style={{ ...bouton, padding: '4px 12px' }}><Emo e="✕"/></button>
         </div>
         {debloquee ? (
           <>
             <CartesFiche page={page} couleur={couleur} />
             <div style={{ textAlign: 'right', marginTop: 12 }}>
-              <button type="button" onClick={() => { onFermer(); allerA('mes-fiches'); }} style={bouton}>📚 Toutes mes fiches (imprimer)</button>
+              <button type="button" onClick={() => { onFermer(); allerA('mes-fiches'); }} style={bouton}><Emo e="📚"/> Toutes mes fiches (imprimer)</button>
             </div>
           </>
         ) : (
           <>
             <p style={{ margin: '12px 0 6px', fontSize: 15, lineHeight: 1.5, color: '#0c1a2e', fontWeight: 600 }}>
-              🔒 Cette fiche se débloque quand tu <b>termines le parcours guidé</b> ou que tu <b>relèves le défi</b>. Elle contient {cartes.length} carte{cartes.length > 1 ? 's' : ''} :
+              <Emo e="🔒"/> Cette fiche se débloque quand tu <b>termines le parcours guidé</b> ou que tu <b>relèves le défi</b>. Elle contient {cartes.length} carte{cartes.length > 1 ? 's' : ''} :
             </p>
             <ol style={{ margin: '0 0 14px', paddingLeft: 22, color: '#334155', fontSize: 15, lineHeight: 1.6, fontWeight: 600 }}>
               {cartes.map(c => <li key={c.id}>{c.titre}</li>)}
             </ol>
-            <button type="button" onClick={() => { onFermer(); versParcours(); }} style={{ ...bouton, background: couleur, color: '#fff', borderColor: couleur }}>Aller au parcours guidé ▶</button>
+            <button type="button" onClick={() => { onFermer(); versParcours(); }} style={{ ...bouton, background: couleur, color: '#fff', borderColor: couleur }}>Aller au parcours guidé <Emo e="▶"/></button>
           </>)}
       </div>
     </div>, document.body);
@@ -79,7 +80,7 @@ export function BoutonFiche({ page, style, couleur = '#ea580c' }) {
     <>
       <button onClick={() => setOuverte(true)} style={style}
         title={debloquee ? 'La fiche de révision de cet atelier' : 'Fiche de révision : se débloque quand tu termines le parcours guidé ou relèves le défi'}>
-        {debloquee ? '📋' : '🔒'} Fiche
+        {debloquee ? <><Emo e="📋"/></> : <><Emo e="🔒"/></>} Fiche
       </button>
       {ouverte && <FenetreFiche page={page} nom={atelier?.nom || page} couleur={couleur} debloquee={debloquee} onFermer={() => setOuverte(false)} />}
     </>
@@ -98,7 +99,7 @@ export function PageMesFiches() {
         <div style={{ flex: 1, minWidth: 200, fontSize: 15, lineHeight: 1.5, color: '#334155', fontWeight: 600 }}>
           {nb} fiche{nb > 1 ? 's' : ''} débloquée{nb > 1 ? 's' : ''} sur {presentes.length}. Termine un parcours guidé ou relève un défi pour débloquer la fiche de l'atelier.
         </div>
-        {nb > 0 && <button onClick={() => window.print()} style={{ padding: '8px 16px', borderRadius: 999, border: '1.5px solid #ea580c', background: '#ea580c', color: '#fff', cursor: 'pointer', fontWeight: 800, fontSize: 14 }}>🖨️ Imprimer mes fiches</button>}
+        {nb > 0 && <button onClick={() => window.print()} style={{ padding: '8px 16px', borderRadius: 999, border: '1.5px solid #ea580c', background: '#ea580c', color: '#fff', cursor: 'pointer', fontWeight: 800, fontSize: 14 }}><Emo e="🖨"/> Imprimer mes fiches</button>}
       </div>
 
       {/* Couverture : visible seulement à l'impression */}
@@ -116,7 +117,7 @@ export function PageMesFiches() {
         const fam = liste[0].famille;
         return (
           <section key={fid} className="fiches-theme">
-            <h2 className="fiches-theme-titre" style={{ color: fam.couleur }}><span aria-hidden="true">{fam.icone} </span>{fam.nom}</h2>
+            <h2 className="fiches-theme-titre" style={{ color: fam.couleur }}><span aria-hidden="true"><Emo e={fam.icone}/> </span>{fam.nom}</h2>
             {liste.map(a => ficheDebloquee(a.page, suivi) ? (
               <article key={a.page} className="fiche-atelier">
                 <h3 className="fiche-atelier-titre" style={{ borderColor: fam.couleur }}>{a.nom}</h3>
@@ -124,7 +125,7 @@ export function PageMesFiches() {
               </article>
             ) : (
               <p key={a.page} className="no-print" style={{ ...cardStyle, margin: '0 0 10px', fontSize: 15, color: '#334155', fontWeight: 700 }}>
-                🔒 {a.nom} <span style={{ fontWeight: 600, color: '#64748b' }}>· se débloque avec le parcours guidé ou le défi</span>
+                <Emo e="🔒"/> {a.nom} <span style={{ fontWeight: 600, color: '#64748b' }}>· se débloque avec le parcours guidé ou le défi</span>
               </p>
             ))}
           </section>);

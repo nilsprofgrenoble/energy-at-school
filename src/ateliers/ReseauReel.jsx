@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { fmt, CarteParcours, Cadre, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite,
+import { Cadre, CarteParcours, KIT, fmt, styleBoite, styleBouton, stylePetitBouton, useEtatPersistant,
   Section, LigneMesure } from "../commun";
+import { PicSvg } from '../Pictos';
 
 // ====================================================
 // TRANSPORT · PARCOURS « PRÉPARER L'ATELIER » : UN VRAI RÉSEAU
@@ -125,7 +126,7 @@ export function ParcoursReseauReel({ fin }) {
       {/* centrale */}
       <rect x="14" y="110" width="64" height="60" fill="#e2e8f0" stroke={KIT.txt} strokeWidth="2"/>
       <rect x="26" y="78" width="14" height="32" fill="#cbd5e1" stroke={KIT.txt} strokeWidth="1.5"/>
-      <text x="46" y="148" fontSize="22" textAnchor="middle">⚡</text>
+      <PicSvg n="bolt" x="33" y="126" t="26" color={KIT.txt}/>
       <text x="46" y="190" fontSize="13" fontWeight="700" fill={KIT.txt} textAnchor="middle">centrale</text>
       <text x="46" y="206" fontSize="12" fill={KIT.txt2} textAnchor="middle">1 MW</text>
       {/* transformateur élévateur */}
