@@ -3,6 +3,7 @@ import { KIT } from "../commun";
 import { useSession, estEleve, estProf } from "../serveur";
 import { useSuivi, bilan } from "../avancement";
 import { FormulaireConnexion } from "../Compte";
+import { Classement } from "../Classement";
 
 // ====================================================
 // ENERGY@SCHOOL — PAGE D'ENTRÉE
@@ -125,6 +126,14 @@ export function EnergyAccueil({ aller }) {
           <strong> Après la journée</strong> : revenez explorer, relevez les défis, et découvrez les ateliers que vous n'avez pas faits.
           <div style={{ fontSize: 13.5, color: TXT2, marginTop: 8 }}>Votre progression dans les parcours est enregistrée sur cet appareil : vous pouvez vous arrêter et reprendre plus tard. Avec le compte donné par votre professeur (bouton « Se connecter »), elle est aussi enregistrée en ligne, vous choisissez un pseudo et vous débloquez des niveaux au fil des parcours terminés et des défis relevés, dans l’ordre que vous voulez.</div>
         </div>
+      </div>
+
+      <div className="ea-lame">
+        <h3>🏆 Le classement</h3>
+        <div style={{ fontSize: 15, color: TXT2, lineHeight: 1.6, marginBottom: 8 }}>
+          Points, défis, activité de la semaine : seuls les élèves qui l’ont choisi apparaissent, sous un pseudo.
+        </div>
+        <Classement aller={aller} accueil />
       </div>
 
       <a href={PAILLASSE_URL} target="_blank" rel="noopener noreferrer"
