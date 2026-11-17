@@ -147,3 +147,25 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 .cl-argent { background: #8794a5; }
 .cl-bronze { background: #a8643a; }
 .ea-compte .ic, .ea-bouton .ic, .ea-mode .ic, .cl-onglet .ic, .cl-tete .ic { flex: none; }
+
+/* ── En-tête : actions du site (discrètes) et simulations (onglets bien visibles) ── */
+.es-util { display: inline-flex; align-items: center; gap: 4px; padding: 6px 8px; border: 0; border-radius: 8px; background: none; color: #475569; font: 700 13.5px 'Nunito', sans-serif; cursor: pointer; text-decoration: none; }
+.es-util:hover { background: #f1ebe3; color: var(--es-encre); }
+.es-util-logo img { opacity: .9; }
+.es-compte { color: var(--es-orange-fonce); border: 1.5px solid var(--es-orange); padding: 5px 12px; }
+.es-compte:hover { background: var(--es-orange-clair); color: var(--es-orange-fonce); }
+.es-nav { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 14px 22px; margin: 4px -20px -12px; padding: 12px 20px 14px; background: #fff4e6; border-top: 1px solid var(--es-bord); }
+.es-groupe { display: flex; flex-direction: column; gap: 4px; }
+.es-groupe-titre { font: 800 11px 'Nunito', sans-serif; color: var(--es-orange-fonce); text-transform: uppercase; letter-spacing: .08em; }
+.es-groupe-liste { display: flex; flex-wrap: wrap; gap: 6px; }
+.es-onglet { display: inline-flex; align-items: center; gap: 8px; padding: 10px 14px; border: 1.5px solid #e6d3bd; border-left: 5px solid var(--c); border-radius: 8px; background: #fff; color: var(--es-encre); font: 800 15px 'Nunito', sans-serif; cursor: pointer; white-space: nowrap; }
+.es-onglet .ic { color: var(--c); }
+.es-onglet:hover { border-color: var(--c); }
+.es-actif { background: var(--c); border-color: var(--c); color: #fff; }
+.es-actif .ic { color: #fff; }
+@media (max-width: 640px) {
+  .es-nav { flex-direction: column; align-items: stretch; gap: 12px; }
+  .es-groupe-liste { display: grid; grid-template-columns: 1fr 1fr; }
+  .es-groupe-liste .es-onglet { white-space: normal; }
+  .es-nav > .es-onglet { width: 100%; }
+}

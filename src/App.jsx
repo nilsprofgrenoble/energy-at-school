@@ -83,14 +83,10 @@ export default function App() {
 
   const onglet = p => (
     <button key={p.slug} onClick={() => aller(p.slug)} aria-current={p.slug === slug ? 'page' : undefined}
-      style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 14px', borderRadius: 999, cursor: 'pointer',
-        fontWeight: 800, fontSize: 14, whiteSpace: 'nowrap',
-        border: `1.5px solid ${p.slug === slug ? p.couleur : '#eadfd2'}`,
-        background: p.slug === slug ? p.couleur : 'white', color: p.slug === slug ? 'white' : '#334155' }}>
+      className={`es-onglet${p.slug === slug ? ' es-actif' : ''}`} style={{ '--c': p.couleur }}>
       <Emo e={p.icone}/>{p.nom}
     </button>
   );
-  const pilule = { padding: '8px 16px', borderRadius: 999, border: '1.5px solid #eadfd2', background: 'white', cursor: 'pointer', fontWeight: 800, fontSize: 13.5, color: '#334155' };
 
   return (
     <div style={{ minHeight: '100vh', background: '#fffaf3', display: 'flex', flexDirection: 'column', fontFamily: "'Nunito', 'Segoe UI', system-ui, sans-serif" }}>
@@ -104,22 +100,21 @@ export default function App() {
               <span style={{ fontSize: 13, color: '#3d4d63', fontWeight: 600, maxWidth: 330, lineHeight: 1.35 }}>Simulations pour préparer la journée à Grenoble INP – Ense³, et y revenir ensuite</span>
             </button>
             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
-              <a href="https://paillasse-virtuelle.fr/" target="_blank" rel="noopener noreferrer" title="Toutes les simulations de chimie et de physique"
-                style={{ display: 'flex', alignItems: 'center', padding: '4px 12px', borderRadius: 999, border: '1.5px solid #eadfd2', background: 'white', textDecoration: 'none' }}>
+              <a href="https://paillasse-virtuelle.fr/" target="_blank" rel="noopener noreferrer" title="Toutes les simulations de chimie et de physique" className="es-util es-util-logo">
                 <img src={`${import.meta.env.BASE_URL}paillasse-logo.png`} alt="Paillasse virtuelle" height="28" style={{ height: 28, width: 'auto' }} />
               </a>
               <BoutonCompte aller={aller} />
-              {nbFiches > 0 && slug !== 'mes-fiches' && <button onClick={() => aller('mes-fiches')} style={pilule} title="Mes fiches de révision"><Emo e="📚"/> Mes fiches</button>}
-              {slug !== 'a-propos' && <button onClick={() => aller('a-propos')} style={pilule} title="À propos de ce site" aria-label="À propos de ce site"><Emo e="ℹ"/> À propos</button>}
-              {slug === 'presentation' && <button onClick={partager} style={pilule}>{copie ? <><Emo e="✅"/> Lien copié</> : <><Emo e="🔗"/> Partager</>}</button>}
+              {nbFiches > 0 && slug !== 'mes-fiches' && <button onClick={() => aller('mes-fiches')} className="es-util" title="Mes fiches de révision"><Emo e="📚"/> Mes fiches</button>}
+              {slug !== 'a-propos' && <button onClick={() => aller('a-propos')} className="es-util" title="À propos de ce site" aria-label="À propos de ce site"><Emo e="ℹ"/> À propos</button>}
+              {slug === 'presentation' && <button onClick={partager} className="es-util">{copie ? <><Emo e="✅"/> Lien copié</> : <><Emo e="🔗"/> Partager</>}</button>}
             </div>
           </div>
-          <nav aria-label="Ateliers" style={{ display: 'flex', gap: 14, flexWrap: 'wrap', alignItems: 'flex-end' }}>
+          <nav aria-label="Ateliers" className="es-nav">
             {onglet(PAGES[0])}
             {GROUPES.map(g => (
-              <div key={g} style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-                <span style={{ fontSize: 11, fontWeight: 800, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.08em', paddingLeft: 4 }}>{g}</span>
-                <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>{PAGES.filter(p => p.groupe === g).map(onglet)}</div>
+              <div key={g} className="es-groupe">
+                <span className="es-groupe-titre">{g}</span>
+                <div className="es-groupe-liste">{PAGES.filter(p => p.groupe === g).map(onglet)}</div>
               </div>
             ))}
           </nav>
@@ -131,7 +126,7 @@ export default function App() {
           <div className="no-print" style={{ display: 'flex', alignItems: 'center', gap: 14, margin: '4px 0 14px', flexWrap: 'wrap' }}>
             <span aria-hidden="true" style={{ color: page.couleur, display: 'flex', flexShrink: 0 }}><Emo e={page.icone} t={36}/></span>
             <h1 style={{ margin: 0, flex: 1, fontFamily: "'Outfit', sans-serif", fontWeight: 800, letterSpacing: '-0.02em', color: '#0c1a2e', fontSize: 'clamp(26px, 3.8vw, 40px)', lineHeight: 1.1, textWrap: 'balance' }}>{page.nom}</h1>
-            <button onClick={partager} style={pilule}>{copie ? <><Emo e="✅"/> Lien copié</> : <><Emo e="🔗"/> Partager</>}</button>
+            <button onClick={partager} className="es-util">{copie ? <><Emo e="✅"/> Lien copié</> : <><Emo e="🔗"/> Partager</>}</button>
           </div>)}
         <Composant key={slug} aller={aller} />
       </main>
