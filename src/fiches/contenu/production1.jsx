@@ -1,4 +1,4 @@
-import { Fm, Fi, Grandeurs, Exemple, Memo, FauxVrai, Def, Flux, Schema, T, Fl, Boite, COUL, Courbe, Cas } from '../elements';
+import { Fm, Fi, Grandeurs, Exemple, Memo, FauxVrai, Schema, T, Fl, COUL, Courbe, TroisVitesses } from '../elements';
 
 // Fiche « Turbine Pelton » : valeurs de la simulation (p ≈ 2,7 bar ; Q_V ≈ 6,7·10⁻⁵ m³/s ; P_hyd ≈ 18 W ; 4 paires de pôles ; jet Ø 2,0 mm ; auget à 4,0 cm).
 // Courbe de rendement : mêmes points que la simulation (U en V, η en %).
@@ -76,37 +76,6 @@ const SceneOscillo = () => (
 );
 
 
-// Trois roues : mêmes jet et même rayon, seule la vitesse de l'auget change. Flèches fines, proportionnelles aux vitesses.
-const V = ({ x, y, sub, a = 'middle', c = COUL.encre }) => (
-  <text x={x} y={y} textAnchor={a} fontSize="14" fontWeight="800" fill={c} fontFamily="Nunito, sans-serif">v<tspan fontSize="10" dy="3">{sub}</tspan></text>
-);
-const TroisRoues = () => {
-  const lignes = [
-    { cy: 60, long: 0, col: '#64748b', l1: '✗ P = 0', l2: 'roue bloquée', bon: false, e: 'v_auget = 0' },
-    { cy: 158, long: 57, col: COUL.vert, l1: '✓ maximum', l2: 'bon compromis', bon: true },
-    { cy: 256, long: 114, col: COUL.rouge, l1: '✗ P = 0', l2: 'roue trop rapide', bon: false },
-  ];
-  return (
-    <Schema h={306} titre="Trois cas avec le même jet : roue bloquée (vitesse de l'auget nulle), roue dont l'auget va à la moitié de la vitesse du jet (maximum), roue dont l'auget va aussi vite que le jet. Les flèches sont proportionnelles aux vitesses">
-      {lignes.map((r, k) => {
-        const haut = r.cy - 26;
-        return (
-          <g key={k}>
-            {r.bon && <rect x="3" y={r.cy - 52} width="354" height="90" rx="12" fill="#f0fdf4" stroke={COUL.vert} strokeWidth="2.5" />}
-            <line x1="12" y1={haut} x2="116" y2={haut} stroke={COUL.eau} strokeWidth="2" markerEnd="url(#ahB)" />
-            <V x={64} y={haut - 7} sub="jet" c={COUL.eau} />
-            <circle cx="126" cy={r.cy} r="26" fill="#f1f5f9" stroke="#334155" strokeWidth="2" />
-            {[0, 60, 120, 180, 240, 300].map(a => <circle key={a} cx={126 + 26 * Math.cos(a * Math.PI / 180)} cy={r.cy + 26 * Math.sin(a * Math.PI / 180)} r="4.5" fill={COUL.eau} />)}
-            {r.long > 0 && <line x1="126" y1={haut} x2={126 + r.long - 4} y2={haut} stroke={r.col} strokeWidth="2.5" markerEnd={r.bon ? 'url(#ahG)' : 'url(#ahR)'} />}
-            {r.long > 0 ? <V x={130} y={haut - 7} sub="auget" a="start" c={r.col} /> : <text x="130" y={haut - 7} fontSize="14" fontWeight="800" fill={r.col} fontFamily="Nunito, sans-serif">v<tspan fontSize="10" dy="3">auget</tspan><tspan dy="-3"> = 0</tspan></text>}
-            <T x="256" y={r.cy - 4} s={r.l1} a="start" c={r.bon ? COUL.vert : COUL.rouge} />
-            <T x="256" y={r.cy + 14} s={r.l2} a="start" w={600} c="#475569" />
-          </g>);
-      })}
-    </Schema>
-  );
-};
-
 export const production1 = [
   { id: 'chaine', titre: 'De l’eau au courant électrique', corps: <>
     <SceneChaine />
@@ -130,7 +99,7 @@ export const production1 = [
     <Memo>Ni ouvert, ni fermé : l’optimum est au milieu.</Memo>
   </> },
   { id: 'pelton', titre: 'Le secret de la turbine Pelton', corps: <>
-    <TroisRoues />
+    <TroisVitesses titre="Trois cas avec le même jet : roue bloquée (vitesse de l'auget nulle), auget à la moitié de la vitesse du jet (maximum), auget aussi rapide que le jet. Les flèches sont proportionnelles aux vitesses" />
     <Fm>{'v_jet = {Q_V|π * r^2}'}</Fm>
     <Fm>{'v_auget = 2 * π * r * n'}</Fm>
     <Grandeurs lignes={[['v_jet', 'vitesse du jet', 'm/s'], ['Q_V', 'débit volumique', 'm³/s'], ['r', 'rayon : 1,0 mm (jet), 4,0 cm (roue)', 'm'], ['v_auget', 'vitesse de l’auget', 'm/s'], ['n', 'vitesse de rotation', 'tr/s']]} />

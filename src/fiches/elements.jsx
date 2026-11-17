@@ -26,6 +26,7 @@ function analyser(s, cle = 'm') {
   while (i < s.length) {
     const c = s[i];
     if (c === ' ') { i++; continue; }
+    if (c === '√' && s[i + 1] === '{') { const f = trouverFin(s, i + 1); poser(<msqrt><mrow>{analyser(s.slice(i + 2, f), `${cle}r${n}`)}</mrow></msqrt>); i = f + 1; continue; }
     if (c === '{') {
       const f = trouverFin(s, i); const [h, b] = scinder(s.slice(i + 1, f));
       poser(<mfrac><mrow>{analyser(h, `${cle}h${n}`)}</mrow><mrow>{analyser(b, `${cle}b${n}`)}</mrow></mfrac>); i = f + 1; continue;
@@ -131,7 +132,7 @@ export function Courbe({ titre, h = 200, pts, xmax, ymax, ticksX, ticksY = [], x
       <polyline fill="none" stroke={couleur} strokeWidth="3.5" strokeLinejoin="round" points={pts.map(([x, y]) => `${sx(x)},${sy(y)}`).join(' ')} />
       {reperes.map((r, k) => <g key={k}><circle cx={sx(r.x)} cy={sy(r.y)} r="6" fill={r.c || COUL.orange} stroke="#fff" strokeWidth="2" />{r.texte && <T x={r.tx ?? sx(r.x)} y={r.ty ?? sy(r.y) - 12} s={r.texte} a={r.a || 'middle'} c={r.c || COUL.orange} />}</g>)}
       <T x={X0} y={haut + 8} s={ylab} a="start" c={COUL.encre} />
-      <T x={X1} y={Y1 + 52} s={xlab} a="end" c={COUL.encre} />
+      <T x={X1} y={Y1 + (dessous.length ? 52 : 36)} s={xlab} a="end" c={COUL.encre} />
       {dessous.map((d, k) => <T key={k} x={d.x} y={Y1 + 34} s={d.texte} a={d.a || 'middle'} c={d.c || COUL.rouge} />)}
     </Schema>
   );
@@ -163,5 +164,55 @@ export function Flux({ etapes, couleur = COUL.orange }) {
           {k < etapes.length - 1 && <div className="fiche-flux-fleche" aria-hidden="true">↓</div>}
         </div>))}
     </div>
+  );
+}
+
+// Lettre avec indice dans un SVG (sans baselineShift) ; `suite` = texte qui suit l'indice
+export const Vs = ({ x, y, s, sub, suite, a = 'middle', c = COUL.encre, f = 14, w = 800 }) => (
+  <text x={x} y={y} textAnchor={a} fontSize={f} fontWeight={w} fill={c} fontFamily="Nunito, sans-serif">{s}<tspan fontSize={f - 4} dy="3">{sub}</tspan>{suite ? <tspan dy="-3">{suite}</tspan> : null}</text>
+);
+// Flèche épaisse (largeur ep) avec une pointe de taille fixe : pour montrer qu'un courant est grand ou petit
+export const Fleche = ({ x1, x2, cy, ep, c = COUL.eau }) => {
+  const h = Math.max(ep / 2 + 3, 6);
+  return <g><line x1={x1} y1={cy} x2={x2 - 12} y2={cy} stroke={c} strokeWidth={ep} /><polygon points={`${x2},${cy} ${x2 - 14},${cy - h} ${x2 - 14},${cy + h}`} fill={c} /></g>;
+};
+// Barre de puissance : ce qui arrive, la part utile (orange) et la part perdue (rouge pâle)
+export function BarrePertes({ haut, utile, perdu, frac, titre }) {
+  const w = Math.max(frac * 340, 6);
+  return (
+    <Schema h={96} titre={titre}>
+      <T x="180" y="18" s={haut} f={14} />
+      <rect x="10" y="28" width="340" height="30" fill="#fecaca" stroke={COUL.rouge} strokeWidth="1.5" strokeDasharray="5 3" />
+      <rect x="10" y="28" width={w} height="30" fill={COUL.orange} />
+      <T x="10" y="82" s={utile} a="start" c={COUL.orange} />
+      <T x="350" y="82" s={perdu} a="end" c="#991b1b" />
+    </Schema>
+  );
+}
+// Trois cas avec le même jet : roue bloquée, vitesse de l'auget = moitié de celle du jet (maximum), auget aussi rapide que le jet
+export function TroisVitesses({ sousJ = 'jet', sousA = 'auget', bloquee = 'roue bloquée', trop = 'roue trop rapide', titre }) {
+  const lignes = [
+    { cy: 60, long: 0, col: '#64748b', l1: '✗ P = 0', l2: bloquee },
+    { cy: 158, long: 57, col: COUL.vert, l1: '✓ maximum', l2: 'bon compromis', bon: true },
+    { cy: 256, long: 114, col: COUL.rouge, l1: '✗ P = 0', l2: trop },
+  ];
+  return (
+    <Schema h={306} titre={titre}>
+      {lignes.map((r, k) => {
+        const haut = r.cy - 26;
+        return (
+          <g key={k}>
+            {r.bon && <rect x="3" y={r.cy - 52} width="354" height="90" rx="12" fill="#f0fdf4" stroke={COUL.vert} strokeWidth="2.5" />}
+            <line x1="12" y1={haut} x2="116" y2={haut} stroke={COUL.eau} strokeWidth="2" markerEnd="url(#ahB)" />
+            <Vs x={64} y={haut - 7} s="v" sub={sousJ} c={COUL.eau} />
+            <circle cx="126" cy={r.cy} r="26" fill="#f1f5f9" stroke="#334155" strokeWidth="2" />
+            {[0, 60, 120, 180, 240, 300].map(a => <circle key={a} cx={126 + 26 * Math.cos(a * Math.PI / 180)} cy={r.cy + 26 * Math.sin(a * Math.PI / 180)} r="4.5" fill={COUL.eau} />)}
+            {r.long > 0 && <line x1="126" y1={haut} x2={126 + r.long - 4} y2={haut} stroke={r.col} strokeWidth="2.5" markerEnd={r.bon ? 'url(#ahG)' : 'url(#ahR)'} />}
+            {r.long > 0 ? <Vs x={130} y={haut - 7} s="v" sub={sousA} a="start" c={r.col} /> : <Vs x={130} y={haut - 7} s="v" sub={sousA} suite=" = 0" a="start" c={r.col} />}
+            <T x="256" y={r.cy - 4} s={r.l1} a="start" c={r.bon ? COUL.vert : COUL.rouge} />
+            <T x="256" y={r.cy + 14} s={r.l2} a="start" w={600} c="#475569" />
+          </g>);
+      })}
+    </Schema>
   );
 }
