@@ -7,6 +7,7 @@ import { SimulationTransport } from "./ateliers/Transport";
 import { SimulationStockage } from "./ateliers/Stockage";
 import { SimulationHydrogene } from "./ateliers/Hydrogene";
 import { BoutonCompte, PageProfil, PageSuivi } from "./Compte";
+import { PageAPropos } from "./APropos";
 import { restaurer } from "./serveur";
 import { synchroniser } from "./avancement";
 
@@ -27,6 +28,8 @@ const PAGES = [
   // Pages de compte (hors de la barre d'onglets : on y accède par le bouton en haut à droite)
   { slug: 'profil', nom: 'Mon profil', groupe: null, icone: '👤', couleur: '#ea580c', composant: PageProfil, compte: true },
   { slug: 'suivi', nom: 'Suivi des classes', groupe: null, icone: '👩‍🏫', couleur: '#ea580c', composant: PageSuivi, compte: true },
+  // Page d'information (hors de la barre d'ateliers : accessible depuis l'en-tête et le pied de page)
+  { slug: 'a-propos', nom: 'À propos', groupe: null, icone: 'ℹ️', couleur: '#ea580c', composant: PageAPropos, description: "Qui a construit ce site, avec quelle aide, et comment vos données sont traitées : transparence sur Energy@School." },
 ];
 const GROUPES = ['Produire', 'Transporter', 'Stocker et restituer'];
 
@@ -51,6 +54,11 @@ export default function App() {
   }, []);
   useEffect(() => {
     document.title = page.slug === 'presentation' ? 'Energy@School · Simulations' : `${page.nom} · Energy@School`;
+    const meta = document.querySelector('meta[name="description"]');
+    if (meta) {
+      if (!meta.dataset.defaut) meta.dataset.defaut = meta.content;
+      meta.content = page.description || meta.dataset.defaut;
+    }
     window.scrollTo(0, 0);
   }, [page]);
   function aller(s) {
@@ -90,6 +98,7 @@ export default function App() {
                 <img src={`${import.meta.env.BASE_URL}paillasse-logo.png`} alt="Paillasse virtuelle" height="28" style={{ height: 28, width: 'auto' }} />
               </a>
               <BoutonCompte aller={aller} />
+              {slug !== 'a-propos' && <button onClick={() => aller('a-propos')} style={pilule} title="À propos de ce site" aria-label="À propos de ce site">ℹ️ À propos</button>}
               {slug === 'presentation' && <button onClick={partager} style={pilule}>{copie ? '✅ Lien copié' : '🔗 Partager'}</button>}
             </div>
           </div>
@@ -120,6 +129,8 @@ export default function App() {
         <a href="https://creativecommons.org/licenses/by-nc-nd/4.0/deed.fr" target="_blank" rel="noopener noreferrer" style={{ color: 'inherit' }}>CC BY-NC-ND 4.0</a>
         {' '}· libre d'accès, reproduction et modification non autorisées ·{' '}
         <a href="https://paillasse-virtuelle.fr/" style={{ color: 'inherit', fontWeight: 700 }}>Paillasse virtuelle : toutes les autres simulations de chimie et de physique</a>
+        {' '}·{' '}
+        <a href="?atelier=a-propos" onClick={e => { if (e.metaKey || e.ctrlKey || e.shiftKey || e.button) return; e.preventDefault(); aller('a-propos'); }} style={{ color: 'inherit', fontWeight: 700 }}>À propos</a>
       </footer>
     </div>
   );
