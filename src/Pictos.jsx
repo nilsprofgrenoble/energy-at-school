@@ -83,6 +83,8 @@ const ICONES = {
   warn: C('<path class="a" d="M12 3.5L21.5 20h-19z"/><path d="M12 3.5L21.5 20h-19zM12 10v5"/><circle cx="12" cy="17.4" r=".6" fill="currentColor"/>'),
   party: C('<path class="a" d="M4 21l4-11 7 7z"/><path d="M4 21l4-11 7 7zM13 5v2M18 6l-1.5 1.5M20 12h-2M15 3l.5 1.5"/>'),
   refresh: C('<path d="M20 11a8 8 0 0 0-14-4M4 5v4h4M4 13a8 8 0 0 0 14 4M20 19v-4h-4"/>'),
+  flag: C('<path class="a" d="M5 4.5c3-1.6 5 1.6 8 0s4-1 6 0v9c-2-1-3-1.4-6 0s-5-1.6-8 0z"/><path d="M5 4.5c3-1.6 5 1.6 8 0s4-1 6 0v9c-2-1-3-1.4-6 0s-5-1.6-8 0zM5 3v18"/>'),
+  calc: C('<rect class="a" x="5" y="3" width="14" height="18" rx="2.5"/><rect x="5" y="3" width="14" height="18" rx="2.5"/><path d="M8 7.5h8M8.5 12h.01M12 12h.01M15.5 12h.01M8.5 15.5h.01M12 15.5h.01M15.5 15.5h.01"/>'),
   trash: C('<path d="M4 7h16M9 7V4h6v3"/><path class="a" d="M6 7l1 14h10l1-14z" opacity=".6"/><path d="M6 7l1 14h10l1-14M10 11v6M14 11v6"/>'),
   plus: C('<path d="M12 5v14M5 12h14"/>'),
   eye: C('<path class="a" d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z" opacity=".6"/><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>'),
