@@ -110,6 +110,22 @@ async function appeler(url, { method = 'GET', corps, entetes = {}, keepalive = f
 // ── Base de données (PostgREST) ──
 export const rest = (chemin, options) => appeler(`${URL_SB}/rest/v1/${chemin}`, options);
 // Classement public (supabase/18-classement-energy.sql de simulations-chimie) : ouvert à tous, même sans compte. Seule la clé publique est envoyée.
+// Signalement d'un problème (supabase/21-signalements.sql) : ouvert à tous, même sans compte, en écriture seule. Seule la clé publique est envoyée.
+export async function envoyerSignalement(corps) {
+  let r;
+  try { r = await fetch(`${URL_SB}/rest/v1/signalements`, { method: 'POST', headers: { apikey: CLE_PUBLIQUE, 'Content-Type': 'application/json', Prefer: 'return=minimal' }, body: JSON.stringify(corps) }); }
+  catch { throw new ErreurServeur('Serveur injoignable : vérifiez votre connexion internet.', 0); }
+  if (!r.ok) throw new ErreurServeur(await messageDe(r), r.status);
+}
+// Capture d'écran facultative (supabase/22-signalements-capture-etat.sql) : dépôt ouvert à tous (image JPEG légère), lecture et suppression réservées à l'administrateur.
+export async function envoyerCapture(blob) {
+  const chemin = `${crypto.randomUUID()}.jpg`;
+  let r;
+  try { r = await fetch(`${URL_SB}/storage/v1/object/signalements/${chemin}`, { method: 'POST', headers: { apikey: CLE_PUBLIQUE, 'Content-Type': 'image/jpeg' }, body: blob }); }
+  catch { throw new ErreurServeur('Serveur injoignable : vérifiez votre connexion internet.', 0); }
+  if (!r.ok) throw new ErreurServeur(await messageDe(r), r.status);
+  return chemin;
+}
 export async function lireClassementPublic() {
   let r;
   try { r = await fetch(`${URL_SB}/rest/v1/rpc/classement_public_energy`, { method: 'POST', headers: { apikey: CLE_PUBLIQUE, 'Content-Type': 'application/json' }, body: '{}' }); }

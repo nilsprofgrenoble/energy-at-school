@@ -16,6 +16,8 @@ import { useSuivi } from "./avancement";
 import { restaurer } from "./serveur";
 import { synchroniser } from "./avancement";
 import { Emo, Pic, PictosSprite } from './Pictos';
+import { Calculatrice } from './Calculatrice';
+import { SignalerProbleme } from './SignalerProbleme';
 
 // ============================================================
 //  SITE ENERGY@SCHOOL
@@ -139,6 +141,8 @@ export default function App() {
         {' '}·{' '}
         <a href="?atelier=a-propos" onClick={e => { if (e.metaKey || e.ctrlKey || e.shiftKey || e.button) return; e.preventDefault(); aller('a-propos'); }} style={{ color: 'inherit', fontWeight: 700 }}>À propos</a>
       </footer>
+      <SignalerProbleme slug={slug} titre={page.nom} />
+      <Calculatrice visible={!page.compte && slug !== 'presentation' && slug !== 'a-propos' && slug !== 'classement' && slug !== 'mes-fiches'} />
     </div>
   );
 }
