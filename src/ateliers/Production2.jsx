@@ -52,6 +52,8 @@ export function SimulationProduction2() {
   const [mode, setMode] = useState(() => modeOuverture(['es1-production2']));
   const [guide, setGuide] = useEtatPersistant('es1-production2', { etape: 0, reps: {}, verifs: {}, reussies: {} });
   const [ouverts, setOuverts] = useState({ commandes: true, mesures: true, points: true });
+  // En exploration, « Mes points / Mes mesures » est replié (un clic l'ouvre) ; parcours et défi le gardent ouvert.
+  useEffect(() => { setOuverts(o => ({ ...o, points: mode !== 'explore' })); }, [mode]);
   const [qL, setQL] = useState(15);
   const [F1, setF1] = useState(0);
   const [onglet, setOnglet] = useState('rendement');

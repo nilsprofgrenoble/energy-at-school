@@ -79,6 +79,8 @@ export function SimulationProduction1() {
   const [guide2, setGuide2] = useEtatPersistant('es1-production1-p2', { etape: 0, reps: {}, verifs: {}, reussies: {} });
   const [vus, setVus] = useState({ co: false, cc: false });
   const [ouverts, setOuverts] = useState({ commandes: true, mesures: true, points: true });
+  // En exploration, « Mes points / Mes mesures » est replié (un clic l'ouvre) ; parcours et défi le gardent ouvert.
+  useEffect(() => { setOuverts(o => ({ ...o, points: mode !== 'explore' })); }, [mode]);
   const [ouv, setOuv] = useState(80);                 // ouverture du robinet (%)
   const [kR, setKR] = useState(6);                    // indice dans PR_CHARGES (10 Ω)
   const [onglet, setOnglet] = useState('rendement');
@@ -814,7 +816,7 @@ export function SimulationProduction1() {
         {enGuide ? <div>
           <SelecteurParcours parcours={[[1, 'De l\u2019eau à l\u2019électricité'], [2, 'Rotation et vitesses']]} choix={parcours} setChoix={choisirParcours}/>
           <CarteParcours key={parcours} cle={parcours === 2 ? 'es1-production1-p2' : 'es1-production1'} etapes={ETAPES} etat={guide} setEtat={setGuide} fin={finParcours}/>
-        </div> : mode === 'explore' ? <div>{section('commandes', `Commandes · robinet ${ouv} % · charge ${nomCharge(R)}`, commandes)}</div> : blocGraphe}
+        </div> : mode === 'explore' ? <div>{section('commandes', `Commandes · robinet ${ouv} % · charge ${nomCharge(R)}`, commandes)}</div> : <div style={box}>{voletDefi}</div>}
       </div>
 
       {enGuide ? (
@@ -842,7 +844,7 @@ export function SimulationProduction1() {
             {section('mesures', 'Mesures', mesures)}
             {section('points', 'Mes points', mesPoints)}
           </div>
-          <div style={box}>{voletDefi}</div>
+          {blocGraphe}
         </div>
       )}
     </div>
