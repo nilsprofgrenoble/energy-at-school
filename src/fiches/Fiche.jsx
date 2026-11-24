@@ -107,7 +107,7 @@ export function PageMesFiches() {
         <div className="fiches-couverture-etiquette">Energy@School</div>
         <h1>Mes fiches de révision</h1>
         <p>Production, transport et stockage de l'énergie électrique</p>
-        <p className="fiches-couverture-date">Grenoble INP – Ense³ · édité le {date}</p>
+        <p className="fiches-couverture-date">Grenoble INP – Ense³, UGA · édité le {date}</p>
         <p className="fiches-couverture-date">{nb} fiche{nb > 1 ? 's' : ''}</p>
       </section>
 

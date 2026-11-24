@@ -1,6 +1,6 @@
 # Energy@School · Simulations
 
-Simulations interactives pour préparer la journée Energy@School à Grenoble INP – Ense³, et y revenir ensuite :
+Simulations interactives pour préparer la journée du dispositif Energy@School (CEA, Grenoble INP – Ense³, UGA), et y revenir ensuite :
 production (turbines Pelton, roue au fil de l'eau), transport (transformateurs et lignes), stockage (batteries)
 et hydrogène (électrolyse, pile à combustible).
 
