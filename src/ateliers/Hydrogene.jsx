@@ -857,12 +857,14 @@ export function SimulationHydrogene() {
       return [
         { id: 'U', type: 'num', indice: <>Réglez le curseur du banc sur I = 10 A et lisez la tension de la pile U dans « Mesures ».</>, q: 'Réglez I = 10 A. Tension lue aux bornes de la pile', unite: 'V', vrai: U10, tol: 0.05 },
         { id: 'Uc', type: 'num', indice: <>Les 10 cellules sont empilées en série : les tensions s’ajoutent, donc U<sub>cellule</sub> = U<sub>pile</sub> / 10.</>, q: 'Tension aux bornes d’une cellule (la pile en compte 10)', unite: 'V', vrai: U10 / 10, tol: 0.05,
+          suit: () => lireNombre(reps.U) / 10,
           pieges: [[U10, 'Divisez la tension de la pile par le nombre de cellules.']] },
         { id: 'J', type: 'num', indice: <>J = I / S, avec I = 10 A et S = 25 cm² : la densité de courant s’exprime en A·cm⁻².</>, q: 'Densité de courant J = I / S (S = 25 cm²)', unite: 'A·cm⁻²', vrai: 0.4, tol: 0.05,
           pieges: [[2.5, 'C’est I / S, pas S / I.']] },
-        { id: 'P', type: 'num', indice: <>P = U × I, avec U lue dans « Mesures » (en V) et I = 10 A.</>, q: 'Puissance fournie P = U × I', unite: 'W', vrai: U10 * 10, tol: 0.06 },
+        { id: 'P', type: 'num', indice: <>P = U × I, avec U lue dans « Mesures » (en V) et I = 10 A.</>, q: 'Puissance fournie P = U × I', unite: 'W', vrai: U10 * 10, tol: 0.06,
+          suit: () => lireNombre(reps.U) * 10 },
         { id: 'eta', type: 'num', indice: <>Le rendement d’une cellule compare sa tension réelle à la tension théorique : η = U<sub>cellule</sub> / 1,48 V, × 100 pour des % (U<sub>cellule</sub> = U<sub>pile</sub> / 10).</>, q: 'Rendement η = U cellule / 1,48 V', unite: '%', vrai: U10 / 10 / U_TH * 100, tol: 0.06,
-          suit: () => lireNombre(reps.U) * 10,
+          suit: () => lireNombre(reps.Uc) / U_TH * 100,
           pieges: [[U10 / U_TH * 100, 'Utilisez la tension d’une seule cellule.']] },
       ];
     }

@@ -45,6 +45,8 @@ const COUL = { eau: '#2563eb', meca: '#7c3aed', elec: '#dc2626', chaleur: '#ea58
 export function SimulationProduction3() {
   const [mode, setMode] = useState(() => modeOuverture(['es1-production3']));            // 'guide' | 'explore' | 'defi'
   const [ouverts, setOuverts] = useState({ commandes: true, mesures: true, points: true });
+  // En exploration, « Mes points / Mes mesures » est replié (un clic l'ouvre) ; parcours et défi le gardent ouvert.
+  useEffect(() => { setOuverts(o => ({ ...o, points: mode !== 'explore' })); }, [mode]);
   const [qLs, setQLs] = useState(2.6);                   // L/s
   const [hCm, setHCm] = useState(5.0);
   const [kR, setKR] = useState(4);                        // 10 Ω

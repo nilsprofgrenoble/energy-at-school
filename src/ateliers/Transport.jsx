@@ -58,6 +58,8 @@ export function SimulationTransport() {
   // Deux parcours : « Préparer l'atelier » (un vrai réseau, avant la journée) et « Revoir l'atelier » (la maquette, après)
   const [parcours, setParcours] = useEtatPersistant('es1-transport-choix', 'preparer');
   const [ouverts, setOuverts] = useState({ commandes: true, mesures: true, points: true });
+  // En exploration, « Mes points / Mes mesures » est replié (un clic l'ouvre) ; parcours et défi le gardent ouvert.
+  useEffect(() => { setOuverts(o => ({ ...o, points: mode !== 'explore' })); }, [mode]);
   const [m1, setM1] = useState(1);
   const [m2, setM2] = useState(1);
   const [cableId, setCableId] = useState('bleu');
