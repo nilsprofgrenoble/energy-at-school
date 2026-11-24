@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { cardStyle, Graphe, fmt, sci, lireNombre, proche, CarteParcours, Cadre, ORANGE_GUIDE, useEtatPersistant, avecIndices, IndiceDefi, valeurAttendue, arrondiSig } from "../commun";
+import { cardStyle, Graphe, fmt, sci, lireNombre, proche, CarteParcours, Cadre, ORANGE_GUIDE, useEtatPersistant, avecIndices, IndiceDefi, valeurAttendue, arrondiSig, FormuleEnLigne } from "../commun";
 import { BoutonFiche } from "../fiches/Fiche";
 import { signalerDefi, ouvrirDefi } from "../avancement";
 import { Emo, Pic, PicSvg, ec } from '../Pictos';
@@ -112,7 +112,7 @@ export function SimulationStockage() {
     return () => cancelAnimationFrame(id);
   }, [marche]);
   // Décharge et charge : seules comptent celles faites pendant leur étape du parcours (atelier 1)
-  const ETAPE_DECHARGE = 2, ETAPE_CHARGE = 6;
+  const ETAPE_DECHARGE = 2, ETAPE_CHARGE = 5;
   const etapeA1 = mode === 'guide' && atelier === 1 ? guide1.etape : -1;
   useEffect(() => {
     if (etapeA1 === ETAPE_DECHARGE) { setVus(v => ({ ...v, decharge: false })); setSocDepart(etat.soc); }
@@ -191,59 +191,57 @@ export function SimulationStockage() {
   const enGuide = mode === 'guide';
   const e1 = guide1.etape, e2 = guide2.etape;
   const vu1 = k => !enGuide || e1 >= k, vu2 = k => !enGuide || e2 >= k;
-  const rev1 = { commandes: vu1(2), equations: vu1(2), chargeur: vu1(6), graphe: vu1(9), reglages: vu1(10) };
+  const rev1 = { commandes: vu1(2), equations: vu1(6), chargeur: vu1(5), graphe: vu1(7), reglages: vu1(8) };
   // L'énergie et la densité d'énergie n'apparaissent qu'après les étapes où l'élève les calcule lui-même (étapes 7 et 8)
-  const rev2 = { assemblage: vu2(4), missions: vu2(4), energie: vu2(8), umax: vu2(14) };
+  const rev2 = { assemblage: vu2(2), missions: vu2(2), energie: vu2(6), umax: vu2(11) };
   const E37 = 3.7 * Qcap;   // énergie stockée (Wh) avec la tension nominale
   const ETAPES1 = [
     { titre: 'Qu’y a-t-il dans une cellule de batterie ?', focus: ['neg', 'pos', 'sep'],
-      texte: <>Une <strong>batterie</strong> est un assemblage de plusieurs <strong>cellules</strong> (vous les assemblerez à l'atelier 2).
-        Ici, on regarde l'intérieur d'<strong>une seule cellule</strong> lithium-ion : elle stocke de l'énergie sous forme
-        <strong> chimique</strong> et la rend sous forme <strong>électrique</strong>. Chaque électrode est faite de petites
-        <strong> particules</strong> de matière active, collées sur un collecteur métallique : du <strong>graphite</strong> côté négatif
-        (des feuillets d'hexagones de carbone C<sub>6</sub>), un <strong>oxyde de nickel, manganèse et cobalt</strong> (NMC) côté positif,
-        lui aussi en feuillets. Entre les feuillets, comme sur des étagères, les
-        ions lithium Li⁺ peuvent venir se ranger. Un <strong>électrolyte</strong> liquide remplit tout l'espace entre les particules, et un
+      texte: <>Une <strong>batterie</strong> est un assemblage de <strong>cellules</strong> (vous les assemblerez à l'atelier 2). Ici, on regarde
+        l'intérieur d'<strong>une seule cellule</strong> lithium-ion : elle stocke de l'énergie sous forme <strong>chimique</strong> et la rend sous
+        forme <strong>électrique</strong>. Côté négatif, des particules de <strong>graphite</strong> (feuillets de carbone C<sub>6</sub>) ; côté positif,
+        un <strong>oxyde de nickel, manganèse et cobalt</strong> (NMC), lui aussi en feuillets. Entre les feuillets, comme sur des étagères, les
+        ions lithium Li⁺ viennent se ranger. Un <strong>électrolyte</strong> liquide remplit l'espace entre les particules, et un
         <strong> séparateur</strong> poreux empêche les deux électrodes de se toucher.</>, tache: null },
     { titre: 'Le séparateur', focus: ['sep'],
       texte: <>Le séparateur empêche les deux électrodes de se toucher.</>,
       tache: { type: 'qcm', q: 'Que laisse-t-il passer ?', options: ['Les ions, mais pas les électrons', 'Les électrons, mais pas les ions', 'Rien du tout'], bonne: 0,
+        indice: 'Les électrons doivent passer par le fil et la lampe : que se passerait-il s’ils traversaient directement ?',
         expl: 'Les électrons sont obligés de faire le tour par le circuit extérieur : c’est ce courant qui allume la lampe.' } },
     { titre: 'La décharge', focus: ['lampe'],
       texte: <>La cellule est chargée et une lampe est branchée. Les commandes sont apparues sous le schéma : lancez la décharge
         et observez les ions et les électrons.</>,
       tache: { type: 'action', ok: vus.decharge, consigne: `État de charge : ${fmt(etat.soc * 100, 0)} %` } },
-    { titre: 'Le chemin des ions', focus: ['neg', 'pos'],
-      texte: <>Regardez dans quel sens traversent les ions Li⁺ pendant la décharge.</>,
-      tache: { type: 'qcm', q: 'Pendant la décharge, les ions Li⁺ vont…', options: ['de l’électrode négative vers la positive', 'de l’électrode positive vers la négative'], bonne: 0 } },
-    { titre: 'Le chemin des électrons', focus: ['lampe'],
-      texte: <>Les électrons, eux, ne peuvent pas traverser l'électrolyte.</>,
-      tache: { type: 'qcm', q: 'Pendant la décharge, les électrons vont…',
-        options: ['de la borne − vers la borne + en passant par la lampe', 'de la borne + vers la borne − en passant par la lampe', 'directement à travers le séparateur'], bonne: 0,
-        expl: 'Ions et électrons partent du même côté et arrivent du même côté, mais par deux chemins différents.' } },
+    { titre: 'Le chemin des ions et des électrons', focus: ['neg', 'pos', 'lampe'],
+      texte: <>Regardez la décharge : les ions Li⁺ traversent l'électrolyte, mais les électrons ne peuvent pas : ils passent par le circuit extérieur.</>,
+      tache: { type: 'qcm', q: 'Pendant la décharge, quel est le bon trajet ?',
+        options: ['Ions Li⁺ : électrode − vers électrode + dans la cellule ; électrons : borne − vers borne + par la lampe',
+          'Ions Li⁺ : électrode + vers électrode − dans la cellule ; électrons : borne − vers borne + par la lampe',
+          'Ions Li⁺ : électrode − vers électrode + dans la cellule ; électrons : borne + vers borne − par la lampe'], bonne: 0,
+        indice: ['Ions et électrons partent de la même électrode, mais par deux chemins différents.', 'L’électrode négative est celle qui libère les ions et les électrons pendant la décharge.'],
+        expl: 'Ions et électrons partent du même côté (le graphite, négatif) et arrivent du même côté (l’oxyde, positif), mais par deux chemins différents.' } },
     { titre: 'Chaque ion a son électron', focus: ['neg', 'pos'],
       texte: <>Regardez une particule : chaque ion Li⁺ rangé entre les feuillets est accompagné d'un électron (en vert). Quand un ion Li⁺
         quitte une particule de graphite, son électron la quitte aussi, mais par le collecteur et le fil.</>,
       tache: { type: 'qcm', q: 'Quand un ion Li⁺ vient se ranger dans une particule d’oxyde, qu’est-ce qui la garde électriquement neutre ?',
         options: ['Un électron, arrivé par le circuit et le collecteur', 'Un anion de l’électrolyte, qui entre aussi dans la particule', 'Rien : la bille se charge positivement'], bonne: 0,
+        indice: 'Une particule neutre qui reçoit une charge + doit recevoir aussi une charge − pour rester neutre.',
         expl: 'C’est l’électron qui compense la charge de l’ion dans la particule (il réduit le métal de l’oxyde). Les anions restent dans l’électrolyte, qui remplit les pores entre les billes : ils assurent la neutralité de l’électrolyte, pas celle des particules.' } },
     { titre: 'La charge', focus: ['lampe'],
-      texte: <>On remplace la lampe par un <strong>chargeur</strong> (le bouton est apparu). Lancez la charge.</>,
+      texte: <>On remplace la lampe par un <strong>chargeur</strong> (le bouton est apparu) et on le lance. La décharge se fait toute seule ; la charge, non :
+        le chargeur est un générateur qui fournit l'énergie forçant les ions et les électrons à revenir vers l'électrode négative.</>,
       tache: { type: 'action', ok: vus.charge, consigne: `${sens === 'charge' ? '✅' : '⬜'} chargeur branché   État de charge : ${fmt(etat.soc * 100, 0)} %` } },
-    { titre: 'Pourquoi faut-il un chargeur ?', focus: ['neg', 'pos'],
-      texte: <>Pendant la charge, ions et électrons font le chemin inverse.</>,
-      tache: { type: 'qcm', q: 'Pourquoi une lampe ne suffit-elle pas pour recharger la cellule ?',
-        options: ['Il faut un générateur qui force les ions et les électrons à revenir vers l’électrode négative', 'La lampe est trop petite', 'Il faut d’abord vider l’électrolyte'], bonne: 0,
-        expl: 'La décharge est spontanée ; la charge ne l’est pas : il faut fournir de l’énergie.' } },
     { titre: 'Anode ou cathode ?', focus: ['neg'],
       texte: <>Regardez les demi-équations sous le schéma. En décharge, le graphite perd ses électrons : c'est une
         <strong> oxydation</strong>, il joue le rôle d'<strong>anode</strong>. Passez en charge et observez.</>,
       tache: { type: 'qcm', q: 'Pendant la charge, l’électrode de graphite…',
         options: ['est le siège d’une réduction : elle joue alors le rôle de cathode', 'reste l’anode', 'devient la borne +'], bonne: 0,
+        indice: ['Anode : siège d’une oxydation (perte d’électrons). Cathode : siège d’une réduction (gain d’électrons).', 'Pendant la charge, le graphite gagne des électrons et des ions Li⁺.'],
         expl: 'Les noms anode et cathode suivent la réaction, donc changent entre la charge et la décharge. Les bornes + et − ne changent pas. (Les fabricants appellent souvent « cathode » l’électrode NMC : c’est son rôle en décharge.)' } },
     { titre: 'La tension de la cellule', focus: [],
       texte: <>Le graphique montre la tension de la cellule selon son état de charge.</>,
       tache: { type: 'qcm', q: 'Quand la cellule se décharge, sa tension…', options: ['augmente', 'diminue, de 4,2 V à 2,5 V environ', 'reste exactement constante'], bonne: 1,
+        indice: 'Regardez la courbe du graphique quand l’état de charge baisse.',
         expl: 'On retient une tension « nominale » de 3,7 V, sa valeur moyenne pendant la décharge. En fin de décharge, la tension chute très vite : le système de gestion de la batterie (BMS) coupe la décharge vers 2,5 V pour ne pas abîmer la cellule.' } },
     { titre: 'La capacité', focus: ['neg'],
       texte: <>La capacité Q dit quelle quantité d'électricité la cellule peut débiter. C'est une <strong>charge électrique</strong>,
@@ -252,23 +250,28 @@ export function SimulationStockage() {
         et regardez le nombre de particules (donc de places pour le lithium) ; augmentez l'intensité, et regardez le flux d'ions et
         d'électrons. Ici, la cellule débite <strong>{fmt(I, 1)} A</strong>.</>,
       tache: { type: 'num', q: 'Durée de la décharge complète t = Q / I', carnet: false, unite: 'h', vrai: Qcap / I, tol: 0.03,
+        indice: ['Une cellule de Q ampères-heures débite Q ampères pendant 1 heure.', <>Durée = <FormuleEnLigne><mfrac><mi>Q</mi><mi>I</mi></mfrac></FormuleEnLigne>, avec Q en Ah et I en A : le résultat est en heures.</>],
         pieges: [[I / Qcap, 'C’est Q divisé par I.'], [Qcap / I * 60, 'La réponse est demandée en heures.']] } },
     { titre: 'L’énergie stockée', focus: [],
       texte: <>L'énergie stockée vaut E = U × Q, avec la tension nominale U = 3,7 V.</>,
-      tache: { type: 'num', q: <>Énergie stockée E (Q = {fmt(Qcap, 1)} Ah)</>, carnet: 'Énergie stockée E', unite: 'Wh', vrai: E37, tol: 0.03 } },
+      tache: { type: 'num', q: <>Énergie stockée E (Q = {fmt(Qcap, 1)} Ah)</>, carnet: 'Énergie stockée E', unite: 'Wh', vrai: E37, tol: 0.03,
+        indice: <>E = U × Q = 3,7 V × Q (Q en Ah) : le résultat est en Wh.</> } },
     { titre: 'La densité d’énergie', focus: [],
       texte: <>Cette cellule a une masse de <strong>{fmt(masse1, 0)} g</strong> et stocke <strong>{fmt(E37, 1)} Wh</strong> (étape précédente). La densité massique
         d'énergie est l'énergie stockée par kilogramme de cellule : elle se mesure en Wh/kg.</>,
       tache: { type: 'num', q: 'Densité massique d’énergie', carnet: false, unite: 'Wh/kg', affiche: Wh_kg, vrai: E37 / (masse1 / 1000), tol: 0.03,
+        indice: ['Densité = énergie ÷ masse, avec la masse en kilogrammes.', 'Convertissez les grammes en kg : divisez par 1000.'],
         pieges: [[E37 / masse1, 'La masse doit être en kilogrammes : 45 g = 0,045 kg.']] } },
     { titre: 'Combien de lithium ? (terminale)', focus: ['neg'],
       texte: <>Chaque ion Li⁺ qui traverse s'accompagne d'un électron dans le circuit. La charge totale vaut Q × 3600 (en coulombs),
         et une mole d'électrons porte F = 96 485 C (constante de Faraday).</>,
       tache: { type: 'num', q: 'Quantité de lithium qui fait l’aller-retour n = Q × 3600 / F', unite: 'mol', vrai: Qcap * 3600 / ST_F, tol: 0.03, carnet: false,
+        indice: ['Convertissez d’abord la capacité Q en coulombs : multipliez les Ah par 3600.', 'Puis divisez par F = 96 485 C/mol.'],
         pieges: [[Qcap / ST_F, 'Convertissez d’abord la capacité en coulombs : 1 Ah = 3600 C.']], aide: 'Notation scientifique acceptée : pour 4,5 × 10⁻⁶, tapez 4,5e-6.' } },
-    { titre: 'Bravo !', focus: [],
-      texte: <>Vous savez ce qui se passe dans une cellule de batterie et comment la caractériser (tension, capacité, énergie, densité).
-        Passez à l'atelier 2 pour assembler des cellules et relever des missions.</>, tache: null },
+    { titre: 'Le bilan', focus: [],
+      texte: <>Dans une cellule lithium-ion, les ions Li⁺ traversent l'électrolyte et les électrons le circuit extérieur : de − vers + en décharge, en sens inverse en charge
+        (avec un chargeur). Les noms anode et cathode suivent la réaction. Pour votre cellule : Q = {fmt(Qcap, 1)} Ah, E = U × Q = {fmt(E37, 1)} Wh (U = 3,7 V),
+        masse {fmt(masse1, 0)} g, soit {fmt(E37 / (masse1 / 1000), 0)} Wh/kg. Passez à l'atelier 2 pour assembler des cellules et relever des missions.</>, tache: null },
   ];
   const zn = 0.34 - (-0.76);
   const whKg = id => { const c = CELLULES.find(x => x.id === id); return c.U * c.Q / (c.m / 1000); };
@@ -290,17 +293,8 @@ export function SimulationStockage() {
     { titre: 'Choisir ses électrodes', focus: [],
       texte: <>La tension d'une cellule est (au mieux) la différence des potentiels de ses deux couples :{tableauPot}</>,
       tache: { type: 'qcm', q: 'Quelle association donnerait la plus grande tension ?', options: ['Cuivre et zinc', 'Or et lithium', 'Argent et cuivre', 'Fer et zinc'], bonne: 1,
-        expl: '1,50 − (−3,04) = 4,54 V. Mais l’or est très cher, et très lourd (197 g/mol) : la batterie aurait une faible densité d’énergie massique. Les batteries réelles associent le lithium à des oxydes métalliques.' } },
-    { titre: 'La pile cuivre-zinc', focus: [],
-      texte: <>La pile « patate » utilise une électrode de zinc et une de cuivre (potentiels : Cu<sup>2+</sup>/Cu +0,34 V ; Zn<sup>2+</sup>/Zn −0,76 V).</>,
-      tache: { type: 'num', q: 'Tension théorique de la pile cuivre-zinc', unite: 'V', vrai: zn, tol: 0.02,
-        pieges: [[0.34 - 0.76, 'Attention au signe : 0,34 − (−0,76) = 0,34 + 0,76.']],
-        carnet: false, expl: 'Le calcul donne l’ordre de grandeur, pas la valeur exacte : on mesure vers 0,9 V. Dans un fruit, il n’y a pas d’ions Cu²⁺ au départ, les concentrations ne sont pas « standard », et c’est surtout H⁺ (l’acide du fruit) qui est réduit sur le cuivre.' } },
-    { titre: 'Et le lithium ?', focus: [],
-      texte: <>Le lithium donnerait les plus grandes tensions. Pourtant, les batteries au lithium n'utilisent jamais d'eau
-        (ni de fruit !) : les cellules sont assemblées sous argon, avec un électrolyte organique.</>,
-      tache: { type: 'qcm', q: 'Pourquoi ?', options: ['Le lithium réagit violemment avec l’eau', 'Le lithium est trop lourd', 'L’eau est trop chère'], bonne: 0,
-        expl: 'De plus, au-delà d’environ 1,5 à 2 V, l’eau elle-même se décompose (électrolyse).' } },
+        indice: ['Cherchez le couple de potentiel le plus élevé et celui de potentiel le plus bas.', 'La tension est la différence des deux potentiels : la plus grande valeur absolue gagne.'],
+        expl: '1,50 − (−3,04) = 4,54 V. Mais l’or est très cher et très lourd (197 g/mol) : la densité d’énergie massique serait faible. Les batteries réelles associent le lithium à des oxydes métalliques, avec un électrolyte organique (le lithium réagit violemment avec l’eau, et au-delà de 1,5 à 2 V l’eau se décompose). Exemple de la pile « patate » : cuivre-zinc, 0,34 − (−0,76) = 1,10 V en théorie ; on mesure plutôt 0,9 V, car les concentrations ne sont pas « standard » et c’est surtout H⁺ (l’acide du fruit) qui est réduit sur le cuivre.' } },
     { titre: 'Allumer le réveil', focus: [],
       texte: <>Le réveil a besoin d'<strong>au moins 1,5 V</strong>. L'assemblage est apparu sous le schéma : avec des piles
         patates (0,9 V chacune), trouvez comment y arriver.</>,
@@ -308,27 +302,27 @@ export function SimulationStockage() {
     { titre: 'Série ou parallèle ?', focus: [],
       texte: <>Essayez d'ajouter des cellules en série, puis en parallèle, et regardez U et Q.</>,
       tache: { type: 'qcm', q: 'En série, les tensions s’additionnent. En parallèle…', options: ['les capacités s’additionnent', 'les tensions s’additionnent aussi', 'rien ne change'], bonne: 0,
+        indice: 'Essayez les deux assemblages et regardez U et Q dans les mesures.',
         expl: 'Série : plus de tension. Parallèle : plus de capacité (plus longtemps). Dans les deux cas, l’énergie E = U × Q augmente.' } },
     { titre: 'L’énergie d’une cellule', focus: [],
       texte: <>Une pile Ni-MH GP 2300 affiche 1,2 V et 2,25 Ah. On rappelle E = U × Q.</>,
-      tache: { type: 'num', q: 'Énergie stockée', carnet: 'Énergie de la pile Ni-MH', unite: 'Wh', vrai: mGP.U * mGP.Q, tol: 0.02 } },
+      tache: { type: 'num', q: 'Énergie stockée', carnet: 'Énergie de la pile Ni-MH', unite: 'Wh', vrai: mGP.U * mGP.Q, tol: 0.03,
+        indice: 'Multipliez la tension (V) par la capacité (Ah) : le résultat est en Wh.' } },
     { titre: 'La densité d’énergie', focus: [],
       texte: <>Cette pile pèse 30 g et stocke {fmt(mGP.U * mGP.Q, 2)} Wh (étape précédente). On donne une densité d'énergie sans décimale : d'une cellule à l'autre, Q et m varient un peu, et Q
         dépend aussi de la température, du courant demandé et du vieillissement de la batterie.</>,
       tache: { type: 'num', q: 'Densité massique d’énergie', carnet: false, unite: 'Wh/kg', affiche: Wh_kg, vrai: mGP.U * mGP.Q / 0.030, tol: 0.03,
+        indice: ['Densité = énergie ÷ masse, avec la masse en kilogrammes.', '30 g = 0,030 kg.'],
         pieges: [[mGP.U * mGP.Q / 30, 'Le piège classique : la masse doit être en kg (30 g = 0,030 kg).']] } },
     { titre: 'Mission téléphone', focus: [],
       texte: <>Un téléphone demande entre <strong>3,6 et 4,4 V</strong>, au moins <strong>8 Wh</strong>, et la batterie ne doit pas
         dépasser <strong>100 g</strong>. Choisissez le type de cellule et l'assemblage.</>,
       tache: { type: 'action', ok: telOk, consigne: telOk ? null : `Actuel : ${fmt(bat.U, 1)} V ; ${fmt(bat.E, 1)} Wh ; ${fmt(bat.m, 0)} g` } },
-    { titre: 'Et une voiture ?', focus: [],
-      texte: <>À 80 km/h, une Renault Zoé consomme <strong>13,5 kWh pour 100 km</strong>.</>,
-      tache: { type: 'num', q: 'Énergie nécessaire pour parcourir 400 km', carnet: 'Énergie pour 400 km', unite: 'kWh', vrai: 54, tol: 0.02,
-        pieges: [[13.5 * 400, 'La consommation est donnée pour 100 km : divisez par 100.']] } },
-    { titre: 'Quelle densité faut-il ?', focus: [],
-      texte: <>Il faut <strong>54 kWh</strong> (étape précédente), et les cellules de la Zoé pèsent au total <strong>217 kg</strong>. Quelle densité d'énergie
-        minimale doivent-elles avoir ?</>,
+    { titre: 'Quelle densité pour une voiture ?', focus: [],
+      texte: <>À 80 km/h, une Renault Zoé consomme <strong>13,5 kWh pour 100 km</strong> : pour parcourir 400 km, il lui faut <strong>54 kWh</strong> (13,5 × 4).
+        Les cellules de sa batterie pèsent au total <strong>217 kg</strong>. Quelle densité d'énergie minimale doivent-elles avoir ?</>,
       tache: { type: 'num', q: 'Densité d’énergie nécessaire', carnet: false, unite: 'Wh/kg', affiche: Wh_kg, vrai: 54000 / 217, tol: 0.03,
+        indice: ['Densité = énergie ÷ masse. Convertissez 54 kWh en Wh.', '54 kWh = 54 000 Wh.'],
         pieges: [[54 / 217, '54 kWh = 54 000 Wh.']] } },
     { titre: 'Mission Zoé', focus: [],
       texte: <>Construisez la batterie de la Zoé : au moins 54 kWh, au plus 217 kg de cellules, et une tension entre 340 et 420 V.
@@ -340,6 +334,7 @@ export function SimulationStockage() {
         de vie (sous le choix de cellule).</>,
       tache: { type: 'qcm', q: 'Qu’est-ce qui distingue une cellule LFP d’une cellule NMC ?',
         options: ['Le matériau de l’électrode positive, donc la tension et la densité d’énergie', 'La LFP ne contient pas de lithium', 'Rien : ce sont les mêmes cellules'], bonne: 0,
+        indice: 'Comparez les tensions et les densités d’énergie affichées pour les deux cellules.',
         expl: `La LFP a une tension nominale plus basse (3,2 V contre 3,7 V) et stocke moins d'énergie par kilogramme (${Wh_kg(whKg('lfp'))} Wh/kg contre ${Wh_kg(whKg('lihd'))} pour une NMC haute densité), mais elle est plus sûre, sans cobalt, et supporte bien plus de cycles de charge.` } },
     { titre: 'Une batterie de 12 V', focus: [],
       texte: <>Une voiture thermique a une batterie de 12 V, rechargée par l'alternateur sous <strong>14,4 V</strong> au maximum. Chaque cellule
@@ -347,6 +342,7 @@ export function SimulationStockage() {
         Les cellules sont en série : les tensions s'additionnent.</>,
       tache: { type: 'num', q: 'Combien de cellules LFP en série pour une tension nominale proche de 12 V ?', unite: 'cellules', vrai: 4, tol: 0,
         carnet: false,
+        indice: ['Les tensions des cellules en série s’additionnent : n × 3,2 V.', 'Cherchez n pour que n × 3,2 V soit proche de 12 V.'],
         pieges: [[3, 'Avec 3 cellules, on n’obtient que 9,6 V.'], [5, 'Avec 5 cellules, la tension de fin de charge dépasserait 14,4 V (5 × 3,6 = 18 V).']],
         expl: '4 × 3,2 = 12,8 V nominaux, et 4 × 3,6 = 14,4 V en fin de charge : exactement la tension de l’alternateur. Avec des cellules NMC, 4 en série feraient 16,8 V en fin de charge : trop.' } },
     { titre: 'Mission batterie de voiture', focus: [],
@@ -357,12 +353,14 @@ export function SimulationStockage() {
     { titre: 'Combien coûte le kWh stocké ?', focus: [],
       texte: <>Une batterie LFP coûte environ <strong>184 €/kWh</strong> de capacité et supporte environ <strong>3000 cycles</strong> complets de charge et de décharge.
         Chaque cycle fait passer 1 kWh de plus dans la batterie. On suppose ici des cycles complets et on néglige le rendement et le vieillissement dans le temps.</>,
-      tache: { type: 'num', q: 'Coût du kWh stocké = prix / nombre de cycles', unite: '€/kWh', vrai: 184 / 3000, tol: 0.03, carnet: false,
+      tache: { type: 'num', q: 'Coût du kWh stocké = prix / nombre de cycles', unite: '€/kWh', vrai: 184 / 3000, tol: 0.05, carnet: false,
+        indice: 'Chaque cycle stocke 1 kWh de plus : divisez le prix au kWh par le nombre de cycles.',
         affiche: v => fmt(v, 2),
         pieges: [[184 * 3000, 'C’est le prix divisé par le nombre de cycles.']],
         expl: 'Environ 0,06 €. Pour comparer : NMC 0,11 € (114 €/kWh, 1000 cycles), plomb 0,28 € (221 €/kWh, 800 cycles), Na-ion 0,03 € (113 €/kWh, 4000 cycles). Le coût du kWh stocké dépend fortement du nombre de cycles de charge possibles : la technologie la moins chère à l’achat n’est pas toujours la moins chère à l’usage. Données indicatives (CEA-Liten / INES).' } },
-    { titre: 'Bravo !', focus: [],
-      texte: <>Seules les meilleures cellules actuelles (250 Wh/kg) permettent la mission Zoé. Avec du plomb, la même masse ne ferait
+    { titre: 'Le bilan', focus: [],
+      texte: <>En série, les tensions s'additionnent ; en parallèle, les capacités s'additionnent ; l'énergie E = U × Q et la densité d'énergie (Wh/kg) décident de ce qui est possible.
+        Seules les meilleures cellules actuelles (250 Wh/kg) permettent la mission Zoé. Avec du plomb, la même masse ne ferait
         que {fmt(Math.round(kmZoe('plomb') / 10) * 10, 0)} km… et avec des patates, {fmt(Math.round(kmZoe('patate') / 5) * 5, 0)} km ! Les cellules LFP et Na-ion, moins denses, trouvent leur place
         là où la durée de vie, la sécurité ou le coût comptent plus que la masse. Explorez librement ou relevez le défi.</>, tache: null },
   ];
@@ -417,8 +415,7 @@ export function SimulationStockage() {
   const ionsLibres = [[262, 118], [298, 214], [350, 136], [372, 262], [248, 282], [392, 178], [324, 280], [150, 290], [490, 290]];
   const anions = [[278, 160], [340, 104], [356, 214], [262, 236], [150, 100], [86, 160], [150, 238], [490, 100], [554, 160], [490, 238], [300, 132], [384, 238], [86, 290], [554, 290]];
   const schemaBatterie = (
-    <svg viewBox="0 0 640 330" role="img" aria-label="Cellule lithium-ion en charge ou en décharge"
-      style={{ width: '100%', height: 'auto', display: 'block', background: 'white', borderRadius: 8, border: `1px solid ${BORDER}` }}>
+    <svg viewBox="0 0 640 330" role="img" aria-label="Cellule lithium-ion en charge ou en décharge" className="es-schema" style={{ background: 'white', borderRadius: 8, border: `1px solid #cbd5e1` }}>
       {/* circuit extérieur */}
       <path d={cheminFil} fill="none" stroke={TXT} strokeWidth="2"/>
       {sens === 'decharge' ? (
@@ -539,8 +536,7 @@ export function SimulationStockage() {
     const w = Math.min(cols <= 4 ? 70 : 44, 520 / cols - 10), h = lignes <= 3 ? 32 : 22;   // plus grandes quand il y en a peu
     const x0 = 320 - (cols * (w + 10)) / 2, y0 = 140 - (lignes * (h + 8)) / 2;
     return (
-      <svg viewBox="0 0 640 300" role="img" aria-label="Assemblage de cellules en série et en parallèle"
-        style={{ width: '100%', height: 'auto', display: 'block', background: 'white', borderRadius: 8, border: `1px solid ${BORDER}` }}>
+      <svg viewBox="0 0 640 300" role="img" aria-label="Assemblage de cellules en série et en parallèle" className="es-schema" style={{ background: 'white', borderRadius: 8, border: `1px solid #cbd5e1` }}>
         <text x="320" y="26" fontSize="16" fontWeight="700" fill={TXT} textAnchor="middle">
           {nS} en série × {nP} en parallèle = {bat.n} cellule{bat.n > 1 ? 's' : ''} « {cel.nom} »
         </text>
@@ -599,7 +595,7 @@ export function SimulationStockage() {
         val: c.U * c.Q / (c.m / 1000), etiquette: Wh_kg(c.U * c.Q / (c.m / 1000)), color: c.c, fort: c.id === celId }))}/>
   );
   const blocGraphe = (atelier === 1 ? rev1.graphe : rev2.energie) && (
-    <div style={box} data-apparait={atelier === 1 ? '9' : undefined}>
+    <div style={box} data-apparait={atelier === 1 ? '7' : undefined}>
       <div style={titreBox}>{atelier === 1 ? 'Tension et état de charge' : 'Densité d’énergie des cellules'}</div>
       {atelier === 1 ? grapheBatterie : grapheDensites}
       <div style={{ fontSize: 13, color: TXT2, marginTop: 6, lineHeight: 1.5 }}>
@@ -814,7 +810,8 @@ export function SimulationStockage() {
       <div className="st-l1">
         <div style={box}>
           <div style={titreBox}>{atelier === 1 ? 'Une cellule lithium-ion' : 'Votre batterie'}</div>
-          {atelier === 1 ? schemaBatterie : schemaAssemblage}
+          <div className="es-schema-cadre">{atelier === 1 ? schemaBatterie : schemaAssemblage}</div>
+          <div className="es-schema-aide">↔ Faites glisser le schéma pour le voir en entier.</div>
           {atelier === 1 && rev1.equations && equations}
           <div style={{ fontSize: 13, color: TXT2, marginTop: 6, lineHeight: 1.5 }}>
             {atelier === 1 ? <>Dans la cellule, les ions Li⁺ traversent l'électrolyte ; à l'extérieur, les électrons parcourent le circuit.
@@ -830,13 +827,13 @@ export function SimulationStockage() {
       <div className="st-l2">
         {mode !== 'explore' && blocGraphe}
         {atelier === 1 ? (
-          <div data-apparait="2 6 10">
+          <div data-apparait="2 5 8">
             {section('commandes', 'Commandes', commandes1)}
             {rev1.commandes && section('mesures', 'Mesures', mesures1)}
           </div>
         ) : (
           <>
-            <div data-apparait="4">{section('assemblage', 'Assemblage', assemblage)}</div>
+            <div data-apparait="2">{section('assemblage', 'Assemblage', assemblage)}</div>
             {rev2.assemblage && <div>
               {section('mesures', 'Caractéristiques de la batterie', resultats2)}
               {mode !== 'defi' && rev2.missions && section('missions', 'Missions', missions)}
