@@ -140,6 +140,14 @@ export function SimulationStockage() {
 
   // ── Styles ──
   const { txt: TXT, txt2: TXT2, bord: BORDER, fond: BG } = COUL;
+  const menuS = (libelle, valeur, onChange, options) => (
+    <label style={{ display: 'block', fontSize: 13.5, color: TXT2, fontWeight: 700, marginBottom: 8 }}>{libelle}
+      <select value={valeur} onChange={e => onChange(e.target.value)}
+        style={{ display: 'block', width: '100%', minHeight: 42, marginTop: 3, fontSize: 15, padding: '6px 8px', border: `1.5px solid ${BORDER}`, borderRadius: 8, background: 'white', color: TXT }}>
+        {options.map(([v, t]) => <option key={v} value={v}>{t}</option>)}
+      </select>
+    </label>
+  );
   const box = { background: BG, borderRadius: 10, padding: '10px 12px', border: `1px solid ${BORDER}` };
   const titreBox = { fontWeight: 700, fontSize: 15, color: TXT, marginBottom: 6 };
   const btn = (actif, c = '#0284c7') => ({ padding: '7px 14px', borderRadius: 999, cursor: 'pointer',
@@ -622,10 +630,11 @@ export function SimulationStockage() {
         {bloque && <div style={{ fontSize: 13, color: '#b45309', marginBottom: 8 }}>
           {sens === 'decharge' ? 'La cellule est vide : il n’y a plus de lithium dans le graphite. Passez en charge.'
             : 'La cellule est pleine : tout le lithium est rangé dans le graphite. Passez en décharge.'}</div>}
+        {enGuide ? <>
         <div style={{ fontSize: 12.5, color: TXT2, fontWeight: 700, marginBottom: 3 }}>Vitesse du temps</div>
         <div style={{ display: 'flex', gap: 5, marginBottom: 8 }}>
           {[60, 300, 1200].map(v => <button key={v} onClick={() => setVitesse(v)} style={petitBtn(vitesse === v, '#334155')}>× {v}</button>)}
-        </div>
+        </div></> : menuS('Vitesse du temps (1 s réelle = … s simulées)', vitesse, v => setVitesse(+v), [60, 300, 1200].map(v => [v, `× ${v}`]))}
       </>}
       {rev1.reglages && <>
         {curseur('Capacité de la cellule (quantité de lithium)', Qcap, v => { setQcap(v); }, 1, 5, 0.5, 'Ah', 1)}
@@ -652,10 +661,11 @@ export function SimulationStockage() {
     <>
       {!rev2.assemblage && <div style={{ fontSize: 13, color: TXT2 }}>L'assemblage apparaîtra au fil du parcours.</div>}
       {rev2.assemblage && <>
+        {enGuide ? <>
         <div style={{ fontSize: 13.5, color: TXT2, fontWeight: 700, marginBottom: 4 }}>Type de cellule</div>
         <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', marginBottom: 10 }}>
           {CELLULES.map(c => <button key={c.id} onClick={() => setCelId(c.id)} style={petitBtn(celId === c.id, c.c)}>{c.nom}</button>)}
-        </div>
+        </div></> : menuS('Type de cellule', celId, setCelId, CELLULES.map(c => [c.id, c.nom]))}
         <div style={{ fontSize: 12.5, color: TXT2, marginBottom: 8 }}>
           Une cellule : {fmt(cel.U, 2)} V ; {fmt(cel.Q, 2)} Ah ; {fmt(cel.m, 1)} g{cel.note ? ` (${cel.note})` : ''}.
           {cel.cycles && <> Durée de vie : environ {fmt(cel.cycles, 0)} cycles ; prix : environ {fmt(cel.prix, 0)} €/kWh (valeurs indicatives).</>}
@@ -677,9 +687,9 @@ export function SimulationStockage() {
   );
   const missions = (
     <>
-      <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', marginBottom: 8 }}>
+      {enGuide ? <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', marginBottom: 8 }}>
         {MISSIONS.map(x => <button key={x.id} onClick={() => setMissionId(x.id)} style={petitBtn(missionId === x.id, '#0ea5e9')}>{x.nom}</button>)}
-      </div>
+      </div> : menuS('Mission', missionId, setMissionId, MISSIONS.map(x => [x.id, x.nom]))}
       <div style={{ fontSize: 14, color: TXT, lineHeight: 1.5 }}><strong>{mission.nom}</strong> : {mission.texte}.</div>
       <div style={{ fontSize: 15, fontWeight: 700, marginTop: 6, color: mission.ok(bat) ? '#15803d' : '#b91c1c' }}>
         {mission.ok(bat) ? <><Emo e="✅"/> Mission réussie !</> : <><Emo e="❌"/> Pas encore</>}

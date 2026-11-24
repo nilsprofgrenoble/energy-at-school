@@ -578,6 +578,14 @@ export function SimulationHydrogene() {
   })();
 
   // ════════════════ VOLETS D'EXPLORATION ════════════════
+  const menuH = (libelle, valeur, onChange, options) => (
+    <label style={{ display: 'block', fontSize: 13.5, color: TXT2, fontWeight: 700, marginBottom: 8 }}>{libelle}
+      <select value={valeur} onChange={e => onChange(e.target.value)}
+        style={{ display: 'block', width: '100%', minHeight: 42, marginTop: 3, fontSize: 15, padding: '6px 8px', border: `1.5px solid ${BORDER}`, borderRadius: 8, background: 'white', color: TXT }}>
+        {options.map(([v, t]) => <option key={v} value={v}>{t}</option>)}
+      </select>
+    </label>
+  );
   const commandesMaquette = (
     <>
       {!rev1.chrono && <div style={{ fontSize: 13, color: TXT2 }}>Les commandes apparaîtront au fil du parcours.</div>}
@@ -588,10 +596,12 @@ export function SimulationHydrogene() {
         </button>
         <button onClick={reinitialiser} style={btn(false)}>↺ Vider les tubes</button>
       </div>
+      {enGuide ? <>
       <div style={{ fontSize: 12, color: TXT2, fontWeight: 700, marginBottom: 3 }}>Vitesse du temps</div>
       <div style={{ display: 'flex', gap: 5, marginBottom: 10 }}>
         {[1, 10, 60].map(v => <button key={v} onClick={() => setVitesse(v)} style={petitBtn(vitesse === v)}>× {v}</button>)}
-      </div></>}
+      </div></> : menuH('Vitesse du temps (1 s réelle = … s simulées)', vitesse, v => setVitesse(+v), [1, 10, 60].map(v => [v, `× ${v}`]))}
+      </>}
       {rev1.pile && <><div style={{ display: 'flex', flexDirection: 'column', gap: 5, marginBottom: 10 }}>
         <button onClick={() => setElecOn(v => !v)} style={petitBtn(elecOn, COUL.elec)}>
           {elecOn ? <><Emo e="🔌"/> Électrolyseur branché</> : <><Emo e="🔌"/> Électrolyseur débranché</>}
@@ -600,11 +610,13 @@ export function SimulationHydrogene() {
           {pacOn ? <><Emo e="🔌"/> Pile branchée sur la charge</> : <><Emo e="🔌"/> Pile débranchée</>}
         </button>
       </div>
+      {enGuide ? <>
       <div style={{ fontSize: 12, color: TXT2, fontWeight: 700, marginBottom: 3 }}>Charge branchée sur la pile</div>
       <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
         {CHARGES.map(c => <button key={c.id} onClick={() => setChargeId(c.id)}
           style={{ ...petitBtn(chargeId === c.id, COUL.pile), padding: '3px 8px' }}>{c.nom}</button>)}
-      </div></>}
+      </div></> : menuH('Charge branchée sur la pile', chargeId, setChargeId, CHARGES.map(c => [c.id, c.nom]))}
+      </>}
       {pacOn && affame && (
         <div style={{ fontSize: 12.5, color: '#b45309', marginTop: 8 }}>
           Les tubes sont presque vides : la pile ne consomme que le gaz produit à l'instant par l'électrolyseur,

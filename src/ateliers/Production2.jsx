@@ -324,6 +324,9 @@ export function SimulationProduction2() {
   // ════════════════ VOLETS ════════════════
   const commandes = (
     <>
+      {!enGuide && <div style={{ fontSize: 12.5, color: TXT2, lineHeight: 1.5, marginBottom: 8 }}>
+        Réglez le débit, puis serrez le frein pas à pas : il joue le rôle de l’alternateur qui prélève de la puissance.
+      </div>}
       {!enGuide && <div style={{ marginBottom: 10 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13.5, color: TXT2, fontWeight: 700 }}>
           <span>Débit (aiguille de la tuyère)</span><span style={{ color: TXT }}>{fmt(qL, 1)} L/min</span>
@@ -646,14 +649,14 @@ export function SimulationProduction2() {
         <div className="p2-l2">
           {blocGraphe}
           <div>
-            {section('commandes', 'Commandes', commandes)}
+            {section('commandes', !enGuide ? <>Commandes <span style={{ fontWeight: 600, fontSize: 13, color: TXT2 }}>· {fmt(qL, 1)} L/min · frein {fmt(F1, 1)} N</span></> : 'Commandes', commandes)}
             {section('mesures', 'Mesures', mesures)}
           </div>
           {revele.graphe && section('points', 'Mes points', mesPoints)}
         </div>
       ) : mode === 'explore' ? (
         <div className="p2-l2">
-          {section('commandes', 'Commandes', commandes)}
+          {section('commandes', !enGuide ? <>Commandes <span style={{ fontWeight: 600, fontSize: 13, color: TXT2 }}>· {fmt(qL, 1)} L/min · frein {fmt(F1, 1)} N</span></> : 'Commandes', commandes)}
           {section('mesures', 'Mesures', mesures)}
           {section('points', 'Mes points', mesPoints)}
           {section('comprendre', 'Comprendre', comprendre)}
@@ -661,7 +664,7 @@ export function SimulationProduction2() {
       ) : (
         <div className="p2-l2-defi">
           <div>
-            {section('commandes', 'Commandes', commandes)}
+            {section('commandes', !enGuide ? <>Commandes <span style={{ fontWeight: 600, fontSize: 13, color: TXT2 }}>· {fmt(qL, 1)} L/min · frein {fmt(F1, 1)} N</span></> : 'Commandes', commandes)}
             {section('mesures', 'Mesures', mesures)}
             {section('points', 'Mes points', mesPoints)}
           </div>

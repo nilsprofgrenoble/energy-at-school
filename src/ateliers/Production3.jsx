@@ -403,6 +403,9 @@ export function SimulationProduction3() {
     <>
       {mode === 'explore' && (
         <>
+          <div style={{ fontSize: 12.5, color: TXT2, lineHeight: 1.5, marginBottom: 8 }}>
+            Réglez le débit et la hauteur d’eau, puis la charge de l’alternateur : la roue s’adapte et les mesures se mettent à jour.
+          </div>
           <div style={{ marginBottom: 8 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13.5, color: TXT2, fontWeight: 700 }}>
               <span>Débit de la pompe</span><span style={{ color: TXT }}>{fmt(Q * 1000, 1)} L/s</span>
@@ -606,7 +609,7 @@ export function SimulationProduction3() {
       <div className="p3-l2">
         {revele.graphe && mode !== 'explore' && <div>{blocGraphe}</div>}
         <div>
-          {section('commandes', 'Commandes', commandes)}
+          {section('commandes', mode === 'explore' ? <>Commandes <span style={{ fontWeight: 600, fontSize: 13, color: TXT2 }}>· {fmt(Q * 1000, 1)} L/s · {fmt(H * 100, 1)} cm · {nomCharge(R)}</span></> : 'Commandes', commandes)}
           {(revele.balance || !enGuide) && section('mesures', 'Mesures', mesures)}
         </div>
         {revele.graphe && section('points', 'Mes points', mesPoints)}
