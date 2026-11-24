@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { cardStyle, Graphe, fmt, sci, lireNombre, proche, CarteParcours, useEtatPersistant, avecIndices, IndiceDefi, valeurAttendue } from "../commun";
+import { cardStyle, Graphe, fmt, sci, lireNombre, proche, CarteParcours, useEtatPersistant, avecIndices, IndiceDefi, valeurAttendue, FormuleEnLigne } from "../commun";
 import { BoutonFiche } from "../fiches/Fiche";
 import { signalerDefi, ouvrirDefi } from "../avancement";
 import { Emo, Pic } from '../Pictos';
@@ -67,7 +67,7 @@ export function SimulationProduction3() {
   const opt = optimum(Q, H);
 
   // Circuit ouvert et court-circuit : seuls comptent les essais faits pendant l'étape « Brancher l’alternateur »
-  const ETAPE_CHARGE = 6;
+  const ETAPE_CHARGE = 5;
   useEffect(() => {
     if (mode === 'guide' && etape === ETAPE_CHARGE) setVus({ co: false, cc: false });
   }, [etape, mode]);
@@ -165,28 +165,30 @@ export function SimulationProduction3() {
       texte: <>Ici, l'eau ne fait presque pas de chute : elle avance horizontalement dans le canal.</>,
       tache: { type: 'qcm', q: 'L’énergie que la roue récupère est surtout…',
         options: ['l’énergie cinétique de l’eau (sa vitesse)', 'l’énergie potentielle de l’eau (sa hauteur de chute)', 'l’énergie électrique du canal'], bonne: 0,
+        indice: 'L’eau avance dans un canal horizontal : qu’est-ce qui change, sa vitesse ou son altitude ?',
         expl: 'En première approximation, c’est surtout l’énergie cinétique de l’eau qui fait tourner la roue. Il y a aussi une petite part d’énergie potentielle (la légère différence de niveau de part et d’autre de la roue), que l’on néglige ici.' } },
-    { titre: 'Mesurer le débit avec la balance', focus: ['balance'],
+    { titre: 'Mesurer puis calculer le débit', focus: ['balance'],
       texte: <>En sortie de canal, l'eau tombe dans le seau d'une balance de Roberval. Le contre-poids vaut
-        <strong> 15 kg</strong> : la balance bascule quand le seau contient 15 kg d'eau. Lancez la pesée et notez la durée.</>,
-      tache: { type: 'action', label: '⚖️ Lancer la pesée', faire: () => setPesee({ actif: true, t: 0, m: 0, fini: null }),
-        ok: !!pesee.fini, attente: pesee.actif ? 'Remplissage du seau…' : null } },
-    { titre: 'Calculer le débit', focus: ['balance'],
-      texte: <>La balance a basculé au bout de <strong>{tPes ? fmt(tPes, 1) : '?'} s</strong>. 15 kg d'eau occupent un volume
-        V = m / ρ, avec ρ = 1,0 × 10³ kg·m⁻³. Le débit est Q<sub>V</sub> = V / Δt.</>,
-      tache: { type: 'num', id: 'Q', q: <>Débit volumique Q<sub>V</sub></>, carnet: 'Débit Q_V', unite: 'm³·s⁻¹', vrai: Qmes, tol: 0.03,
+        <strong> 15 kg</strong> : la balance bascule quand le seau contient 15 kg d'eau. Lancez la pesée et notez la durée Δt{tPes ? <> : <strong>{fmt(tPes, 1)} s</strong></> : null}.
+        15 kg d'eau occupent un volume <FormuleEnLigne><mi>V</mi><mo>=</mo><mfrac><mi>m</mi><mi>ρ</mi></mfrac></FormuleEnLigne>, avec ρ = 1,0 × 10³ kg·m⁻³. Le débit est <FormuleEnLigne><msub><mi>Q</mi><mi>V</mi></msub><mo>=</mo><mfrac><mi>V</mi><mrow><mi>Δ</mi><mi>t</mi></mrow></mfrac></FormuleEnLigne>.</>,
+      tache: { type: 'num', id: 'Q', q: <>Débit volumique Q<sub>V</sub></>, carnet: 'Débit Q_V', unite: 'm³·s⁻¹', vrai: Qmes, tol: 0.04,
+        bloque: !pesee.fini ? (pesee.actif ? 'Remplissage du seau…' : 'Lancez d’abord la pesée pour mesurer la durée.') : null,
+        retablir: pesee.actif ? undefined : { label: '⚖️ Lancer la pesée', faire: () => setPesee({ actif: true, t: 0, m: 0, fini: null }) },
+        indice: ['Passez d’abord de la masse au volume : V = m / ρ (en m³).', '15 kg d’eau = 0,015 m³. Divisez ensuite par la durée mesurée.'],
         pieges: Qmes ? [[15 / tPes, 'Il faut d’abord passer de la masse au volume : V = m / ρ.'], [Qmes * 1000, 'Le volume doit être en m³ : 15 kg d’eau = 0,015 m³.']] : [],
         aide: 'Notation scientifique acceptée : pour 4,5 × 10⁻⁶, tapez 4,5e-6.' } },
     { titre: 'La vitesse de l’eau', focus: ['H', 'L'],
       texte: <>L'eau occupe dans le canal une section rectangulaire : hauteur d'eau H = <strong>5,0 cm</strong>, largeur
         L = <strong>7,5 cm</strong>. On utilise Q<sub>V</sub> = v × S, avec S = H × L et le débit de l'étape précédente : Q<sub>V</sub> = {Qmes ? sci(Qmes) : '?'} m³·s⁻¹.</>,
-      tache: { type: 'num', id: 'va', q: <>Vitesse de l'eau v<sub>a</sub> = Q<sub>V</sub> / (H × L)</>, carnet: 'Vitesse de l’eau v_a', unite: 'm·s⁻¹', vrai: vaMes, tol: 0.04,
+      tache: { type: 'num', id: 'va', q: <>Vitesse de l'eau v<sub>a</sub> = Q<sub>V</sub> / (H × L)</>, carnet: 'Vitesse de l’eau v_a', unite: 'm·s⁻¹', vrai: vaMes, tol: 0.05,
+        indice: ['Calculez la section S = H × L en m² (1 cm = 0,01 m).', 'Puis v = Q_V / S.'],
         pieges: vaMes ? [[vaMes / 1e4, 'H et L doivent être en mètres : 5,0 cm = 0,050 m.'], [vaMes * 1e4, 'H et L doivent être en mètres.']] : [] } },
     { titre: 'La puissance disponible', focus: ['canal'],
       texte: <>On admet que la puissance apportée par l'eau qui s'écoule vaut P<sub>hyd</sub> = ½ × ρ × S × v<sub>a</sub>³
         (c'est l'énergie cinétique transportée chaque seconde ; elle pourra être démontrée pendant la journée). Avec la vitesse de l'eau
         de l'étape précédente, v<sub>a</sub> = {vaMes ? fmt(vaMes, 3) : '?'} m·s⁻¹, et S = H × L = 3,75 × 10⁻³ m².</>,
-      tache: { type: 'num', id: 'Ph', q: <>Puissance hydraulique P<sub>hyd</sub></>, carnet: 'Puissance hydraulique P_hyd', unite: 'W', vrai: PhMes, tol: 0.05,
+      tache: { type: 'num', id: 'Ph', q: <>Puissance hydraulique P<sub>hyd</sub></>, carnet: 'Puissance hydraulique P_hyd', unite: 'W', vrai: PhMes, tol: 0.06,
+        indice: ['Calculez v³ = v × v × v avec la vitesse de l’eau.', 'Puis P = ½ × ρ × S × v³, avec ρ = 1000 kg·m⁻³ et S = 3,75 × 10⁻³ m².'],
         pieges: PhMes ? [[PhMes * 2, 'N’oubliez pas le ½.'], [PhMes / vaMes, 'La vitesse est au cube : v³ = v × v × v.']] : [],
         aide: 'S = H × L en m².' } },
     { titre: 'Brancher l’alternateur', focus: ['charge'],
@@ -194,40 +196,39 @@ export function SimulationProduction3() {
         apparu sous le schéma : amenez-le tout à droite (circuit ouvert), puis tout à gauche (court-circuit), et
         observez U et I.</>,
       tache: { type: 'action', ok: vus.co && vus.cc, consigne: `${vus.co ? '✅' : '⬜'} circuit ouvert   ${vus.cc ? '✅' : '⬜'} court-circuit` } },
-    { titre: 'Circuit ouvert', focus: ['charge'],
-      texte: <>En circuit ouvert, la puissance électrique est nulle.</>,
-      tache: { type: 'qcm', q: 'Pourquoi ?', options: ['l’intensité I = 0 A', 'la tension U = 0 V'], bonne: 0,
-        expl: 'Le circuit est coupé : aucun courant ne circule, même si l’alternateur produit une tension.' } },
-    { titre: 'Court-circuit', focus: ['charge'],
-      texte: <>En court-circuit, la puissance électrique est aussi nulle.</>,
-      tache: { type: 'qcm', q: 'Pourquoi ?', options: ['l’intensité I = 0 A', 'la tension U = 0 V'], bonne: 1,
-        expl: 'Les bornes sont reliées par un fil : la tension entre elles est nulle. Entre les deux extrêmes, la puissance passe donc par un maximum.' } },
+    { titre: 'Une puissance nulle aux deux extrêmes', focus: ['charge'],
+      texte: <>En circuit ouvert comme en court-circuit, la puissance électrique <FormuleEnLigne><mi>P</mi><mo>=</mo><mi>U</mi><mo>×</mo><mi>I</mi></FormuleEnLigne> est nulle. Regardez U et I dans les deux cas.</>,
+      tache: { type: 'qcm', q: 'Pourquoi la puissance est-elle nulle aux deux extrêmes ?',
+        options: ['Circuit ouvert : I = 0 A ; court-circuit : U = 0 V', 'Circuit ouvert : U = 0 V ; court-circuit : I = 0 A', 'La puissance de l’alternateur est nulle dans les deux cas'], bonne: 0,
+        indice: ['Un circuit ouvert est coupé ; un court-circuit relie directement les bornes par un fil.', 'P = U × I : l’un des deux facteurs vaut 0 à chaque extrême.'],
+        expl: 'Circuit ouvert : aucun courant ne circule (I = 0). Court-circuit : les bornes sont reliées par un fil, la tension entre elles est nulle (U = 0). Entre les deux extrêmes, la puissance passe donc par un maximum.' } },
     { titre: 'La puissance électrique', focus: ['charge'],
       texte: <>Réglez la charge sur <strong>10 Ω</strong>. L'alternateur est <strong>triphasé</strong> : on admet que
         P<sub>élec</sub> = √3 × U × I, avec U la tension entre deux phases et I l'intensité dans une phase.</>,
-      tache: { type: 'num', id: 'Pe', q: <>Puissance électrique P<sub>élec</sub> (charge de 10 Ω)</>, carnet: 'Puissance électrique P_élec (10 Ω)', unite: 'W', vrai: P10, tol: 0.04,
+      tache: { type: 'num', id: 'Pe', q: <>Puissance électrique P<sub>élec</sub> (charge de 10 Ω)</>, carnet: 'Puissance électrique P_élec (10 Ω)', unite: 'W', vrai: P10, tol: 0.05,
         bloque: R !== 10 ? 'Réglez d’abord la charge sur 10 Ω.' : null,
+        indice: ['Lisez U et I dans les mesures pour une charge de 10 Ω.', 'P = √3 × U × I, avec I en ampères (50 mA = 0,050 A).'],
         pieges: [[U10 * I10, 'N’oubliez pas le facteur √3 de l’alternateur triphasé.'], [P10 * 1000, 'I doit être en ampères : 50 mA = 0,050 A.']] } },
     { titre: 'Le rendement', focus: ['canal', 'charge'],
       texte: <>Le rendement compare la puissance utile à la puissance absorbée : r = P<sub>utile</sub> / P<sub>absorbée</sub>.
         Ici, la puissance utile est l'électricité produite ; la puissance absorbée est celle apportée par l'eau.
         Reprenez vos deux résultats : P<sub>hyd</sub> = {PhMes ? fmt(PhMes, 2) : '?'} W et P<sub>élec</sub> = {fmt(P10, 3)} W (charge de 10 Ω).</>,
       tache: { type: 'num', id: 'eta', q: <>Rendement r = P<sub>élec</sub> / P<sub>hyd</sub></>, carnet: false, unite: '%', vrai: PhMes ? P10 / PhMes * 100 : null, tol: 0.06,
+        indice: ['Divisez la puissance électrique par la puissance hydraulique.', 'Multipliez par 100 pour exprimer en %.'],
         pieges: PhMes ? [[PhMes / P10 * 100, 'C’est l’inverse : puissance utile (électrique) sur puissance absorbée (eau).'], [P10 / PhMes, 'Exprimez le rendement en pourcentage (× 100).']] : [] } },
-    { titre: 'La vitesse de la roue', focus: ['roue'],
-      texte: <>Toujours sur 10 Ω, chronométrez la durée de <strong>5 tours</strong> de roue (le chronomètre est accéléré
-        × 5 pour ne pas attendre, la durée affichée est la vraie).</>,
-      tache: { type: 'action', label: '⏱️ Chronométrer 5 tours', faire: () => setChrono({ actif: true, t: 0, tours: 0, fini: null }),
-        ok: !!chrono.fini, bloque: R !== 10 ? 'Réglez d’abord la charge sur 10 Ω.' : null,
-        attente: chrono.actif ? `Tours comptés : ${Math.floor(chrono.tours)} / 5` : null } },
-    { titre: 'Vitesse de rotation', focus: ['roue'],
-      texte: <>La roue a fait 5 tours en <strong>{t5 ? fmt(t5, 2) : '?'} s</strong>.</>,
-      tache: { type: 'num', id: 'N', q: 'Vitesse de rotation N', carnet: 'Vitesse de rotation N', unite: 'tr·min⁻¹', vrai: Nmes, tol: 0.03,
+    { titre: 'La vitesse de rotation', focus: ['roue'],
+      texte: <>Toujours sur 10 Ω, chronométrez la durée de <strong>5 tours</strong> de roue (le chronomètre est accéléré × 5 pour ne pas attendre, la durée affichée est la vraie){t5 ? <> : <strong>{fmt(t5, 2)} s</strong></> : null}.
+        La vitesse de rotation est le nombre de tours par minute.</>,
+      tache: { type: 'num', id: 'N', q: 'Vitesse de rotation N', carnet: 'Vitesse de rotation N', unite: 'tr·min⁻¹', vrai: Nmes, tol: 0.04,
+        bloque: R !== 10 ? 'Réglez d’abord la charge sur 10 Ω.' : (!chrono.fini ? (chrono.actif ? `Tours comptés : ${Math.floor(chrono.tours)} / 5` : 'Lancez le chronomètre pour mesurer la durée de 5 tours.') : null),
+        retablir: R !== 10 ? undefined : (chrono.actif || chrono.fini ? undefined : { label: '⏱️ Chronométrer 5 tours', faire: () => setChrono({ actif: true, t: 0, tours: 0, fini: null }) }),
+        indice: ['Calculez d’abord le nombre de tours par seconde : 5 tours ÷ durée.', 'Multipliez par 60 pour obtenir des tours par minute.'],
         pieges: Nmes ? [[Nmes / 60, 'La réponse est demandée en tours par minute : multipliez par 60.'], [t5 / 5 * 60, 'C’est le nombre de tours divisé par la durée.']] : [] } },
     { titre: 'Vitesse de la pale', focus: ['r'],
       texte: <>Le milieu de la pale immergée est à r = <strong>17 cm</strong> de l'axe. On rappelle v = r × ω,
         avec ω en rad·s⁻¹ (1 tr·s⁻¹ = 2π rad·s⁻¹) : reprenez la vitesse de rotation N = {Nmes ? fmt(Nmes, 1) : '?'} tr·min⁻¹ de l'étape précédente.</>,
-      tache: { type: 'num', id: 'vp', q: 'Vitesse du milieu de la pale', carnet: 'Vitesse de la pale v_pale', unite: 'm·s⁻¹', vrai: vPale, tol: 0.04,
+      tache: { type: 'num', id: 'vp', q: 'Vitesse du milieu de la pale', carnet: 'Vitesse de la pale v_pale', unite: 'm·s⁻¹', vrai: vPale, tol: 0.05,
+        indice: ['Convertissez N en tr·s⁻¹ (÷ 60), puis ω = 2π × N (rad·s⁻¹).', 'Puis v = r × ω, avec r = 0,17 m.'],
         pieges: vPale ? [[vPale * 60, 'N est en tr/min : divisez par 60 pour avoir des tr/s.'], [vPale / (2 * Math.PI), 'N’oubliez pas 2π.'], [vPale * 100, 'r doit être en mètres.']] : [] } },
     { titre: 'Chercher le maximum', focus: ['charge'],
       texte: <>Le graphique est apparu. Faites varier la charge, du court-circuit au circuit ouvert, et ajoutez un point à
@@ -238,20 +239,20 @@ export function SimulationProduction3() {
         v<sub>a</sub> calculée plus tôt (valeurs rappelées ci-dessous).</>,
       tache: { type: 'num', id: 'rap', q: <>Rapport v<sub>pale</sub> / v<sub>a</sub> au rendement maximal (1 chiffre significatif)</>, unite: '',
         vrai: opt.u / opt.va, tol: 0.25,
+        indice: ['Lisez la vitesse de la pale au sommet de votre courbe de rendement.', 'Divisez-la par la vitesse de l’eau v_a.'],
         expl: 'La pale va environ deux fois moins vite que l’eau. Trop lente, elle freine l’eau sans avancer ; trop rapide, l’eau ne la pousse plus.' } },
-    { titre: 'Bravo !', focus: [],
-      texte: <>Vous avez fait tout le chemin de la centrale : débit, puissance de l'eau, puissance électrique, rendement,
-        vitesse de la roue et point de fonctionnement optimal. Vous pouvez maintenant explorer librement la maquette
-        (changer le débit, la hauteur d'eau…) ou relever le défi.</>,
+    { titre: 'Le bilan', focus: [],
+      texte: <>Vous avez fait tout le chemin de la centrale : débit {Qmes ? sci(Qmes) : '?'} m³·s⁻¹, puissance de l'eau {PhMes ? fmt(PhMes, 2) : '?'} W, puissance électrique {fmt(P10, 3)} W, rendement {PhMes ? fmt(P10 / PhMes * 100, 1) : '?'} %.
+        Le rendement est maximal quand la pale va environ deux fois moins vite que l'eau. Vous pouvez maintenant explorer librement la maquette (changer le débit, la hauteur d'eau…) ou relever le défi.</>,
       tache: null },
   ];
   const et = ETAPES[Math.min(etape, ETAPES.length - 1)];
   // Ce qui est visible selon l'avancement du parcours
   const vu = k => !enGuide || etape >= k;
-  const revele = { balance: vu(2), charge: vu(6), chrono: vu(11), graphe: vu(14) };
+  const revele = { balance: vu(2), charge: vu(5), chrono: vu(9), graphe: vu(11) };
   const focus = enGuide ? et.focus : [];
   const hl = id => focus.includes(id);
-  const montre = { HL: vu(4), r: vu(13) };
+  const montre = { HL: vu(3), r: vu(10) };
 
   // ════════════════ SCHÉMA ════════════════
   const cx = 290, cy = 120, rRoue = 100;
@@ -281,7 +282,7 @@ export function SimulationProduction3() {
   );
   const schema = (
     <svg viewBox="0 0 640 330" role="img" aria-label="Canal, roue à aubes, alternateur et balance"
-      style={{ width: '100%', height: 'auto', display: 'block', background: 'white', borderRadius: 8, border: `1px solid ${BORDER}` }}>
+      className="es-schema" style={{ background: 'white', borderRadius: 8, border: `1px solid ${BORDER}` }}>
       {/* Canal */}
       <path d={surfaceEau + ` L 520 230 L 20 230 Z`} fill="#bfdbfe"/>
       <path d={surfaceEau} fill="none" stroke="#1d4ed8" strokeWidth="2"/>
@@ -580,7 +581,8 @@ export function SimulationProduction3() {
       <div className="p3-l1">
         <div style={box}>
           <div style={titreBox}>La maquette : canal, roue à aubes et alternateur</div>
-          {schema}
+          <div className="es-schema-cadre">{schema}</div>
+          <div className="es-schema-aide">↔ Faites glisser le schéma pour le voir en entier.</div>
           <div style={{ fontSize: 13, color: TXT2, marginTop: 6, lineHeight: 1.5 }}>
             {enGuide ? <>L'élément encadré en orange est celui dont parle l'étape en cours.</>
               : <>L'eau du canal pousse les pales ; la roue entraîne l'alternateur, qui alimente la charge.</>}
