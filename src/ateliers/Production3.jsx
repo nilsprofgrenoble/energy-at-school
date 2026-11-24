@@ -516,22 +516,32 @@ export function SimulationProduction3() {
       pieges: [[eM.va * 1000, 'Le débit est donné en L/s : convertissez-le en m³·s⁻¹ (1 L = 10⁻³ m³).'], [eM.va / 1e4, 'H et L doivent être en mètres, pas en centimètres.']],
       indice: <>L’eau traverse la section du canal S = H × L (L = 7,5 cm). Le débit volumique Q (en m³·s⁻¹) vaut Q = S × v<sub>a</sub>, donc v<sub>a</sub> = Q / S. Convertissez : 1 L = 10⁻³ m³ et 1 cm = 10⁻² m.</> },
     { id: 'ph', q: <>Puissance disponible P<sub>hyd</sub></>, unite: 'W', vrai: eM.Phyd, tol: 0.05,
+      suit: () => 0.5 * P3_RHO * eM.S * lireNombre(mission.reps.va) ** 3,
       pieges: [[eM.Phyd * 2, 'N’oubliez pas le facteur ½ : c’est l’énergie cinétique par seconde.'], [eM.Phyd / eM.va, 'La vitesse est au cube : v³ = v × v × v.']],
       indice: <>C’est la puissance cinétique de l’eau qui traverse la section : P<sub>hyd</sub> = ½ × ρ × S × v<sub>a</sub>³, avec ρ = 1000 kg·m⁻³, S = H × L (en m²) et v<sub>a</sub> la vitesse trouvée à la question 1.</> },
     { id: 'pmax', q: <>Trouvez la charge qui donne le plus de puissance : P<sub>élec</sub> maximale</>, unite: 'W', vrai: optM.P, tol: 0.06,
       indice: <>Faites varier la charge R et relevez P<sub>élec</sub> = √3 × U × I pour chaque valeur (placez des points sur la courbe). Le maximum est atteint pour la charge qui donne la courbe la plus haute.</> },
     { id: 'eta', q: 'Rendement maximal de l’installation', unite: '%', vrai: optM.eta * 100, tol: 0.08,
+      suit: () => lireNombre(mission.reps.pmax) / lireNombre(mission.reps.ph) * 100,
       pieges: [[optM.eta, 'Exprimez le rendement en pourcentage (× 100).'], [optM.Phyd / optM.P * 100, 'C’est l’inverse : puissance électrique sur puissance de l’eau.']],
       indice: <>Le rendement est le rapport entre la puissance utile et la puissance reçue : η = P<sub>élec,max</sub> / P<sub>hyd</sub> (question 2), puis × 100 pour l’exprimer en %.</> },
     { id: 'n', q: 'Vitesse de rotation de la roue à ce maximum', unite: 'tr·min⁻¹', vrai: optM.N, tol: 0.08,
       indice: <>Réglez la charge sur la valeur qui donne P<sub>élec</sub> maximale, puis lisez la vitesse de rotation N de la roue dans « Mesures ».</> },
   ];
-  const justeM = q => { const x = lireNombre(mission.reps[q.id]); return isFinite(x) && proche(x, q.vrai, q.tol); };
+  const justeM = q => {
+    const x = lireNombre(mission.reps[q.id]);
+    if (!isFinite(x)) return false;
+    if (proche(x, q.vrai, q.tol)) return true;
+    const c = q.suit ? q.suit() : NaN;   // enchaînement cohérent avec ses propres réponses arrondies
+    return isFinite(c) && proche(x, c, Math.max(q.tol, 0.05));
+  };
   const piegeM = q => {
     const x = lireNombre(mission.reps[q.id]);
     if (!isFinite(x)) return 'Entrez une valeur numérique (la virgule est acceptée).';
     const pg = (q.pieges || []).find(([v]) => proche(x, v, 0.06));
     if (pg) return pg[1];
+    const cs = q.suit ? q.suit() : NaN;
+    if (isFinite(cs) && !proche(x, cs, 0.06)) return `Refaites le calcul avec vos propres réponses précédentes : cela donne ${valeurAttendue(cs)} ${q.unite}.`;
     if (proche(x, q.vrai * 1000, 0.06) || proche(x, q.vrai / 1000, 0.06)) return 'Facteur 1000 : vérifiez les unités.';
     return x < q.vrai ? 'Votre valeur est trop petite : relisez l’indice et vos conversions.' : 'Votre valeur est trop grande : relisez l’indice et vos conversions.';
   };

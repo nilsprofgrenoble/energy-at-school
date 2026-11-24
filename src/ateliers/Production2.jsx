@@ -436,6 +436,7 @@ export function SimulationProduction2() {
           indice: <>Convertissez : 1 L = 10⁻³ m³ et 1 min = 60 s, donc Q (m³·s⁻¹) = Q (L/min) × 10⁻³ / 60.</>,
           pieges: [[q / 1000, 'N’oubliez pas les minutes : 1 min = 60 s.'], [q / 60, '1 L = 10⁻³ m³.']], aide: 'Notation scientifique acceptée : pour 4,5 × 10⁻⁶, tapez 4,5e-6.' },
         { id: 'Ph', type: 'num', q: <>Puissance hydraulique P<sub>hyd</sub> = p × Q (p = {fmt(pBar, 2)} bar)</>, unite: 'W', vrai: Ph, tol: 0.05,
+          suit: () => pBar * 1e5 * lireNombre(reps.Q),
           indice: <>P<sub>hyd</sub> = p × Q avec p en pascals (1 bar = 10⁵ Pa) et Q en m³·s⁻¹ (question 1).</>,
           pieges: [[pBar * Qs, '1 bar = 10⁵ Pa.'], [pBar * 1e5 * q / 1000, 'Le débit doit être en m³·s⁻¹ (divisez aussi par 60).']] },
         { id: 'C', type: 'num', q: <>Couple de freinage C = (F<sub>1</sub> − F<sub>2</sub>) × D/2 (F<sub>1</sub> = {fmt(f1, 1)} N ; F<sub>2</sub> = {fmt(f2, 1)} N ; D = 5,0 cm)</>,
@@ -446,8 +447,10 @@ export function SimulationProduction2() {
           indice: <>1 tour = 2π rad et 1 min = 60 s : ω = 2π × n / 60, avec n en tr/min.</>,
           pieges: [[n / 60, 'N’oubliez pas 2π : 1 tour = 2π rad.'], [2 * Math.PI * n, 'n est en tours par minute : divisez par 60.']] },
         { id: 'Pm', type: 'num', q: <>Puissance mécanique P<sub>méca</sub> = C × ω</>, unite: 'W', vrai: Pm, tol: 0.05,
+          suit: () => lireNombre(reps.C) * lireNombre(reps.w),
           indice: <>La puissance mécanique d’un couple qui tourne : P<sub>méca</sub> = C × ω (C en N·m de la question 3, ω en rad·s⁻¹ de la question 4).</> },
         { id: 'eta', type: 'num', q: <>Rendement η = P<sub>méca</sub> / P<sub>hyd</sub></>, unite: '%', vrai: Pm / Ph * 100, tol: 0.06,
+          suit: () => lireNombre(reps.Pm) / lireNombre(reps.Ph) * 100,
           indice: <>η = puissance utile / puissance reçue = P<sub>méca</sub> / P<sub>hyd</sub> (questions 5 et 2), multiplié par 100 pour l’exprimer en %.</>,
           pieges: [[Ph / Pm * 100, 'C’est l’inverse : puissance utile sur puissance reçue.'], [Pm / Ph, 'Exprimez le rendement en pourcentage.']] },
       ];
@@ -468,6 +471,7 @@ export function SimulationProduction2() {
         { id: 'vaopt', type: 'num', q: <>Vitesse de l'auget au rendement maximal (votre relevé : n = {fmt(releve.n, 0)} tr/min)</>, unite: 'm·s⁻¹', vrai: vaOpt, tol: 0.05,
           indice: <>Même formule que pour la vitesse à vide : v<sub>a</sub> = r × 2π × n / 60, mais avec la valeur de n de votre relevé au rendement maximal (r = 0,0500 m).</> },
         { id: 'rap', type: 'num', q: <>Rapport v<sub>a</sub>(rendement max) / v<sub>a</sub>(à vide)</>, unite: '', vrai: vaOpt / va0m, tol: 0.06,
+          suit: () => lireNombre(reps.vaopt) / lireNombre(reps.va0),
           indice: <>Divisez la vitesse de l’auget au rendement maximal (question 4) par la vitesse de l’auget à vide (question 1) : ce rapport n’a pas d’unité (environ 0,5 attendu).</> },
       ];
     }
@@ -480,13 +484,19 @@ export function SimulationProduction2() {
     const r = reps[q.id];
     if (q.type === 'choix') return r === q.bonne;
     const x = lireNombre(r);
-    return isFinite(x) && proche(x, q.vrai, Math.max(q.tol, TOL_MIN_2CS));
+    if (!isFinite(x)) return false;
+    if (proche(x, q.vrai, Math.max(q.tol, TOL_MIN_2CS))) return true;
+    // Un élève qui enchaîne avec SES réponses arrondies est jugé juste si son calcul est cohérent avec elles.
+    const c = q.suit ? q.suit() : NaN;
+    return isFinite(c) && proche(x, c, Math.max(q.tol, TOL_MIN_2CS));
   };
   const piege = q => {
     const x = lireNombre(reps[q.id]);
     if (!isFinite(x)) return 'Entrez une valeur numérique.';
     const pg = (q.pieges || []).find(([v]) => proche(x, v, Math.max(q.tol, 0.04)));
     if (pg) return pg[1];
+    const cs = q.suit ? q.suit() : NaN;
+    if (isFinite(cs) && !proche(x, cs, 0.05)) return `Refaites le calcul avec vos propres réponses précédentes : cela donne ${valeurAttendue(cs)} ${q.unite}.`;
     if (proche(x, q.vrai * 1000, 0.05) || proche(x, q.vrai / 1000, 0.05)) return 'Facteur 1000 : vérifiez les unités.';
     return x < q.vrai ? 'Votre valeur est trop petite : relisez l’indice et vos conversions.' : 'Votre valeur est trop grande : relisez l’indice et vos conversions.';
   };

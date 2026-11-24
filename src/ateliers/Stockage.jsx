@@ -722,18 +722,27 @@ export function SimulationStockage() {
     { id: 'e', q: 'Énergie stockée (tension nominale 3,7 V)', unite: 'Wh', vrai: 3.7 * defi.q,
       indice: <>E = U × Q, avec U = 3,7 V la tension nominale et Q la capacité en Ah : le résultat est directement en Wh.</> },
     { id: 'd', q: <>Densité d'énergie (masse {defi.m} g)</>, unite: 'Wh/kg', affiche: Wh_kg, vrai: 3.7 * defi.q / (defi.m / 1000),
+      suit: () => lireNombre(defi.reps.e) / (defi.m / 1000),
       pieges: [[3.7 * defi.q / defi.m, 'La masse doit être en kilogrammes : divisez les grammes par 1000.']],
       indice: <>La densité d’énergie est l’énergie stockée par kilogramme : d = E / m, avec E la valeur de la question 2 et m en <strong>kg</strong> (1 g = 10⁻³ kg).</> },
     { id: 'n', q: 'Quantité de lithium échangée', unite: 'mol', vrai: defi.q * 3600 / ST_F,
       pieges: [[defi.q / ST_F, 'Convertissez d’abord la capacité en coulombs : 1 Ah = 3 600 C.']],
       indice: <>Convertissez la capacité en coulombs (1 Ah = 3 600 C), puis n(e⁻) = Q / F avec F = 96 485 C·mol⁻¹. Chaque ion Li⁺ échange un électron : n(Li) = n(e⁻).</> },
   ] : [];
-  const justeD = q => { const x = lireNombre(defi.reps[q.id]); return isFinite(x) && proche(x, q.vrai, 0.06); };   // 6 % : de quoi accepter un résultat final arrondi à 2 chiffres significatifs (jusqu'à 5 % d'écart)
+  const justeD = q => {
+    const x = lireNombre(defi.reps[q.id]);
+    if (!isFinite(x)) return false;
+    if (proche(x, q.vrai, 0.06)) return true;
+    const c = q.suit ? q.suit() : NaN;   // enchaînement cohérent avec sa propre énergie arrondie
+    return isFinite(c) && proche(x, c, 0.06);
+  };   // 6 % : de quoi accepter un résultat final arrondi à 2 chiffres significatifs (jusqu'à 5 % d'écart)
   const piegeD = q => {
     const x = lireNombre(defi.reps[q.id]);
     if (!isFinite(x)) return 'Entrez une valeur numérique (la virgule est acceptée ; 4,5e-6 pour 4,5 × 10⁻⁶).';
     const pg = (q.pieges || []).find(([v]) => proche(x, v, 0.08));
     if (pg) return pg[1];
+    const cs = q.suit ? q.suit() : NaN;
+    if (isFinite(cs) && !proche(x, cs, 0.06)) return `Refaites le calcul avec votre énergie de la question 2 : cela donne ${valeurAttendue(cs)} ${q.unite}.`;
     if (proche(x, q.vrai * 1000, 0.06) || proche(x, q.vrai / 1000, 0.06)) return 'Facteur 1000 : vérifiez les unités.';
     return x < q.vrai ? 'Votre valeur est trop petite : relisez l’indice et vos conversions.' : 'Votre valeur est trop grande : relisez l’indice et vos conversions.';
   };

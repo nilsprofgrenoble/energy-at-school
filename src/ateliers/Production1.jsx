@@ -599,11 +599,13 @@ export function SimulationProduction1() {
         indice: <>Le débit volumique est le volume écoulé par unité de temps : Q<sub>V</sub> = V / Δt. Convertissez 1 L en m³ (1 L = 10⁻³ m³) et gardez Δt en secondes.</>,
         pieges: [[1 / t, '1 L = 10⁻³ m³ : convertissez le volume en m³.']], aide: 'Notation scientifique acceptée : pour 4,5 × 10⁻⁶, tapez 4,5e-6.' },
       { id: 'Ph', type: 'num', q: <>Puissance hydraulique P<sub>hyd</sub> = p × Q<sub>V</sub> (manomètre : {fmt(pBar, 2)} bar)</>, unite: 'W', vrai: Ph, tol: 0.05,
+        suit: () => pBar * 1e5 * lireNombre(reps.Q),
         indice: <>P<sub>hyd</sub> = p × Q<sub>V</sub> avec p en pascals (1 bar = 10⁵ Pa) et Q<sub>V</sub> en m³·s⁻¹ (question 1).</>,
         pieges: [[pBar * Qm, '1 bar = 10⁵ Pa : convertissez la pression en pascals.']] },
       { id: 'Pe', type: 'num', q: <>Puissance électrique P<sub>élec</sub> = U × I (U = {fmt(U, 2)} V ; I = {fmt(I, 3)} A)</>, unite: 'W', vrai: Pe, tol: 0.05,
         indice: <>La puissance électrique est le produit de la tension par l’intensité : P<sub>élec</sub> = U × I (U en V, I en A, résultat en W).</> },
       { id: 'eta', type: 'num', q: <>Rendement <FormuleEnLigne><mi>η</mi><mo>=</mo><mfrac>{M.Pel}{M.Phyd}</mfrac></FormuleEnLigne></>, unite: '%', vrai: Pe / Ph * 100, tol: 0.05,
+        suit: () => lireNombre(reps.Pe) / lireNombre(reps.Ph) * 100,
         indice: <>η = puissance utile / puissance reçue = P<sub>élec</sub> / P<sub>hyd</sub> (questions 2 et 3), multiplié par 100 pour l’exprimer en %.</>,
         pieges: [[Ph / Pe * 100, 'C’est l’inverse : puissance utile (électrique) sur puissance reçue (hydraulique).'], [Pe / Ph, 'Exprimez le rendement en pourcentage (× 100).']] },
     ];
@@ -616,15 +618,18 @@ export function SimulationProduction1() {
         indice: <>Lisez la période T sur l’oscilloscope (nombre de divisions × durée d’une division), convertissez-la en secondes, puis f = 1 / T.</>,
         pieges: [[1 / fr * 1000, 'Vous avez donné T en ms : la fréquence est f = 1 / T, avec T en secondes.'], [fr / 1000, 'T doit être en secondes : 1 ms = 10⁻³ s.']] },
       { id: 'n', type: 'num', q: 'Vitesse de rotation n = f / p', unite: 'tr·s⁻¹', vrai: n, tol: 0.10,
+        suit: () => lireNombre(reps.f) / PR_P,
         indice: <>La fréquence f des tensions vaut n × p (p = 4 paires de pôles), donc n = f / p, avec f la fréquence de la question précédente.</>,
         pieges: [[fr * PR_P, 'C’est n = f / p (et non f × p).']] },
       { id: 'va', type: 'num', q: <>Vitesse de l'auget <FormuleEnLigne>{M.va}<mo>=</mo><mi>r</mi><mo>×</mo><mn>2</mn><mi>π</mi><mi>n</mi></FormuleEnLigne> (r = 4,0 cm)</>, unite: 'm·s⁻¹', vrai: va, tol: 0.10,
+        suit: () => 2 * Math.PI * PR_R_ROUE * lireNombre(reps.n),
         indice: <>L’auget décrit un cercle de rayon r = 0,040 m à n tours par seconde : v<sub>a</sub> = r × ω = r × 2π × n, avec n en tr·s⁻¹ (question 3) et r en mètres.</>,
         pieges: [[va / (2 * Math.PI), 'N’oubliez pas 2π : 1 tr·s⁻¹ = 2π rad·s⁻¹.'], [va * 100, 'r doit être en mètres : 4,0 cm = 0,040 m.']] },
       { id: 've', type: 'num', q: <>Vitesse du jet <FormuleEnLigne>{M.ve}<mo>=</mo><mfrac>{M.QV}<mi>S</mi></mfrac></FormuleEnLigne> (jet de 2,0 mm de diamètre ; Q<sub>V</sub> = {sci(Qm3, 2)} m³·s⁻¹)</>, unite: 'm·s⁻¹', vrai: ve, tol: 0.05,
         indice: <>Le débit traverse la section du jet : Q<sub>V</sub> = v<sub>e</sub> × S, donc v<sub>e</sub> = Q<sub>V</sub> / S avec S = π r² et r = 1,0 mm = 1,0 × 10⁻³ m (le diamètre vaut 2,0 mm).</>,
         pieges: [[ve / 4, 'S = π r² avec r = 1,0 mm (le rayon, pas le diamètre).'], [ve * 1e-6, 'Le rayon doit être en mètres : 1,0 mm = 1,0 × 10⁻³ m.']] },
       { id: 'rap', type: 'num', q: <>Rapport <FormuleEnLigne><mfrac>{M.va}{M.ve}</mfrac></FormuleEnLigne></>, unite: '', vrai: va / ve, tol: 0.12,
+        suit: () => lireNombre(reps.va) / lireNombre(reps.ve),
         indice: <>Divisez la vitesse de l’auget (question 4) par la vitesse du jet (question 5). Ce rapport n’a pas d’unité : on attend environ 0,5 au rendement maximal.</> },
     ];
   })();
@@ -635,13 +640,18 @@ export function SimulationProduction1() {
     const r = reps[q.id];
     if (q.type === 'choix') return r === q.bonne;
     const x = lireNombre(r);
-    return isFinite(x) && (q.tol === 0 ? Math.round(x) === q.vrai : proche(x, q.vrai, Math.max(q.tol, TOL_MIN_2CS)));
+    if (!isFinite(x)) return false;
+    if (q.tol === 0 ? Math.round(x) === q.vrai : proche(x, q.vrai, Math.max(q.tol, TOL_MIN_2CS))) return true;
+    const c = q.suit ? q.suit() : NaN;   // enchaînement cohérent avec ses propres réponses arrondies
+    return isFinite(c) && proche(x, c, Math.max(q.tol, TOL_MIN_2CS));
   };
   const piege = q => {
     const x = lireNombre(reps[q.id]);
     if (!isFinite(x)) return 'Entrez une valeur numérique.';
     const pg = (q.pieges || []).find(([v]) => proche(x, v, Math.max(q.tol, 0.04)));
     if (pg) return pg[1];
+    const cs = q.suit ? q.suit() : NaN;
+    if (isFinite(cs) && !proche(x, cs, 0.05)) return `Refaites le calcul avec vos propres réponses précédentes : cela donne ${valeurAttendue(cs)} ${q.unite}.`;
     if (proche(x, q.vrai * 1000, 0.05) || proche(x, q.vrai / 1000, 0.05)) return 'Facteur 1000 : vérifiez les unités.';
     return x < q.vrai ? 'Votre valeur est trop petite : relisez l’indice et vos conversions.' : 'Votre valeur est trop grande : relisez l’indice et vos conversions.';
   };

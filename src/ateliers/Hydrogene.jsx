@@ -801,14 +801,17 @@ export function SimulationHydrogene() {
         { id: 'P', type: 'num', indice: <>P = U × I, avec U en volts et I en ampères (valeurs relevées dans « Votre manip »).</>, q: <>Puissance reçue par l'électrolyseur P = U × I</>, unite: 'W', vrai: P, tol: 0.06,
           aide: 'Multipliez la tension par l’intensité relevées.' },
         { id: 'E', type: 'num', indice: <>E = P × Δt, avec Δt en <strong>secondes</strong> (1 min = 60 s) : 1 W × 1 s = 1 J.</>, q: <>Énergie électrique consommée E = P × Δt</>, unite: 'J', vrai: E, tol: 0.06,
+          suit: () => lireNombre(reps.P) * t,
           pieges: [[E / 60, 'Δt doit être en secondes, pas en minutes.']], aide: 'Δt en secondes.' },
         { id: 'n', type: 'num', indice: <>n = V / V<sub>m</sub> : convertissez d’abord le volume en litres (1 mL = 10⁻³ L), puis divisez par V<sub>m</sub> = 24 L·mol⁻¹.</>, q: <>Quantité de H<sub>2</sub> produite n = V / V<sub>m</sub> (V<sub>m</sub> = 24 L·mol⁻¹)</>, unite: 'mol', vrai: n, tol: 0.06,
           pieges: [[n * 1000, 'Le volume doit être en litres : 1 mL = 10⁻³ L.'],
             [v / 1000 / 22.4, '22,4 L·mol⁻¹ vaut à 0 °C ; à 20 °C, Vₘ = 24 L·mol⁻¹.']],
           aide: 'Convertissez le volume en litres. Notation scientifique acceptée : pour 4,5 × 10⁻⁶, tapez 4,5e-6.' },
         { id: 'Es', type: 'num', indice: <>Chaque mole de H₂ formée stocke 285 000 J : E<sub>stockée</sub> = n × 285 000, avec n la quantité trouvée à la question précédente.</>, q: <>Énergie stockée E<sub>stockée</sub> = n × 285 000 J·mol⁻¹</>, unite: 'J', vrai: Es, tol: 0.06,
+          suit: () => lireNombre(reps.n) * H2_DH,
           pieges: [[Es / 1000, '285 kJ·mol⁻¹ = 285 000 J·mol⁻¹.']] },
         { id: 'eta', type: 'num', indice: <>η = énergie utile / énergie reçue = E<sub>stockée</sub> / E<sub>consommée</sub>, puis × 100 pour l’exprimer en %.</>, q: <>Rendement de l'électrolyseur η = E<sub>stockée</sub> / E<sub>consommée</sub></>, unite: '%', vrai: Es / E * 100, tol: 0.06,
+          suit: () => lireNombre(reps.Es) / lireNombre(reps.E) * 100,
           pieges: [[E / Es * 100, 'C’est l’inverse : énergie utile (stockée) sur énergie reçue.'],
             [Es / E, 'Exprimez le rendement en pourcentage (× 100).']] },
       ];
@@ -816,18 +819,23 @@ export function SimulationHydrogene() {
         { id: 'ne', type: 'num', indice: <>n(e⁻) = I × Δt / F avec I en A, Δt en s et F = 96 485 C·mol⁻¹ (charge d’une mole d’électrons).</>, q: <>Quantité d'électrons n(e⁻) = I × Δt / F</>, unite: 'mol', vrai: ne, tol: 0.06,
           pieges: [[ne / 60, 'Δt doit être en secondes.']] },
         { id: 'nth', type: 'num', indice: <>À la cathode : 2 H⁺ + 2 e⁻ → H₂. Il faut donc 2 électrons par molécule de H₂ : n(H₂) = n(e⁻) / 2.</>, q: <>Quantité de H<sub>2</sub> attendue (2 e⁻ par molécule)</>, unite: 'mol', vrai: nth, tol: 0.06,
+          suit: () => lireNombre(reps.ne) / 2,
           pieges: [[ne, 'Il faut 2 électrons pour une molécule de H₂ : divisez par 2.'], [ne / 4, 'Divisez par 2, pas par 4 (4 e⁻ par molécule de O₂).']] },
         { id: 'vth', type: 'num', indice: <>V = n × V<sub>m</sub> (V<sub>m</sub> = 24 L·mol⁻¹), en litres ; multipliez par 1000 pour l’exprimer en mL.</>, q: <>Volume de H<sub>2</sub> attendu</>, unite: 'mL', vrai: vth, tol: 0.06,
+          suit: () => lireNombre(reps.nth) * H2_VM * 1000,
           pieges: [[vth / 1000, 'La réponse est demandée en mL.']] },
         { id: 'etaF', type: 'num', indice: <>Le rendement faradique compare le volume recueilli au volume prévu par la loi de Faraday : η<sub>F</sub> = V<sub>mesuré</sub> / V<sub>attendu</sub>, puis × 100 pour des %.</>, q: <>Rendement faradique = V<sub>mesuré</sub> / V<sub>attendu</sub></>, unite: '%', vrai: v / vth * 100, tol: 0.06,
+          suit: () => v / lireNombre(reps.vth) * 100,
           pieges: [[vth / v * 100, 'C’est le volume mesuré divisé par le volume attendu.']] },
         { id: 'xf', type: 'num', indice: <>Dans H₂O → H₂ + ½ O₂, le coefficient de H₂ est 1 : x<sub>f</sub> = n(H₂) = V / V<sub>m</sub> (V en litres).</>, q: <>Tableau d'avancement de H<sub>2</sub>O → H<sub>2</sub> + ½ O<sub>2</sub> : avancement final x<sub>f</sub> (d'après le volume mesuré)</>,
           unite: 'mol', vrai: n, tol: 0.06,
           pieges: [[n * 1000, 'Le volume doit être en litres : 1 mL = 10⁻³ L.'], [v / 1000 / 22.4, 'À 20 °C, Vₘ = 24 L·mol⁻¹.']],
           aide: 'L’avancement final est égal à la quantité de H₂ formée.' },
         { id: 'nO2', type: 'num', indice: <>Le coefficient de O₂ vaut ½ : n(O₂) = ½ × x<sub>f</sub>.</>, q: <>Quantité de O<sub>2</sub> formée n(O<sub>2</sub>) = ½ x<sub>f</sub></>, unite: 'mol', vrai: n / 2, tol: 0.06,
+          suit: () => lireNombre(reps.xf) / 2,
           pieges: [[n, 'Le coefficient de O₂ est ½ : n(O₂) = avancement final / 2.'], [2 * n, 'Le coefficient de O₂ est ½ : on divise par 2.']] },
         { id: 'meau', type: 'num', indice: <>n(H₂O consommée) = x<sub>f</sub> (coefficient 1) ; m = n × M avec M(H₂O) = 2 × 1 + 16 = 18 g·mol⁻¹.</>, q: <>Masse d'eau consommée m = x<sub>f</sub> × M(H<sub>2</sub>O)</>, unite: 'g', vrai: n * 18, tol: 0.06,
+          suit: () => lireNombre(reps.xf) * 18,
           pieges: [[n * 16, 'M(H₂O) = 16 + 2 × 1 = 18 g·mol⁻¹ (et non 16).'], [n * 18000, 'La réponse est demandée en grammes.']] },
         { id: 'Ppac', type: 'num', indice: <>Branchez la pile sur 10 Ω, lisez U et I dans « Mesures », puis P = U × I (U en V, I en A : le résultat est en W, pas en mW).</>, q: <>Branchez la pile sur 10 Ω et relevez U et I : puissance fournie P<sub>pile</sub></>, unite: 'W', vrai: pp.p, tol: 0.06,
           pieges: [[pp.p * 1000, 'La réponse est demandée en W (1 mW = 10⁻³ W).']] },
@@ -854,6 +862,7 @@ export function SimulationHydrogene() {
           pieges: [[2.5, 'C’est I / S, pas S / I.']] },
         { id: 'P', type: 'num', indice: <>P = U × I, avec U lue dans « Mesures » (en V) et I = 10 A.</>, q: 'Puissance fournie P = U × I', unite: 'W', vrai: U10 * 10, tol: 0.06 },
         { id: 'eta', type: 'num', indice: <>Le rendement d’une cellule compare sa tension réelle à la tension théorique : η = U<sub>cellule</sub> / 1,48 V, × 100 pour des % (U<sub>cellule</sub> = U<sub>pile</sub> / 10).</>, q: 'Rendement η = U cellule / 1,48 V', unite: '%', vrai: U10 / 10 / U_TH * 100, tol: 0.06,
+          suit: () => lireNombre(reps.U) * 10,
           pieges: [[U10 / U_TH * 100, 'Utilisez la tension d’une seule cellule.']] },
       ];
     }
@@ -879,13 +888,18 @@ export function SimulationHydrogene() {
     if (q.type === 'qcm') return r === q.bonne;
     if (q.type === 'module') return r === q.bonne;
     const x = lireNombre(r);
-    return isFinite(x) && (q.tol === 0 ? Math.round(x) === q.vrai : proche(x, q.vrai, q.tol));
+    if (!isFinite(x)) return false;
+    if (q.tol === 0 ? Math.round(x) === q.vrai : proche(x, q.vrai, q.tol)) return true;
+    const c = q.suit ? q.suit() : NaN;   // enchaînement cohérent avec ses propres réponses arrondies
+    return isFinite(c) && proche(x, c, Math.max(q.tol, 0.05));
   };
   const piege = q => {
     const x = lireNombre(reps[q.id]);
     if (!isFinite(x)) return 'Entrez une valeur numérique.';
     const pg = (q.pieges || []).find(([v]) => proche(x, v, Math.max(q.tol, 0.03)));
     if (pg) return pg[1];
+    const cs = q.suit ? q.suit() : NaN;
+    if (isFinite(cs) && !proche(x, cs, 0.05)) return `Refaites le calcul avec vos propres réponses précédentes : cela donne ${valeurAttendue(cs)} ${q.unite}.`;
     if (proche(x, q.vrai * 1000, 0.05) || proche(x, q.vrai / 1000, 0.05)) return 'Facteur 1000 : vérifiez les unités.';
     return x < q.vrai ? 'Votre valeur est trop petite : relisez l’indice et vos conversions.' : 'Votre valeur est trop grande : relisez l’indice et vos conversions.';
   };
