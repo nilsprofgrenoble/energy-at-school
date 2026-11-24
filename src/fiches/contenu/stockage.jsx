@@ -69,6 +69,49 @@ const SceneChimies = () => {
   );
 };
 
+const SceneSens = () => {
+  const ligne = (y, titre, c, g, d, flG, flD) => (
+    <g>
+      <T x="180" y={y} s={titre} c={c} f={14} />
+      <rect x="8" y={y + 10} width="140" height="50" rx="10" fill="#e0e7ff" stroke={COUL.violet} strokeWidth="2.5" />
+      <T x="78" y={y + 31} s="électrode (−)" f={13} /><T x="78" y={y + 50} s={g} f={13} c={COUL.encre} />
+      <rect x="212" y={y + 10} width="140" height="50" rx="10" fill="#ffedd5" stroke={COUL.orange} strokeWidth="2.5" />
+      <T x="282" y={y + 31} s="électrode (+)" f={13} /><T x="282" y={y + 50} s={d} f={13} c={COUL.encre} />
+      <Fl x1={flG} y1={y + 35} x2={flD} y2={y + 35} c="B" e={2.5} />
+      <T x="180" y={y + 28} s="Li⁺" c={COUL.eau} f={14} />
+    </g>
+  );
+  return (
+    <Schema h={252} titre="Pendant la décharge, l'électrode négative est l'anode (oxydation) et la positive la cathode (réduction) ; pendant la charge, les rôles s'échangent alors que les bornes plus et moins restent les mêmes">
+      {ligne(14, 'décharge', COUL.orange, 'anode : oxydation', 'cathode : réduction', 154, 206)}
+      {ligne(130, 'charge', COUL.vert, 'cathode : réduction', 'anode : oxydation', 206, 154)}
+      <T x="180" y="238" s="les bornes + et − ne changent jamais" w={600} c="#475569" f={13} />
+    </Schema>
+  );
+};
+
+const SceneTension = () => {
+  const X = p => 44 + p * 3, Y = v => 170 - (v - 2.5) / 1.7 * 130;
+  const ocv = [[0, 2.5], [4, 3.3], [15, 3.55], [50, 3.7], [85, 3.95], [100, 4.2]];
+  const pts = (d) => ocv.map(([p, v], k) => `${X(p)},${Y(v + (k === 0 ? 0 : d))}`).join(' ');
+  return (
+    <Schema h={236} titre="Tension de la cellule en fonction de l'état de charge : en décharge elle est un peu plus basse que la tension en circuit ouvert, en charge un peu plus haute, à cause de la résistance interne">
+      <line x1="44" y1="36" x2="44" y2="170" stroke="#334155" strokeWidth="2" /><line x1="44" y1="170" x2="348" y2="170" stroke="#334155" strokeWidth="2" />
+      <T x="44" y="22" s="U (V)" a="middle" w={600} c="#475569" />
+      <T x="200" y="204" s="état de charge (%)" w={600} c="#475569" />
+      <T x="44" y="188" s="0" f={12} w={600} c="#475569" /><T x="344" y="188" s="100" f={12} w={600} c="#475569" />
+      <T x="36" y={Y(4.2) + 4} s="4,2" a="end" f={12} w={600} c="#475569" /><T x="36" y={Y(2.5) + 4} s="2,5" a="end" f={12} w={600} c="#475569" />
+      <polyline points={pts(0.18)} fill="none" stroke={COUL.vert} strokeWidth="2.5" strokeDasharray="6 4" />
+      <polyline points={pts(0)} fill="none" stroke={COUL.eau} strokeWidth="3" />
+      <polyline points={pts(-0.18)} fill="none" stroke={COUL.orange} strokeWidth="2.5" strokeDasharray="6 4" />
+      <line x1="170" y1="126" x2="196" y2="126" stroke={COUL.vert} strokeWidth="2.5" strokeDasharray="6 4" /><T x="204" y="130" s="en charge" a="start" c={COUL.vert} f={13} />
+      <line x1="170" y1="144" x2="196" y2="144" stroke={COUL.eau} strokeWidth="3" /><T x="204" y="148" s="circuit ouvert" a="start" c={COUL.eau} f={13} />
+      <line x1="170" y1="162" x2="196" y2="162" stroke={COUL.orange} strokeWidth="2.5" strokeDasharray="6 4" /><T x="204" y="166" s="en décharge" a="start" c={COUL.orange} f={13} />
+      <T x="196" y="226" s="U = E − r × I : le courant fait perdre de la tension" w={600} c="#475569" f={13} />
+    </Schema>
+  );
+};
+
 export const stockage = [
   { id: 'cellule', titre: 'Dans une cellule lithium-ion', corps: <>
     <SceneCellule />
@@ -100,5 +143,19 @@ export const stockage = [
     <Grandeurs lignes={[['prix', 'prix de la batterie', '€/kWh'], ['cycles', 'nombre de cycles de charge-décharge avant usure', '']]} />
     <Exemple>Plomb : <Fi>{'{221|800} ≈ 0,28 [€/kWh]'}</Fi> ; Na-ion : <Fi>{'{113|4 000} ≈ 0,03 [€/kWh]'}</Fi>. Valeurs indicatives (CEA-Liten / INES).</Exemple>
     <Memo>La moins chère à l’achat n’est pas la moins chère à l’usage : il faut aussi compter les cycles.</Memo>
+  </> },
+  { id: 'sens', titre: 'Charge ou décharge : qui est l’anode ?', corps: <>
+    <SceneSens />
+    <Def terme="Négative (graphite)">Li⁺ + C₆ + e⁻ ⇌ LiC₆ (vers la droite : charge ; vers la gauche : décharge).</Def>
+    <Def terme="Positive (oxyde NMC)">Li⁺ + MO₂ + e⁻ ⇌ LiMO₂ (vers la droite : décharge ; vers la gauche : charge).</Def>
+    <Exemple>En décharge, le graphite perd son lithium : c’est une oxydation, donc l’électrode négative est l’anode.</Exemple>
+    <Memo>Les bornes + et − ne changent jamais ; les noms anode et cathode, si.</Memo>
+  </> },
+  { id: 'tension', titre: 'La tension d’une cellule', corps: <>
+    <SceneTension />
+    <Fm>{'U = E - r * I'}</Fm>
+    <Grandeurs lignes={[['U', 'tension mesurée aux bornes', 'V'], ['E', 'tension en circuit ouvert (dépend de l’état de charge)', 'V'], ['r', 'résistance interne de la cellule', 'Ω'], ['I', 'courant débité', 'A']]} />
+    <Exemple>Cellule débitant <Fi>{'I = 1,5 [A]'}</Fi> avec <Fi>{'r = 0,05 [Ω]'}</Fi> : <Fi>{'r × I = 0,05 × 1,5 ≈ 0,08 [V]'}</Fi> de moins que E. En charge, c’est l’inverse : U est plus haute que E.</Exemple>
+    <Memo>Plus on tire de courant, plus la tension chute : la tension d’une batterie n’est pas une constante.</Memo>
   </> },
 ];
