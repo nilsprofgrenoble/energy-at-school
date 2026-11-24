@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { cardStyle, Graphe, fmt, sci, lireNombre, proche, CarteParcours, Cadre, ORANGE_GUIDE, useEtatPersistant, avecIndices, IndiceDefi, valeurAttendue, FormuleEnLigne } from "../commun";
+import { cardStyle, Graphe, fmt, sci, lireNombre, proche, CarteParcours, Cadre, ORANGE_GUIDE, useEtatPersistant, avecIndices, IndiceDefi, valeurAttendue, FormuleEnLigne, modeOuverture } from "../commun";
 import { BoutonFiche } from "../fiches/Fiche";
 import { signalerDefi, ouvrirDefi } from "../avancement";
 import { Emo, Pic } from '../Pictos';
@@ -49,7 +49,7 @@ const COUL = { eau: '#2563eb', meca: '#7c3aed', frein: '#dc2626', chaleur: '#ea5
   txt: '#0f172a', txt2: '#334155', bord: '#cbd5e1', fond: '#f8fafc' };
 
 export function SimulationProduction2() {
-  const [mode, setMode] = useState('guide');
+  const [mode, setMode] = useState(() => modeOuverture(['es1-production2']));
   const [guide, setGuide] = useEtatPersistant('es1-production2', { etape: 0, reps: {}, verifs: {}, reussies: {} });
   const [ouverts, setOuverts] = useState({ commandes: true, mesures: true, points: true });
   const [qL, setQL] = useState(15);

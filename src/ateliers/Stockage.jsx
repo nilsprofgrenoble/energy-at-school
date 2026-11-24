@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { cardStyle, Graphe, fmt, sci, lireNombre, proche, CarteParcours, Cadre, ORANGE_GUIDE, useEtatPersistant, avecIndices, IndiceDefi, valeurAttendue, arrondiSig, FormuleEnLigne } from "../commun";
+import { cardStyle, Graphe, fmt, sci, lireNombre, proche, CarteParcours, Cadre, ORANGE_GUIDE, useEtatPersistant, avecIndices, IndiceDefi, valeurAttendue, arrondiSig, FormuleEnLigne, modeOuverture } from "../commun";
 import { BoutonFiche } from "../fiches/Fiche";
 import { signalerDefi, ouvrirDefi } from "../avancement";
 import { Emo, Pic, PicSvg, ec } from '../Pictos';
@@ -64,7 +64,7 @@ const COUL = { neg: '#dc2626', pos: '#64748b', li: '#2563eb', anion: '#7c3aed', 
 
 export function SimulationStockage() {
   const [atelier, setAtelier] = useState(1);
-  const [mode, setMode] = useState('guide');
+  const [mode, setMode] = useState(() => modeOuverture(['es1-stockage-a1', 'es1-stockage-a2']));
   const [guide1, setGuide1] = useEtatPersistant('es1-stockage-a1', { etape: 0, reps: {}, verifs: {}, reussies: {} });
   const [guide2, setGuide2] = useEtatPersistant('es1-stockage-a2', { etape: 0, reps: {}, verifs: {}, reussies: {} });
   const [ouverts, setOuverts] = useState({ commandes: true, mesures: true, assemblage: true, missions: true });

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { cardStyle, Graphe, fmt, sci, lireNombre, proche, CarteParcours, Cadre, ORANGE_GUIDE, useEtatPersistant, avecIndices, IndiceDefi, Formule, FormuleEnLigne } from "../commun";
+import { cardStyle, Graphe, fmt, sci, lireNombre, proche, CarteParcours, Cadre, ORANGE_GUIDE, useEtatPersistant, avecIndices, IndiceDefi, Formule, FormuleEnLigne, modeOuverture } from "../commun";
 import { BoutonFiche } from "../fiches/Fiche";
 import { signalerDefi, ouvrirDefi } from "../avancement";
 import { ParcoursReseauReel } from "./ReseauReel";
@@ -53,7 +53,7 @@ const COUL = { gen: '#16a34a', ligne: '#7c3aed', charge: '#ea580c', pertes: '#dc
   txt: '#0f172a', txt2: '#334155', bord: '#cbd5e1', fond: '#f8fafc' };
 
 export function SimulationTransport() {
-  const [mode, setMode] = useState('guide');
+  const [mode, setMode] = useState(() => modeOuverture(['es1-transport-prep', 'es1-transport']));
   const [guide, setGuide] = useEtatPersistant('es1-transport', { etape: 0, reps: {}, verifs: {}, reussies: {} });
   // Deux parcours : « Préparer l'atelier » (un vrai réseau, avant la journée) et « Revoir l'atelier » (la maquette, après)
   const [parcours, setParcours] = useEtatPersistant('es1-transport-choix', 'preparer');

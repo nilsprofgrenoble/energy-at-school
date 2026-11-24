@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { cardStyle, Graphe, fmt, sci, lireNombre, proche, CarteParcours, SelecteurParcours, Formule, FormuleEnLigne, Cadre, ORANGE_GUIDE, useEtatPersistant, avecIndices, IndiceDefi, valeurAttendue, arrondiSig } from "../commun";
+import { cardStyle, Graphe, fmt, sci, lireNombre, proche, CarteParcours, SelecteurParcours, Formule, FormuleEnLigne, Cadre, ORANGE_GUIDE, useEtatPersistant, avecIndices, IndiceDefi, valeurAttendue, arrondiSig, modeOuverture } from "../commun";
 import { BoutonFiche } from "../fiches/Fiche";
 import { signalerDefi, ouvrirDefi } from "../avancement";
 import { Emo, Pic } from '../Pictos';
@@ -73,7 +73,7 @@ const M = {
 const nomCharge = R => (R === 0 ? 'court-circuit' : R === Infinity ? 'circuit ouvert' : `${R} Ω`);
 
 export function SimulationProduction1() {
-  const [mode, setMode] = useState('guide');
+  const [mode, setMode] = useState(() => modeOuverture(['es1-production1', 'es1-production1-p2']));
   const [parcours, setParcours] = useEtatPersistant('es1-production1-choix', 1);   // 1 : de l'eau à l'électricité ; 2 : rotation et vitesses
   const [guide1, setGuide1] = useEtatPersistant('es1-production1', { etape: 0, reps: {}, verifs: {}, reussies: {} });
   const [guide2, setGuide2] = useEtatPersistant('es1-production1-p2', { etape: 0, reps: {}, verifs: {}, reussies: {} });

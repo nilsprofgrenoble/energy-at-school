@@ -10,6 +10,9 @@ import '@fontsource/nunito/latin-700.css'
 import '@fontsource/nunito/latin-800.css'
 import './theme.css'
 import App from './App.jsx'
+import { demarrerSynchro } from './etatsParcours.js'
+
+demarrerSynchro()
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
