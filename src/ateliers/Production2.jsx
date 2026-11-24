@@ -134,7 +134,7 @@ export function SimulationProduction2() {
     { titre: 'Le débit', focus: ['panneau'],
       texte: <>Le panneau d'affichage indique un débit de <strong>15 L/min</strong>. Pour les calculs, il faut le convertir en m³·s⁻¹
         (1 L = 10⁻³ m³ ; 1 min = 60 s).</>,
-      tache: { type: 'num', q: 'Débit en m³·s⁻¹', carnet: 'Débit Q_V', unite: 'm³·s⁻¹', vrai: Qg, tol: 0.03,
+      tache: { type: 'num', q: 'Débit en m³·s⁻¹', carnet: 'Débit Q_V', unite: 'm³·s⁻¹', vrai: Qg, tol: 0.05,
         indice: ['Convertissez les litres en m³ (÷ 1000), puis les minutes en secondes (÷ 60).', 'Q = 15 × 10⁻³ ÷ 60.'],
         pieges: [[15 / 1000, 'N’oubliez pas les minutes : divisez aussi par 60.'], [15 / 60, '1 L = 10⁻³ m³ : divisez aussi par 1000.']], aide: 'Notation scientifique acceptée : pour 4,5 × 10⁻⁶, tapez 4,5e-6.' } },
     { titre: 'La puissance hydraulique', focus: ['panneau', 'tuyere'],
@@ -429,17 +429,17 @@ export function SimulationProduction2() {
       const f2 = Math.round(f1 / P2_RAPPORT_F * 10) / 10;           // F₂ telle qu'elle est affichée (1 décimale)
       const Qs = q / 60000, Ph = pBar * 1e5 * Qs, C = (f1 - f2) * P2_D / 2, w = 2 * Math.PI * n / 60, Pm = C * w;
       return [
-        { id: 'Q', type: 'num', q: <>Débit en m³·s⁻¹ ({fmt(q, 1)} L/min)</>, unite: 'm³·s⁻¹', vrai: Qs, tol: 0.03,
+        { id: 'Q', type: 'num', q: <>Débit en m³·s⁻¹ ({fmt(q, 1)} L/min)</>, unite: 'm³·s⁻¹', vrai: Qs, tol: 0.05,
           indice: <>Convertissez : 1 L = 10⁻³ m³ et 1 min = 60 s, donc Q (m³·s⁻¹) = Q (L/min) × 10⁻³ / 60.</>,
           pieges: [[q / 1000, 'N’oubliez pas les minutes : 1 min = 60 s.'], [q / 60, '1 L = 10⁻³ m³.']], aide: 'Notation scientifique acceptée : pour 4,5 × 10⁻⁶, tapez 4,5e-6.' },
-        { id: 'Ph', type: 'num', q: <>Puissance hydraulique P<sub>hyd</sub> = p × Q (p = {fmt(pBar, 2)} bar)</>, unite: 'W', vrai: Ph, tol: 0.04,
+        { id: 'Ph', type: 'num', q: <>Puissance hydraulique P<sub>hyd</sub> = p × Q (p = {fmt(pBar, 2)} bar)</>, unite: 'W', vrai: Ph, tol: 0.05,
           indice: <>P<sub>hyd</sub> = p × Q avec p en pascals (1 bar = 10⁵ Pa) et Q en m³·s⁻¹ (question 1).</>,
           pieges: [[pBar * Qs, '1 bar = 10⁵ Pa.'], [pBar * 1e5 * q / 1000, 'Le débit doit être en m³·s⁻¹ (divisez aussi par 60).']] },
         { id: 'C', type: 'num', q: <>Couple de freinage C = (F<sub>1</sub> − F<sub>2</sub>) × D/2 (F<sub>1</sub> = {fmt(f1, 1)} N ; F<sub>2</sub> = {fmt(f2, 1)} N ; D = 5,0 cm)</>,
-          unite: 'N·m', vrai: C, tol: 0.04,
+          unite: 'N·m', vrai: C, tol: 0.05,
           indice: <>Le frein à bande exerce sur la poulie une force F<sub>1</sub> − F<sub>2</sub> à la distance D/2 de l’axe (le rayon, pas le diamètre) : C = (F<sub>1</sub> − F<sub>2</sub>) × D/2, avec D en mètres.</>,
           pieges: [[C * 2, 'C’est D/2, le rayon de la poulie.'], [C * 100, 'D doit être en mètres : 5,0 cm = 0,050 m.']] },
-        { id: 'w', type: 'num', q: <>Vitesse angulaire ω = 2π × n / 60 (n = {fmt(n, 0)} tr/min)</>, unite: 'rad·s⁻¹', vrai: w, tol: 0.03,
+        { id: 'w', type: 'num', q: <>Vitesse angulaire ω = 2π × n / 60 (n = {fmt(n, 0)} tr/min)</>, unite: 'rad·s⁻¹', vrai: w, tol: 0.05,
           indice: <>1 tour = 2π rad et 1 min = 60 s : ω = 2π × n / 60, avec n en tr/min.</>,
           pieges: [[n / 60, 'N’oubliez pas 2π : 1 tour = 2π rad.'], [2 * Math.PI * n, 'n est en tours par minute : divisez par 60.']] },
         { id: 'Pm', type: 'num', q: <>Puissance mécanique P<sub>méca</sub> = C × ω</>, unite: 'W', vrai: Pm, tol: 0.05,
@@ -454,15 +454,15 @@ export function SimulationProduction2() {
       const ve = Math.sqrt(2 * releveVide.pBar * 1e5 / P2_RHO);
       const vaOpt = 2 * Math.PI * releve.n / 60 * P2_R;
       return [
-        { id: 'va0', type: 'num', q: <>Vitesse de l'auget à vide v<sub>a</sub> = r × 2π n / 60 (n = {fmt(n0, 0)} tr/min ; r = 5,00 cm)</>, unite: 'm·s⁻¹', vrai: va0m, tol: 0.03,
+        { id: 'va0', type: 'num', q: <>Vitesse de l'auget à vide v<sub>a</sub> = r × 2π n / 60 (n = {fmt(n0, 0)} tr/min ; r = 5,00 cm)</>, unite: 'm·s⁻¹', vrai: va0m, tol: 0.05,
           indice: <>L’auget se déplace sur un cercle de rayon r = 0,0500 m : v<sub>a</sub> = r × ω avec ω = 2π × n / 60 (n en tr/min, ω en rad·s⁻¹).</>,
           pieges: [[va0m * 60, 'n est en tr/min : divisez par 60 pour avoir des tr/s.'], [va0m / (2 * Math.PI), 'N’oubliez pas 2π.'], [va0m * 100, 'r doit être en mètres.']] },
-        { id: 've', type: 'num', q: <>Vitesse du jet par Bernoulli v<sub>e</sub> = √(2p/ρ) (p = {fmt(releveVide.pBar, 2)} bar ; ρ = 1000 kg·m⁻³)</>, unite: 'm·s⁻¹', vrai: ve, tol: 0.04,
+        { id: 've', type: 'num', q: <>Vitesse du jet par Bernoulli v<sub>e</sub> = √(2p/ρ) (p = {fmt(releveVide.pBar, 2)} bar ; ρ = 1000 kg·m⁻³)</>, unite: 'm·s⁻¹', vrai: ve, tol: 0.05,
           indice: <>Le théorème de Bernoulli donne p = ½ ρ v<sub>e</sub>² (pression convertie en vitesse), donc v<sub>e</sub> = √(2p / ρ) avec p en pascals (1 bar = 10⁵ Pa).</>,
           pieges: [[Math.sqrt(2 * releveVide.pBar / P2_RHO), 'La pression doit être en pascals : 1 bar = 10⁵ Pa.'], [Math.sqrt(releveVide.pBar * 1e5 / P2_RHO), 'N’oubliez pas le facteur 2 : ½ ρ v² = p.']] },
         { id: 'pq', type: 'choix', q: 'Pourquoi la roue à vide ne tourne-t-elle pas aussi vite que le jet ?',
           options: ['Les frottements (paliers, air, éclaboussures) la freinent', 'Le jet ralentit dans l’air', 'La roue est trop lourde'], bonne: 0 },
-        { id: 'vaopt', type: 'num', q: <>Vitesse de l'auget au rendement maximal (votre relevé : n = {fmt(releve.n, 0)} tr/min)</>, unite: 'm·s⁻¹', vrai: vaOpt, tol: 0.04,
+        { id: 'vaopt', type: 'num', q: <>Vitesse de l'auget au rendement maximal (votre relevé : n = {fmt(releve.n, 0)} tr/min)</>, unite: 'm·s⁻¹', vrai: vaOpt, tol: 0.05,
           indice: <>Même formule que pour la vitesse à vide : v<sub>a</sub> = r × 2π × n / 60, mais avec la valeur de n de votre relevé au rendement maximal (r = 0,0500 m).</> },
         { id: 'rap', type: 'num', q: <>Rapport v<sub>a</sub>(rendement max) / v<sub>a</sub>(à vide)</>, unite: '', vrai: vaOpt / va0m, tol: 0.06,
           indice: <>Divisez la vitesse de l’auget au rendement maximal (question 4) par la vitesse de l’auget à vide (question 1) : ce rapport n’a pas d’unité (environ 0,5 attendu).</> },

@@ -171,7 +171,7 @@ export function SimulationProduction3() {
       texte: <>En sortie de canal, l'eau tombe dans le seau d'une balance de Roberval. Le contre-poids vaut
         <strong> 15 kg</strong> : la balance bascule quand le seau contient 15 kg d'eau. Lancez la pesée et notez la durée Δt{tPes ? <> : <strong>{fmt(tPes, 1)} s</strong></> : null}.
         15 kg d'eau occupent un volume <FormuleEnLigne><mi>V</mi><mo>=</mo><mfrac><mi>m</mi><mi>ρ</mi></mfrac></FormuleEnLigne>, avec ρ = 1,0 × 10³ kg·m⁻³. Le débit est <FormuleEnLigne><msub><mi>Q</mi><mi>V</mi></msub><mo>=</mo><mfrac><mi>V</mi><mrow><mi>Δ</mi><mi>t</mi></mrow></mfrac></FormuleEnLigne>.</>,
-      tache: { type: 'num', id: 'Q', q: <>Débit volumique Q<sub>V</sub></>, carnet: 'Débit Q_V', unite: 'm³·s⁻¹', vrai: Qmes, tol: 0.04,
+      tache: { type: 'num', id: 'Q', q: <>Débit volumique Q<sub>V</sub></>, carnet: 'Débit Q_V', unite: 'm³·s⁻¹', vrai: Qmes, tol: 0.05,
         bloque: !pesee.fini ? (pesee.actif ? 'Remplissage du seau…' : 'Lancez d’abord la pesée pour mesurer la durée.') : null,
         retablir: pesee.actif ? undefined : { label: '⚖️ Lancer la pesée', faire: () => setPesee({ actif: true, t: 0, m: 0, fini: null }) },
         indice: ['Passez d’abord de la masse au volume : V = m / ρ (en m³).', '15 kg d’eau = 0,015 m³. Divisez ensuite par la durée mesurée.'],
@@ -219,7 +219,7 @@ export function SimulationProduction3() {
     { titre: 'La vitesse de rotation', focus: ['roue'],
       texte: <>Toujours sur 10 Ω, chronométrez la durée de <strong>5 tours</strong> de roue (le chronomètre est accéléré × 5 pour ne pas attendre, la durée affichée est la vraie){t5 ? <> : <strong>{fmt(t5, 2)} s</strong></> : null}.
         La vitesse de rotation est le nombre de tours par minute.</>,
-      tache: { type: 'num', id: 'N', q: 'Vitesse de rotation N', carnet: 'Vitesse de rotation N', unite: 'tr·min⁻¹', vrai: Nmes, tol: 0.04,
+      tache: { type: 'num', id: 'N', q: 'Vitesse de rotation N', carnet: 'Vitesse de rotation N', unite: 'tr·min⁻¹', vrai: Nmes, tol: 0.05,
         bloque: R !== 10 ? 'Réglez d’abord la charge sur 10 Ω.' : (!chrono.fini ? (chrono.actif ? `Tours comptés : ${Math.floor(chrono.tours)} / 5` : 'Lancez le chronomètre pour mesurer la durée de 5 tours.') : null),
         retablir: R !== 10 ? undefined : (chrono.actif || chrono.fini ? undefined : { label: '⏱️ Chronométrer 5 tours', faire: () => setChrono({ actif: true, t: 0, tours: 0, fini: null }) }),
         indice: ['Calculez d’abord le nombre de tours par seconde : 5 tours ÷ durée.', 'Multipliez par 60 pour obtenir des tours par minute.'],
@@ -509,7 +509,7 @@ export function SimulationProduction3() {
   const optM = mission ? optimum(mission.Q, mission.H) : null;
   const eM = mission ? etatRoue(mission.Q, mission.H, 10) : null;
   const questionsMission = !mission ? [] : [
-    { id: 'va', q: <>Vitesse de l'eau v<sub>a</sub></>, unite: 'm·s⁻¹', vrai: eM.va, tol: 0.04,
+    { id: 'va', q: <>Vitesse de l'eau v<sub>a</sub></>, unite: 'm·s⁻¹', vrai: eM.va, tol: 0.05,
       indice: <>L’eau traverse la section du canal S = H × L (L = 7,5 cm). Le débit volumique Q (en m³·s⁻¹) vaut Q = S × v<sub>a</sub>, donc v<sub>a</sub> = Q / S. Convertissez : 1 L = 10⁻³ m³ et 1 cm = 10⁻² m.</> },
     { id: 'ph', q: <>Puissance disponible P<sub>hyd</sub></>, unite: 'W', vrai: eM.Phyd, tol: 0.05,
       indice: <>C’est la puissance cinétique de l’eau qui traverse la section : P<sub>hyd</sub> = ½ × ρ × S × v<sub>a</sub>³, avec ρ = 1000 kg·m⁻³, S = H × L (en m²) et v<sub>a</sub> la vitesse trouvée à la question 1.</> },
