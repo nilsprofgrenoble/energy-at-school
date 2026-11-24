@@ -5,8 +5,7 @@ import { LogosPartenaires, LIEN_DISPOSITIF } from './Partenaires';
 // ============================================================
 //  PAGE « À PROPOS » : transparence sur la manière dont le site a été construit.
 //  Page publique (vouvoiement), sobre et courte. Les formulations sont à valider
-//  par Nils. Noms cités : uniquement ceux dont l'accord est acquis (équipe du CEA) ;
-//  ajouter ceux de l'Ense³ une fois leur accord obtenu.
+//  par Nils. Noms des intervenants fournis par Nils (24/11/2026).
 // ============================================================
 
 const titre = { margin: '0 0 6px', fontFamily: "'Outfit', sans-serif", fontWeight: 800, fontSize: 20, color: '#0c1a2e', letterSpacing: '-0.01em' };
@@ -48,9 +47,15 @@ export function PageAPropos() {
           Les simulations prennent appui sur les énoncés et les scénarios pédagogiques imaginés par les intervenants de la
           journée : des enseignants-chercheurs de Grenoble INP – Ense³, UGA et des ingénieurs de recherche du CEA.
         </p>
-        <p style={{ ...texte, marginTop: 8 }}>
-          L'atelier <strong>Stockage</strong> est animé par des équipes du CEA, notamment Loïc Simonin, Éric Mayousse et Nicolas Guillet.
-        </p>
+      </Bloc>
+
+      <Bloc icone="👥" titre="Les intervenants de la journée">
+        <ul style={{ ...texte, margin: 0, paddingLeft: 20, display: 'flex', flexDirection: 'column', gap: 4 }}>
+          <li><strong>Production</strong> : Jean-Luc Schanen et Stéphane Guillet, Grenoble INP – Ense³, UGA</li>
+          <li><strong>Transport</strong> : Jérôme Buire, Grenoble INP – Ense³, UGA</li>
+          <li><strong>Batteries</strong> : Loïc Simonin, Éric Mayousse et Nicolas Guillet, CEA</li>
+          <li><strong>Hydrogène</strong> : Yann Bultel et Maël Oussenekan, Grenoble INP – Ense³, UGA</li>
+        </ul>
       </Bloc>
 
       <Bloc icone="🤖" titre="Et l'intelligence artificielle ?">
