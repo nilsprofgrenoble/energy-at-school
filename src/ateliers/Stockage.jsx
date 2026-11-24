@@ -707,15 +707,26 @@ export function SimulationStockage() {
   }
   const qDefi1 = defi && atelier === 1 && defi.q ? [
     { id: 't', q: <>Une cellule de {fmt(defi.q, 1)} Ah débite {fmt(defi.i, 1)} A. Durée de la décharge</>, unite: 'h', vrai: defi.q / defi.i,
+      pieges: [[defi.i / defi.q, 'C’est Q divisé par I : la capacité (Ah) sur l’intensité (A).']],
       indice: <>Une cellule de capacité Q (en Ah) qui débite un courant I (en A) dure t = Q / I : l’ampère-heure est déjà une unité « courant × heures ».</> },
     { id: 'e', q: 'Énergie stockée (tension nominale 3,7 V)', unite: 'Wh', vrai: 3.7 * defi.q,
       indice: <>E = U × Q, avec U = 3,7 V la tension nominale et Q la capacité en Ah : le résultat est directement en Wh.</> },
     { id: 'd', q: <>Densité d'énergie (masse {defi.m} g)</>, unite: 'Wh/kg', affiche: Wh_kg, vrai: 3.7 * defi.q / (defi.m / 1000),
+      pieges: [[3.7 * defi.q / defi.m, 'La masse doit être en kilogrammes : divisez les grammes par 1000.']],
       indice: <>La densité d’énergie est l’énergie stockée par kilogramme : d = E / m, avec E la valeur de la question 2 et m en <strong>kg</strong> (1 g = 10⁻³ kg).</> },
     { id: 'n', q: 'Quantité de lithium échangée', unite: 'mol', vrai: defi.q * 3600 / ST_F,
+      pieges: [[defi.q / ST_F, 'Convertissez d’abord la capacité en coulombs : 1 Ah = 3 600 C.']],
       indice: <>Convertissez la capacité en coulombs (1 Ah = 3 600 C), puis n(e⁻) = Q / F avec F = 96 485 C·mol⁻¹. Chaque ion Li⁺ échange un électron : n(Li) = n(e⁻).</> },
   ] : [];
   const justeD = q => { const x = lireNombre(defi.reps[q.id]); return isFinite(x) && proche(x, q.vrai, 0.06); };   // 6 % : de quoi accepter un résultat final arrondi à 2 chiffres significatifs (jusqu'à 5 % d'écart)
+  const piegeD = q => {
+    const x = lireNombre(defi.reps[q.id]);
+    if (!isFinite(x)) return 'Entrez une valeur numérique (la virgule est acceptée ; 4,5e-6 pour 4,5 × 10⁻⁶).';
+    const pg = (q.pieges || []).find(([v]) => proche(x, v, 0.08));
+    if (pg) return pg[1];
+    if (proche(x, q.vrai * 1000, 0.06) || proche(x, q.vrai / 1000, 0.06)) return 'Facteur 1000 : vérifiez les unités.';
+    return x < q.vrai ? 'Votre valeur est trop petite : relisez l’indice et vos conversions.' : 'Votre valeur est trop grande : relisez l’indice et vos conversions.';
+  };
   const defiRelevé = !!defi && (atelier === 1
     ? !!defi.verifie && qDefi1.length > 0 && qDefi1.every(justeD)
     : !!defi.valide && defi.valide.ok && defi.valide.leger);
@@ -738,6 +749,7 @@ export function SimulationStockage() {
               <span style={{ fontSize: 13, color: TXT2 }}>{q.unite}</span>
               {defi.verifie && <span>{ok ? <><Emo e="✅"/></> : <><Emo e="❌"/></>}</span>}
             </div>
+            {defi.verifie && !ok && <div style={{ fontSize: 12.5, color: '#9a3412', background: '#fff7ed', border: '1px solid #fdba74', borderRadius: 6, padding: '4px 8px', marginTop: 4 }}>{piegeD(q)}</div>}
             {defi.verifie && !ok && <div style={{ fontSize: 12.5, color: TXT2, marginTop: 3 }}>Valeur attendue : {attendu2(q.vrai)} {q.unite}</div>}
             {!ok && q.indice && <IndiceDefi>{q.indice}</IndiceDefi>}
           </div>

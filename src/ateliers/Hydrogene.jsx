@@ -873,7 +873,7 @@ export function SimulationHydrogene() {
     const pg = (q.pieges || []).find(([v]) => proche(x, v, Math.max(q.tol, 0.03)));
     if (pg) return pg[1];
     if (proche(x, q.vrai * 1000, 0.05) || proche(x, q.vrai / 1000, 0.05)) return 'Facteur 1000 : vérifiez les unités.';
-    return null;
+    return x < q.vrai ? 'Votre valeur est trop petite : relisez l’indice et vos conversions.' : 'Votre valeur est trop grande : relisez l’indice et vos conversions.';
   };
   const score = questions.filter(juste).length;
   const defiRelevé = mode === 'defi' && niveau >= 2 && verifie && questions.length > 0 && score === questions.length;
