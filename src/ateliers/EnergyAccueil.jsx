@@ -99,9 +99,9 @@ export function EnergyAccueil({ aller }) {
         <div className="ea-dispo-corps">
           <div className="ea-dispo-texte">
         <p>
-          Energy@School réunit l'Académie de Grenoble, Grenoble INP – Ense³, UGA et le CEA, qui co-pilote le programme : des
-          lycéens passent une journée de travaux pratiques dans les laboratoires de l'école, autour de l'énergie électrique,
-          encadrés par des enseignants-chercheurs et des ingénieurs de recherche.{' '}
+          Energy@School réunit l'Académie de Grenoble, Grenoble INP – Ense³, UGA et le CEA. Des lycéens passent une journée de
+          travaux pratiques dans les laboratoires de l'école d'ingénieurs, autour de la production, du transport et du stockage
+          de l'énergie électrique.{' '}
           <a href={LIEN_DISPOSITIF} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--es-orange-fonce)', fontWeight: 800 }}>Page du dispositif</a>
           {' '}·{' '}
           <a href="?atelier=a-propos" onClick={e => va(e, 'a-propos')} style={{ color: 'var(--es-orange-fonce)', fontWeight: 800 }}>À propos de ce site</a>

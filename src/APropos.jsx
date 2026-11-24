@@ -29,9 +29,9 @@ export function PageAPropos() {
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12, maxWidth: 760, margin: '0 auto', textAlign: 'left' }}>
       <Bloc icone="🧭" titre="Le dispositif Energy@School">
         <p style={texte}>
-          Energy@School réunit l'Académie de Grenoble, Grenoble INP – Ense³, UGA et le CEA, qui co-pilote le programme. Des lycéens
-          passent une journée de travaux pratiques dans les laboratoires de l'école, autour de la production, du transport et du
-          stockage de l'énergie électrique.{' '}
+          Energy@School réunit l'Académie de Grenoble, Grenoble INP – Ense³, UGA et le CEA. Des lycéens passent une journée de
+          travaux pratiques dans les laboratoires de l'école d'ingénieurs, autour de la production, du transport et du stockage
+          de l'énergie électrique.{' '}
           <a href={LIEN_DISPOSITIF} target="_blank" rel="noopener noreferrer" style={lien}>Page du dispositif</a>
         </p>
         <LogosPartenaires />
