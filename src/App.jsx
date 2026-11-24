@@ -99,7 +99,7 @@ export default function App() {
             <button onClick={() => aller('presentation')} aria-label="Energy@School, retour à la présentation"
               style={{ background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left', padding: 0, display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>
               <img src={`${import.meta.env.BASE_URL}energy-logo.png`} alt="Energy@School" width="174" height="72" style={{ height: 72, width: 'auto', display: 'block' }} />
-              <span style={{ fontSize: 13, color: '#3d4d63', fontWeight: 600, maxWidth: 330, lineHeight: 1.35 }}>Simulations pour préparer la journée à Grenoble INP – Ense³, et y revenir ensuite</span>
+              <span style={{ fontSize: 13, color: '#3d4d63', fontWeight: 600, maxWidth: 360, lineHeight: 1.35 }}>Dispositif CEA et Grenoble INP – Ense³, UGA · simulations pour préparer la journée et y revenir ensuite</span>
             </button>
             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
               <a href="https://paillasse-virtuelle.fr/" target="_blank" rel="noopener noreferrer" title="Toutes les simulations de chimie et de physique" className="es-util es-util-logo">
@@ -107,12 +107,12 @@ export default function App() {
               </a>
               <BoutonCompte aller={aller} />
               {nbFiches > 0 && slug !== 'mes-fiches' && <button onClick={() => aller('mes-fiches')} className="es-util" title="Mes fiches de révision"><Emo e="📚"/> Mes fiches</button>}
-              {slug !== 'a-propos' && <button onClick={() => aller('a-propos')} className="es-util" title="À propos de ce site" aria-label="À propos de ce site"><Emo e="ℹ"/> À propos</button>}
               {slug === 'presentation' && <button onClick={partager} className="es-util">{copie ? <><Emo e="✅"/> Lien copié</> : <><Emo e="🔗"/> Partager</>}</button>}
             </div>
           </div>
           <nav aria-label="Ateliers" className="es-nav">
             {onglet(PAGES[0])}
+            {onglet(PAGES.find(p => p.slug === 'a-propos'))}
             {GROUPES.map(g => (
               <div key={g} className="es-groupe">
                 <span className="es-groupe-titre">{g}</span>

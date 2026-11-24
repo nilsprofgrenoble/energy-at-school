@@ -5,6 +5,7 @@ import { useSuivi, bilan } from "../avancement";
 import { FormulaireConnexion } from "../Compte";
 import { Classement } from "../Classement";
 import { Emo, Pic, PicSvg } from '../Pictos';
+import { LogosPartenaires, MentionSite, LIEN_DISPOSITIF } from "../Partenaires";
 
 // ====================================================
 // ENERGY@SCHOOL — PAGE D'ENTRÉE
@@ -67,9 +68,9 @@ export function EnergyAccueil({ aller }) {
     <div className="ea">
       <section className="ea-hero" aria-label="Présentation">
         <div>
-          <h1><span className="ea-etiquette">Energy@School · Grenoble INP – Ense³</span>Produire, transporter, <mark>stocker.</mark></h1>
+          <h1><span className="ea-etiquette">Dispositif Energy@School · CEA et Grenoble INP – Ense³, UGA</span>Produire, transporter, <mark>stocker.</mark></h1>
           <p className="ea-lead">
-            Pendant une journée dans les laboratoires de l'Ense³, vous allez découvrir comment on <strong>produit</strong> l'énergie
+            Pendant une journée dans les laboratoires de Grenoble INP – Ense³, UGA, vous allez découvrir comment on <strong>produit</strong> l'énergie
             électrique, comment on la <strong>transporte</strong>, et comment on la <strong>stocke</strong> pour la <strong>restituer</strong> plus tard,
             dans une batterie ou sous forme d'hydrogène. Chaque élève participe à deux ateliers sur les quatre. Ces pages vous
             permettent de les préparer avant, et d'y revenir après.
@@ -92,6 +93,20 @@ export function EnergyAccueil({ aller }) {
         </div>
       </section>
       {connexionOuverte && <FormulaireConnexion onFermer={() => setConnexionOuverte(false)} />}
+
+      <section className="ea-dispositif" aria-labelledby="ea-dispositif-titre">
+        <h2 id="ea-dispositif-titre">Le dispositif Energy@School</h2>
+        <p>
+          Energy@School réunit l'Académie de Grenoble, Grenoble INP – Ense³, UGA et le CEA, qui co-pilote le programme : des
+          lycéens passent une journée de travaux pratiques dans les laboratoires de l'école, autour de l'énergie électrique,
+          encadrés par des enseignants-chercheurs et des ingénieurs de recherche.{' '}
+          <a href={LIEN_DISPOSITIF} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--es-orange-fonce)', fontWeight: 800 }}>Page du dispositif</a>
+          {' '}·{' '}
+          <a href="?atelier=a-propos" onClick={e => va(e, 'a-propos')} style={{ color: 'var(--es-orange-fonce)', fontWeight: 800 }}>À propos de ce site</a>
+        </p>
+        <LogosPartenaires />
+        <MentionSite />
+      </section>
 
       <div className="ea-titre-section"><h2>Les ateliers de la journée</h2><span>7 pages · 3 thèmes</span></div>
       <div className="ea-tuiles">

@@ -1,10 +1,12 @@
 import { cardStyle } from "./commun";
 import { Emo } from './Pictos';
+import { LogosPartenaires, LIEN_DISPOSITIF } from './Partenaires';
 
 // ============================================================
 //  PAGE « À PROPOS » : transparence sur la manière dont le site a été construit.
 //  Page publique (vouvoiement), sobre et courte. Les formulations sont à valider
-//  par Nils ; aucun nom propre d'enseignant-chercheur sans son accord.
+//  par Nils. Noms cités : uniquement ceux dont l'accord est acquis (équipe du CEA) ;
+//  ajouter ceux de l'Ense³ une fois leur accord obtenu.
 // ============================================================
 
 const titre = { margin: '0 0 6px', fontFamily: "'Outfit', sans-serif", fontWeight: 800, fontSize: 20, color: '#0c1a2e', letterSpacing: '-0.01em' };
@@ -26,14 +28,28 @@ function Bloc({ icone, titre: t, children }) {
 export function PageAPropos() {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12, maxWidth: 760, margin: '0 auto', textAlign: 'left' }}>
+      <Bloc icone="🧭" titre="Le dispositif Energy@School">
+        <p style={texte}>
+          Energy@School réunit l'Académie de Grenoble, Grenoble INP – Ense³, UGA et le CEA, qui co-pilote le programme. Des lycéens
+          passent une journée de travaux pratiques dans les laboratoires de l'école, autour de la production, du transport et du
+          stockage de l'énergie électrique.{' '}
+          <a href={LIEN_DISPOSITIF} target="_blank" rel="noopener noreferrer" style={lien}>Page du dispositif</a>
+        </p>
+        <LogosPartenaires />
+      </Bloc>
+
       <Bloc icone="✍️" titre="Qui a fait ce site ?">
         <p style={texte}>
-          Ce site a été fait par Nils Aronssohn, professeur au lycée Argouges à Grenoble, pour préparer la journée
-          Energy@School à Grenoble INP – Ense³ et y revenir ensuite.
+          Ce site est une initiative personnelle de Nils Aronssohn, enseignant au lycée Argouges à Grenoble, réalisée dans le cadre
+          du dispositif Energy@School pour préparer la journée à Grenoble INP – Ense³, UGA, et y revenir ensuite. Les logos
+          identifient les partenaires du dispositif ; ils n'en font pas un site officiel de ces institutions.
         </p>
         <p style={{ ...texte, marginTop: 8 }}>
           Les simulations prennent appui sur les énoncés et les scénarios pédagogiques imaginés par les intervenants de la
-          journée : des enseignants-chercheurs de l'Ense³ et des ingénieurs de recherche du CEA.
+          journée : des enseignants-chercheurs de Grenoble INP – Ense³, UGA et des ingénieurs de recherche du CEA.
+        </p>
+        <p style={{ ...texte, marginTop: 8 }}>
+          L'atelier <strong>Stockage</strong> est animé par des équipes du CEA, notamment Loïc Simonin, Éric Mayousse et Nicolas Guillet.
         </p>
       </Bloc>
 
