@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useMemo } from "react";
-import { cardStyle, Graphe, fmt, sci, lireNombre, proche, CarteParcours, Cadre, ORANGE_GUIDE, useEtatPersistant, avecIndices, IndiceDefi, valeurAttendue, arrondiSig, FormuleEnLigne } from "../commun";
+import { cardStyle, Graphe, fmt, sci, lireNombre, proche, CarteParcours, Cadre, ORANGE_GUIDE, useEtatPersistant, avecIndices, IndiceDefi, valeurAttendue, arrondiSig, FormuleEnLigne, modeOuverture } from "../commun";
 import { BoutonFiche } from "../fiches/Fiche";
 import { signalerDefi, ouvrirDefi } from "../avancement";
 import { Emo, Pic } from '../Pictos';
@@ -78,7 +78,7 @@ const MODULES = [
 // ════════════════ COMPOSANT PRINCIPAL ════════════════
 export function SimulationHydrogene() {
   const [atelier, setAtelier] = useState(1);        // 1 : maquette, 2 : banc
-  const [mode, setMode] = useState('guide');        // 'guide' | 'explore' | 'defi'
+  const [mode, setMode] = useState(() => modeOuverture(['es1-hydrogene-a1', 'es1-hydrogene-a2']));        // 'guide' | 'explore' | 'defi'
   const [guide1, setGuide1] = useEtatPersistant('es1-hydrogene-a1', { etape: 0, reps: {}, verifs: {}, reussies: {} });
   const [guide2, setGuide2] = useEtatPersistant('es1-hydrogene-a2', { etape: 0, reps: {}, verifs: {}, reussies: {} });
   const [releveG, setReleveG] = useState(null);

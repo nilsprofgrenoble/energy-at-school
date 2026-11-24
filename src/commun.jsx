@@ -1,5 +1,7 @@
 import { useState, useEffect, useLayoutEffect, useRef, useMemo, Fragment } from "react";
 import { signaler } from "./avancement";
+import { enregistrer, noterModification, surChangementServeur } from "./etatsParcours";
+import { getSession, estProf } from "./serveur";
 import { Emo, Pic, ec } from './Pictos';
 
 // ============================================================
@@ -226,11 +228,28 @@ export function FormuleEnLigne({ children }) {
   return <math style={{ fontSize: '1.05em', whiteSpace: 'nowrap', mathStyle: 'normal' }}>{children}</math>;
 }
 
+// Mode d'ouverture d'un atelier : le parcours guidé pour qui découvre ; l'exploration libre pour un professeur,
+// pour un élève qui a déjà terminé tous les parcours de l'atelier, ou quand un lien de devoir la demande (valable 5 secondes).
+// « cles » : les clés d'état des parcours guidés de l'atelier (useEtatPersistant). Le drapeau « fini » est posé par CarteParcours à la dernière étape.
+export function modeOuverture(cles) {
+  try {
+    const d = JSON.parse(window.sessionStorage.getItem('mode-demande') || 'null');
+    if (d && (d.mode === 'explore' || d.mode === 'defi') && Date.now() - d.t < 5000) return d.mode;
+  } catch { /* pas de demande */ }
+  try { if (estProf(getSession())) return 'explore'; } catch { /* session indisponible */ }
+  try {
+    if (cles.length && cles.every(k => { const b = window.localStorage.getItem(k); return b && JSON.parse(b)?.fini; })) return 'explore';
+  } catch { /* état illisible : on ouvre le parcours */ }
+  return 'guide';
+}
+
 export function CarteParcours({ etapes, etat, setEtat, fin, cle }) {
   const { etape, reps, verifs } = etat;
   // Avancement : signalé au module d'avancement (niveaux, enregistrement sur le serveur si l'élève est connecté)
   const nbReussies = etat.reussies ? Object.values(etat.reussies).filter(Boolean).length : 0;
   useEffect(() => { if (cle) signaler(cle, etape, etapes.length, nbReussies); }, [cle, etape, etapes.length, nbReussies]);
+  // Dernière étape atteinte : le parcours est terminé (la prochaine visite s'ouvrira sur l'exploration libre)
+  useEffect(() => { if (etapes.length > 1 && etape >= etapes.length - 1 && !etat.fini) setEtat(e => (e.fini ? e : { ...e, fini: true })); }, [etape, etapes.length, etat.fini]);
   const et = etapes[Math.min(etape, etapes.length - 1)];
   const tache = et.tache;
   const TXT = '#0f172a', TXT2 = '#334155', BORDER = '#cbd5e1';
@@ -448,16 +467,42 @@ export function SelecteurParcours({ parcours, choix, setChoix, couleur = ORANGE_
 // ============================================================
 
 // useState dont la valeur est gardée sur l'appareil (localStorage) : elle survit au rechargement de la page.
+// Pour un élève connecté, elle est aussi copiée dans son compte (etatsParcours.js) : il reprend là où il s'était arrêté, sur n'importe quel appareil.
 export function useEtatPersistant(cle, initial) {
-  const [valeur, setValeur] = useState(() => {
+  const valeurDe = () => {
     try {
       const brut = window.localStorage.getItem(cle);
-      return brut ? JSON.parse(brut) : initial;
-    } catch { return initial; }
-  });
+      if (brut) {
+        const lu = JSON.parse(brut);
+        // un état sauvegardé par une ancienne version peut manquer de champs : on complète avec les valeurs initiales
+        const init = typeof initial === 'function' ? initial() : initial;
+        if (init && typeof init === 'object' && !Array.isArray(init) && lu && typeof lu === 'object' && !Array.isArray(lu)) return { ...init, ...lu };
+        return lu;
+      }
+    } catch { /* valeur illisible : on repart de la valeur initiale */ }
+    return typeof initial === 'function' ? initial() : initial;
+  };
+  const avait = useRef(null);       // une valeur était-elle déjà gardée sur l'appareil avant cet affichage ?
+  if (avait.current === null) { try { avait.current = window.localStorage.getItem(cle) !== null; } catch { avait.current = false; } }
+  const [valeur, setValeur] = useState(valeurDe);
+  const precedent = useRef(undefined);     // dernier état écrit (pour ne pas confondre l'affichage initial avec une modification de l'élève)
+  const duServeur = useRef(null);          // état venu du compte de l'élève (pas à renvoyer)
   useEffect(() => {
-    try { window.localStorage.setItem(cle, JSON.stringify(valeur)); } catch { /* stockage indisponible : on continue sans */ }
+    let brut;
+    try { brut = JSON.stringify(valeur); window.localStorage.setItem(cle, brut); } catch { return; /* stockage indisponible : on continue sans */ }
+    if (precedent.current === undefined) { precedent.current = brut; enregistrer(cle, avait.current); return; }
+    if (brut === precedent.current) return;
+    precedent.current = brut;
+    if (brut === duServeur.current) return;
+    noterModification(cle);
   }, [cle, valeur]);
+  // L'élève connecté retrouve ici la progression faite sur un autre appareil : le serveur peut apporter une version plus récente
+  useEffect(() => surChangementServeur(cle, () => {
+    const v = valeurDe();
+    duServeur.current = JSON.stringify(v);
+    setValeur(v);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }), [cle]);
   return [valeur, setValeur];
 }
 
