@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { cardStyle, Graphe, fmt, sci, lireNombre, proche, CarteParcours, Cadre, ORANGE_GUIDE, useEtatPersistant, avecIndices, IndiceDefi } from "../commun";
+import { cardStyle, Graphe, fmt, sci, lireNombre, proche, CarteParcours, Cadre, ORANGE_GUIDE, useEtatPersistant, avecIndices, IndiceDefi, Formule, FormuleEnLigne } from "../commun";
 import { BoutonFiche } from "../fiches/Fiche";
 import { signalerDefi, ouvrirDefi } from "../avancement";
 import { ParcoursReseauReel } from "./ReseauReel";
@@ -72,7 +72,7 @@ export function SimulationTransport() {
   const enGuide = mode === 'guide';
   const etape = guide.etape;
   const vu = k => !enGuide || etape >= k;
-  const revele = { reglages: vu(5), cables: vu(7), mesures: vu(7), tableau: vu(11), bilan: vu(16) };
+  const revele = { reglages: vu(3), cables: vu(4), mesures: vu(4), tableau: vu(8), bilan: vu(12) };
 
   // ── Styles ──
   const { txt: TXT, txt2: TXT2, bord: BORDER, fond: BG } = COUL;
@@ -112,6 +112,7 @@ export function SimulationTransport() {
   const cas11 = m1 === 1 && m2 === 1 && cableId === 'bleu';
   const reglagesTestes = new Set(mesuresTab.filter(q => q.cable === 'bleu').map(q => `${q.m1}:${q.m2}`)).size;
   const cablesTestes = new Set(mesuresTab.filter(q => q.m1 === 2 && q.m2 === 0.5).map(q => q.cable)).size;
+  const mRel = <Formule><mi>m</mi><mo>=</mo><mfrac><msub><mi>N</mi><mn>2</mn></msub><msub><mi>N</mi><mn>1</mn></msub></mfrac><mo>=</mo><mfrac><msub><mi>U</mi><mn>2</mn></msub><msub><mi>U</mi><mn>1</mn></msub></mfrac><mo>=</mo><mfrac><msub><mi>I</mi><mn>1</mn></msub><msub><mi>I</mi><mn>2</mn></msub></mfrac></Formule>;
   const ETAPES = [
     { titre: 'Transporter l’électricité', focus: ['gen', 'ligne', 'charge'],
       texte: <>On produit l'électricité là où il y a du vent, de l'eau ou une centrale, et on la consomme dans les villes,
@@ -122,32 +123,24 @@ export function SimulationTransport() {
       texte: <>Le courant traverse des kilomètres de câbles métalliques.</>,
       tache: { type: 'qcm', q: 'Que devient l’énergie perdue dans les câbles ?',
         options: ['Elle chauffe les câbles (effet Joule)', 'Elle repart vers la centrale', 'Elle s’échappe sous forme de lumière'], bonne: 0,
+        indice: 'Un fil parcouru par un courant s’échauffe, comme dans un grille-pain.',
         expl: 'Un câble a une résistance R : il dissipe en chaleur la puissance R × I².' } },
     { titre: 'Le transformateur', focus: ['t1'],
       texte: <>Un transformateur comporte deux bobines enroulées sur un même noyau de fer : N<sub>1</sub> spires à l'entrée
-        (primaire), N<sub>2</sub> spires à la sortie (secondaire). Son rapport vaut m = N<sub>2</sub> / N<sub>1</sub> = U<sub>2</sub> / U<sub>1</sub> = I<sub>1</sub> / I<sub>2</sub>.
-        <br/>Un transformateur a 4 spires en entrée, 8 en sortie, et reçoit U<sub>1</sub> = 1,0 V.</>,
+        (primaire), N<sub>2</sub> spires à la sortie (secondaire). Il modifie la tension et l'intensité, mais pas la fréquence (50 Hz). Son rapport vaut :
+        {mRel}
+        Un transformateur a 4 spires en entrée, 8 en sortie, et reçoit U<sub>1</sub> = 1,0 V.</>,
       tache: { type: 'num', q: <>Tension de sortie U<sub>2</sub></>, carnet: false, unite: 'V', vrai: 2.0, tol: 0.01,
+        indice: ['Calculez d’abord le rapport m avec les nombres de spires.', 'm = 8 / 4, puis U₂ = m × U₁.'],
         pieges: [[0.5, 'm = N₂ / N₁ = 8 / 4 = 2, et U₂ = m × U₁.']] } },
-    { titre: 'Le transformateur (suite)', focus: ['t1'],
-      texte: <>Un autre transformateur reçoit U<sub>1</sub> = 12 V, délivre U<sub>2</sub> = 4 V et comporte 6 spires en sortie.</>,
-      tache: { type: 'num', q: <>Nombre de spires en entrée N<sub>1</sub></>, carnet: false, unite: 'spires', vrai: 18, tol: 0.01,
-        pieges: [[2, 'm = U₂ / U₁ = 4 / 12 = 1/3 ; or m = N₂ / N₁, donc N₁ = N₂ / m.']] } },
-    { titre: 'Ce que fait un transformateur', focus: ['t1', 't2'],
-      texte: <>D'après la relation m = U<sub>2</sub> / U<sub>1</sub> = I<sub>1</sub> / I<sub>2</sub>…</>,
-      tache: { type: 'qcm', q: 'Un transformateur permet de modifier…',
-        options: ['la tension et l’intensité, mais pas la fréquence', 'la tension seulement', 'la tension, l’intensité et la fréquence'], bonne: 0,
-        expl: 'Quand il élève la tension, il abaisse l’intensité dans le même rapport. La fréquence (50 Hz) ne change pas.' } },
     { titre: 'Les deux transformateurs', focus: ['t1', 't2'],
       texte: <>La maquette modélise le réseau : un générateur d'environ 25 V (le parc éolien), un transformateur 1 qui adapte la tension pour
         le transport, une ligne de deux câbles de 10 m, et un transformateur 2 qui adapte la tension pour les habitations.
         Les réglages sont apparus sous le schéma. Réglez m<sub>1</sub> = 2.</>,
       tache: { type: 'qcm', q: <>Pour que les habitations reçoivent à nouveau environ 25 V, comment régler m<sub>2</sub> ?</>,
         options: ['m₂ = 0,5', 'm₂ = 1', 'm₂ = 2'], bonne: 0,
-        expl: 'Le transformateur 1 double la tension, le transformateur 2 doit la diviser par 2 : m₁ × m₂ = 1.' } },
-    { titre: 'Et dans l’autre sens ?', focus: ['t1', 't2'],
-      texte: <>Le transformateur 1 est maintenant réglé sur m<sub>1</sub> = 0,5.</>,
-      tache: { type: 'qcm', q: <>Quel réglage de m<sub>2</sub> faut-il ?</>, options: ['m₂ = 0,5', 'm₂ = 1', 'm₂ = 2'], bonne: 2 } },
+        indice: ['Le transformateur 1 double la tension.', 'Le transformateur 2 doit la ramener à sa valeur de départ.'],
+        expl: 'Le transformateur 1 double la tension, le transformateur 2 doit la diviser par 2 : m₁ × m₂ = 1. Dans l’autre sens (m₁ = 0,5), il faudrait m₂ = 2.' } },
     { titre: 'Première mesure', focus: ['gen', 'charge'],
       texte: <>Réglez les deux transformateurs sur <strong>1 : 1</strong> et choisissez les <strong>câbles bleus</strong>
         (S = 1,5 mm²). Les appareils de mesure sont apparus sur le schéma.</>,
@@ -155,17 +148,23 @@ export function SimulationTransport() {
     { titre: 'La puissance produite', focus: ['gen'],
       texte: <>Au générateur : V<sub>1</sub> = {fmt(V1a, 1)} V et i<sub>1</sub> = {fmt(i1a, 2)} A (valeurs efficaces). On suppose que la charge est
         résistive, donc que la puissance est simplement le produit de la tension par l'intensité.</>,
-      tache: { type: 'num', q: <>Puissance électrique produite P<sub>1</sub> = V<sub>1</sub> × i<sub>1</sub></>, carnet: 'Puissance produite P_1', affiche: v => fmt(v, 1), unite: 'W', vrai: V1a * i1a, tol: 0.02,
-        bloque: !cas11 ? 'Revenez au réglage 1 : 1 avec les câbles bleus.' : null } },
+      tache: { type: 'num', q: <>Puissance électrique produite P<sub>1</sub> = V<sub>1</sub> × i<sub>1</sub></>, carnet: 'Puissance produite P_1', affiche: v => fmt(v, 1), unite: 'W', vrai: V1a * i1a, tol: 0.03,
+        indice: 'Multipliez la tension par l’intensité affichées au générateur.',
+        bloque: !cas11 ? 'Revenez au réglage 1 : 1 avec les câbles bleus.' : null,
+        retablir: { label: 'Rétablir 1 : 1 et câbles bleus', faire: () => { setM1(1); setM2(1); setCableId('bleu'); } } } },
     { titre: 'La puissance reçue', focus: ['charge'],
       texte: <>Aux habitations : V<sub>2</sub> = {fmt(V2a, 1)} V et i<sub>2</sub> = {fmt(i2a, 2)} A.</>,
-      tache: { type: 'num', q: <>Puissance reçue P<sub>2</sub> = V<sub>2</sub> × i<sub>2</sub></>, carnet: 'Puissance reçue P_2', affiche: v => fmt(v, 1), unite: 'W', vrai: V2a * i2a, tol: 0.02,
-        bloque: !cas11 ? 'Revenez au réglage 1 : 1 avec les câbles bleus.' : null } },
-    { titre: 'Le rendement du transport', focus: ['gen', 'charge'],
-      texte: <>Le rendement du transport compare la puissance reçue à la puissance produite : r = P<sub>2</sub> / P<sub>1</sub>.
-        Reprenez vos deux résultats : P<sub>1</sub> = {fmt(V1a * i1a, 1)} W et P<sub>2</sub> = {fmt(V2a * i2a, 1)} W.</>,
-      tache: { type: 'num', q: 'Rendement r (2 chiffres significatifs)', carnet: false, unite: '%', vrai: V2a * i2a / (V1a * i1a) * 100, tol: 0.03,
+      tache: { type: 'num', q: <>Puissance reçue P<sub>2</sub> = V<sub>2</sub> × i<sub>2</sub></>, carnet: 'Puissance reçue P_2', affiche: v => fmt(v, 1), unite: 'W', vrai: V2a * i2a, tol: 0.03,
+        indice: 'Même calcul qu’à l’étape précédente, avec les valeurs mesurées aux habitations.',
         bloque: !cas11 ? 'Revenez au réglage 1 : 1 avec les câbles bleus.' : null,
+        retablir: { label: 'Rétablir 1 : 1 et câbles bleus', faire: () => { setM1(1); setM2(1); setCableId('bleu'); } } } },
+    { titre: 'Le rendement du transport', focus: ['gen', 'charge'],
+      texte: <>Le rendement du transport compare la puissance reçue à la puissance produite : <FormuleEnLigne><mi>r</mi><mo>=</mo><mfrac><msub><mi>P</mi><mn>2</mn></msub><msub><mi>P</mi><mn>1</mn></msub></mfrac></FormuleEnLigne>.
+        Reprenez vos deux résultats : P<sub>1</sub> = {fmt(V1a * i1a, 1)} W et P<sub>2</sub> = {fmt(V2a * i2a, 1)} W.</>,
+      tache: { type: 'num', q: 'Rendement r (2 chiffres significatifs)', carnet: false, unite: '%', vrai: V2a * i2a / (V1a * i1a) * 100, tol: 0.05,
+        indice: ['Divisez la puissance reçue par la puissance produite.', 'Multipliez par 100 pour exprimer le rendement en %.'],
+        bloque: !cas11 ? 'Revenez au réglage 1 : 1 avec les câbles bleus.' : null,
+        retablir: { label: 'Rétablir 1 : 1 et câbles bleus', faire: () => { setM1(1); setM2(1); setCableId('bleu'); } },
         pieges: [[V1a * i1a / (V2a * i2a) * 100, 'C’est l’inverse : puissance reçue sur puissance produite.'], [V2a * i2a / (V1a * i1a), 'Exprimez le rendement en pourcentage.']] } },
     { titre: 'Comparer les réglages', focus: ['t1', 't2'],
       texte: <>Le tableau de mesures est apparu. Avec les câbles bleus, testez les trois réglages <strong>1 : 1</strong>,
@@ -173,28 +172,30 @@ export function SimulationTransport() {
       tache: { type: 'action', ok: reglagesTestes >= 3, consigne: `Réglages enregistrés (câbles bleus) : ${reglagesTestes} / 3` } },
     { titre: 'Le meilleur réglage', focus: ['t1', 't2'],
       texte: <>Comparez les rendements obtenus (onglet « Mes mesures »).</>,
-      tache: { type: 'qcm', q: <>Quel est le meilleur choix pour m<sub>1</sub> : m<sub>2</sub> ?</>, options: ['1 : 1', '2 : 0,5', '0,5 : 2'], bonne: 1 } },
-    { titre: 'Comparer les câbles', focus: ['ligne'],
-      texte: <>Gardez le réglage <strong>2 : 0,5</strong> et testez les trois câbles (rouge 1,0 mm², bleu 1,5 mm², noir 2,5 mm²),
-        en enregistrant la mesure à chaque fois.</>,
-      tache: { type: 'action', ok: cablesTestes >= 3, consigne: `Câbles enregistrés (réglage 2 : 0,5) : ${cablesTestes} / 3` } },
+      tache: { type: 'qcm', q: <>Quel est le meilleur choix pour m<sub>1</sub> : m<sub>2</sub> ?</>, options: ['1 : 1', '2 : 0,5', '0,5 : 2'], bonne: 1,
+        indice: 'Cherchez la barre la plus haute dans l’onglet « Mes mesures ».' } },
     { titre: 'Le meilleur câble', focus: ['ligne'],
-      texte: <>Plus un câble est épais, plus sa résistance est faible : R = ρ × L / S.</>,
+      texte: <>Gardez le réglage <strong>2 : 0,5</strong> et testez les trois câbles (rouge 1,0 mm², bleu 1,5 mm², noir 2,5 mm²), en enregistrant la mesure à chaque fois.
+        Plus un câble est épais, plus sa résistance est faible : <FormuleEnLigne><mi>R</mi><mo>=</mo><mi>ρ</mi><mo>×</mo><mfrac><mi>L</mi><mi>S</mi></mfrac></FormuleEnLigne>.</>,
       tache: { type: 'qcm', q: 'Quel est le meilleur câble pour le rendement ?', options: ['rouge (1,0 mm²)', 'bleu (1,5 mm²)', 'noir (2,5 mm²)'], bonne: 2,
+        indice: ['Un câble plus épais a une résistance plus faible, donc moins de pertes.', 'Vérifiez avec vos mesures enregistrées.'],
         expl: 'Mais un câble plus épais est plus lourd et plus cher : c’est un compromis.' } },
     { titre: 'Pourquoi élever la tension ?', focus: ['ligne'],
       texte: <>Pour une même puissance, si on double la tension dans la ligne, l'intensité est divisée par 2. Or les pertes dans les
-        câbles valent R × I².</>,
+        câbles valent <FormuleEnLigne><mi>R</mi><mo>×</mo><msup><mi>I</mi><mn>2</mn></msup></FormuleEnLigne>.</>,
       tache: { type: 'qcm', q: 'Les pertes dans les câbles sont alors…', options: ['divisées par 2', 'divisées par 4', 'inchangées'], bonne: 1,
+        indice: 'L’intensité est élevée au carré dans la formule des pertes.',
         expl: 'C’est pour cela que les lignes à haute tension fonctionnent sous 400 000 V !' } },
     { titre: 'Où part l’énergie ?', focus: ['t1', 'ligne', 't2'],
       texte: <>L'onglet <strong>Bilan</strong> détaille où passe la puissance produite, pour le réglage actuel.</>,
       tache: { type: 'qcm', q: 'Dans cette maquette (câbles de 10 m), où sont les plus grosses pertes ?',
         options: ['Dans les câbles', 'Dans les transformateurs'], bonne: 1,
+        indice: 'Comparez les barres rouges T1, ligne et T2 dans le Bilan.',
         expl: 'Avec seulement 10 m de câble, ce sont les transformateurs qui perdent le plus. Sur une vraie ligne de plusieurs centaines de km, la résistance des câbles devient énorme : élever la tension devient alors indispensable.' } },
-    { titre: 'Bravo !', focus: [],
-      texte: <>Vous savez maintenant pourquoi on transporte l'électricité sous haute tension, et pourquoi le choix des câbles est un
-        compromis. En exploration libre, vous pouvez allonger la ligne jusqu'à 1 km pour voir ce qui se passe sur une vraie ligne.</>, tache: null },
+    { titre: 'Le bilan', focus: [],
+      texte: <>Un transformateur modifie la tension et l'intensité dans le rapport m, pas la fréquence. Le rendement r = P<sub>2</sub> / P<sub>1</sub> est meilleur avec le réglage 2 : 0,5 (tension élevée dans la ligne)
+        et avec le câble le plus épais ; doubler la tension divise les pertes des câbles par 4. Sur la maquette (10 m de câble), les transformateurs perdent plus que les câbles ;
+        sur une ligne de plusieurs centaines de km, c'est l'inverse. En exploration libre, vous pouvez allonger la ligne jusqu'à 1 km pour le voir.</>, tache: null },
   ];
   const et = ETAPES[Math.min(etape, ETAPES.length - 1)];
   const hl = id => enGuide && et.focus.includes(id);
@@ -217,8 +218,7 @@ export function SimulationTransport() {
   const ep = 2 + cable.S * 2;
   const eclat = Math.min(1, r.P2 / 110);
   const schema = (
-    <svg viewBox="0 0 640 300" role="img" aria-label="Réseau de transport : générateur, transformateurs, ligne et habitations"
-      style={{ width: '100%', height: 'auto', display: 'block', background: 'white', borderRadius: 8, border: `1px solid ${BORDER}` }}>
+    <svg viewBox="0 0 640 300" role="img" aria-label="Réseau de transport : générateur, transformateurs, ligne et habitations" className="es-schema" style={{ background: 'white', borderRadius: 8, border: `1px solid #cbd5e1` }}>
       {/* Éolienne et générateur */}
       <g transform="translate(48 52)">
         <line x1="0" y1="0" x2="0" y2="44" stroke="#64748b" strokeWidth="3"/>
@@ -352,7 +352,7 @@ export function SimulationTransport() {
       <thead><tr>{['m₁ : m₂', 'câble', 'P₁ (W)', 'P₂ (W)', 'r (%)'].map(h => (
         <th key={h} style={{ textAlign: 'right', padding: '3px 5px', borderBottom: `1.5px solid ${BORDER}`, color: TXT2 }}>{h}</th>))}</tr></thead>
       <tbody>{mesuresTab.map((q, i) => (
-        <tr key={i}>{[nomReglage(q.m1, q.m2), q.cable, fmt(q.P1, 1), fmt(q.P2, 1), enGuide && etape < 12 ? '?' : fmt(q.eta, 1)].map((c, j) => (
+        <tr key={i}>{[nomReglage(q.m1, q.m2), q.cable, fmt(q.P1, 1), fmt(q.P2, 1), enGuide && etape < 9 ? '?' : fmt(q.eta, 1)].map((c, j) => (
           <td key={j} style={{ textAlign: 'right', padding: '3px 5px', fontFamily: 'monospace' }}>{c}</td>))}</tr>
       ))}</tbody>
     </table>
@@ -460,7 +460,8 @@ export function SimulationTransport() {
       <div className="tr-l1">
         <div style={box}>
           <div style={titreBox}>La maquette du réseau de transport</div>
-          {schema}
+          <div className="es-schema-cadre">{schema}</div>
+          <div className="es-schema-aide">↔ Faites glisser le schéma pour le voir en entier.</div>
           <div style={{ fontSize: 13, color: TXT2, marginTop: 6, lineHeight: 1.5 }}>
             {enGuide ? <>L'élément encadré en orange est celui dont parle l'étape en cours.</>
               : <>Le transformateur 1 adapte la tension pour le transport, le transformateur 2 la ramène pour les habitations.
@@ -472,11 +473,11 @@ export function SimulationTransport() {
       </div>
       <div className="tr-l2">
         {mode !== 'explore' && blocGraphe}
-        <div data-apparait="5 7">
+        <div data-apparait="3 4">
           {section('commandes', 'Commandes', commandes)}
           {revele.mesures && section('mesures', 'Mesures', mesures)}
         </div>
-        {revele.tableau && <div data-apparait="11">{section('points', 'Mes mesures', tableau)}</div>}
+        {revele.tableau && <div data-apparait="8">{section('points', 'Mes mesures', tableau)}</div>}
         {mode === 'explore' && section('comprendre', 'Comprendre', comprendre)}
       </div>
       </>}
