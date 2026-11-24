@@ -208,14 +208,14 @@ export function SimulationProduction1() {
       texte: <>Le seau de 1,0 L a été rempli en <strong>{tS ? fmt(tS, 1) : '?'} s</strong>. Le débit volumique est le volume écoulé par seconde :
         <Formule>{M.QV}<mo>=</mo><mfrac><mi>V</mi><mrow><mi>Δ</mi><mi>t</mi></mrow></mfrac></Formule>
         avec V en m³ (1 L = 10⁻³ m³) et Δt en secondes.</>,
-      tache: { type: 'num', q: <>Débit volumique Q<sub>V</sub></>, carnet: 'Débit Q_V', unite: 'm³·s⁻¹', vrai: Qm, tol: 0.03,
+      tache: { type: 'num', q: <>Débit volumique Q<sub>V</sub></>, carnet: 'Débit Q_V', unite: 'm³·s⁻¹', vrai: Qm, tol: 0.05,
         indice: ['Le débit est un volume divisé par une durée.', 'Convertissez d’abord le volume : 1 L = 10⁻³ m³. Gardez la durée en secondes.'],
         pieges: Qm ? [[1 / tS, '1 L = 10⁻³ m³ : convertissez le volume.']] : [], aide: 'Notation scientifique acceptée : pour 4,5 × 10⁻⁶, tapez 4,5e-6.' } },
     { titre: 'La puissance hydraulique', focus: ['mano'],
       texte: <>Le manomètre est apparu : il indique la pression dans la conduite forcée, <strong>{fmt(pB, 2)} bar</strong> (1 bar = 10⁵ Pa).
         La puissance apportée par l'eau vaut <FormuleEnLigne>{M.Phyd}<mo>=</mo><mi>p</mi><mo>×</mo>{M.QV}</FormuleEnLigne>, avec p en Pa et Q<sub>V</sub> en m³·s⁻¹.
         Le débit trouvé à l'étape précédente est Q<sub>V</sub> = {Qm ? sci(Qm) : '?'} m³·s⁻¹.</>,
-      tache: { type: 'num', q: <>Puissance hydraulique P<sub>hyd</sub></>, carnet: 'Puissance hydraulique P_hyd', unite: 'W', vrai: Phm, tol: 0.04,
+      tache: { type: 'num', q: <>Puissance hydraulique P<sub>hyd</sub></>, carnet: 'Puissance hydraulique P_hyd', unite: 'W', vrai: Phm, tol: 0.05,
         indice: ['Multipliez la pression par le débit.', 'La pression doit être en pascals : 1 bar = 10⁵ Pa.'],
         pieges: Qm ? [[pB * Qm, '1 bar = 10⁵ Pa : convertissez la pression.']] : [] } },
     { titre: 'Brancher la charge', focus: ['charge'],
@@ -231,7 +231,7 @@ export function SimulationProduction1() {
     { titre: 'La puissance électrique', focus: ['charge'],
       texte: <>Réglez la charge sur <strong>10 Ω</strong>, relevez U et I sur les appareils, et calculez
         <FormuleEnLigne>{M.Pel}<mo>=</mo><mi>U</mi><mo>×</mo><mi>I</mi></FormuleEnLigne>.</>,
-      tache: { type: 'num', q: <>Puissance électrique P<sub>élec</sub></>, carnet: 'Puissance électrique P_élec (10 Ω)', unite: 'W', vrai: P10, tol: 0.04,
+      tache: { type: 'num', q: <>Puissance électrique P<sub>élec</sub></>, carnet: 'Puissance électrique P_élec (10 Ω)', unite: 'W', vrai: P10, tol: 0.05,
         indice: ['Multipliez la tension (en V) par l’intensité (en A).', 'La charge doit être sur 10 Ω : lisez U et I à cette valeur.'],
         bloque: R !== 10 ? 'Réglez d’abord la charge sur 10 Ω.' : null, retablir: retablir10 } },
     { titre: 'Le rendement', focus: ['charge', 'conduite'],
@@ -595,13 +595,13 @@ export function SimulationProduction1() {
     const { t, pBar, U, I, f: fr, oq } = releve;
     const Qm = 1e-3 / t, Ph = pBar * 1e5 * Qm, Pe = U * I;
     if (niveau === 2) return [
-      { id: 'Q', type: 'num', q: <>Débit <FormuleEnLigne>{M.QV}<mo>=</mo><mfrac><mi>V</mi><mrow><mi>Δ</mi><mi>t</mi></mrow></mfrac></FormuleEnLigne> (le seau de 1 L est rempli en {fmt(t, 1)} s)</>, unite: 'm³·s⁻¹', vrai: Qm, tol: 0.03,
+      { id: 'Q', type: 'num', q: <>Débit <FormuleEnLigne>{M.QV}<mo>=</mo><mfrac><mi>V</mi><mrow><mi>Δ</mi><mi>t</mi></mrow></mfrac></FormuleEnLigne> (le seau de 1 L est rempli en {fmt(t, 1)} s)</>, unite: 'm³·s⁻¹', vrai: Qm, tol: 0.05,
         indice: <>Le débit volumique est le volume écoulé par unité de temps : Q<sub>V</sub> = V / Δt. Convertissez 1 L en m³ (1 L = 10⁻³ m³) et gardez Δt en secondes.</>,
         pieges: [[1 / t, '1 L = 10⁻³ m³ : convertissez le volume en m³.']], aide: 'Notation scientifique acceptée : pour 4,5 × 10⁻⁶, tapez 4,5e-6.' },
-      { id: 'Ph', type: 'num', q: <>Puissance hydraulique P<sub>hyd</sub> = p × Q<sub>V</sub> (manomètre : {fmt(pBar, 2)} bar)</>, unite: 'W', vrai: Ph, tol: 0.04,
+      { id: 'Ph', type: 'num', q: <>Puissance hydraulique P<sub>hyd</sub> = p × Q<sub>V</sub> (manomètre : {fmt(pBar, 2)} bar)</>, unite: 'W', vrai: Ph, tol: 0.05,
         indice: <>P<sub>hyd</sub> = p × Q<sub>V</sub> avec p en pascals (1 bar = 10⁵ Pa) et Q<sub>V</sub> en m³·s⁻¹ (question 1).</>,
         pieges: [[pBar * Qm, '1 bar = 10⁵ Pa : convertissez la pression en pascals.']] },
-      { id: 'Pe', type: 'num', q: <>Puissance électrique P<sub>élec</sub> = U × I (U = {fmt(U, 2)} V ; I = {fmt(I, 3)} A)</>, unite: 'W', vrai: Pe, tol: 0.03,
+      { id: 'Pe', type: 'num', q: <>Puissance électrique P<sub>élec</sub> = U × I (U = {fmt(U, 2)} V ; I = {fmt(I, 3)} A)</>, unite: 'W', vrai: Pe, tol: 0.05,
         indice: <>La puissance électrique est le produit de la tension par l’intensité : P<sub>élec</sub> = U × I (U en V, I en A, résultat en W).</> },
       { id: 'eta', type: 'num', q: <>Rendement <FormuleEnLigne><mi>η</mi><mo>=</mo><mfrac>{M.Pel}{M.Phyd}</mfrac></FormuleEnLigne></>, unite: '%', vrai: Pe / Ph * 100, tol: 0.05,
         indice: <>η = puissance utile / puissance reçue = P<sub>élec</sub> / P<sub>hyd</sub> (questions 2 et 3), multiplié par 100 pour l’exprimer en %.</>,
