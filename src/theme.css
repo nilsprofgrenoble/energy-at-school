@@ -34,6 +34,11 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 .ea-dispositif { background: #fff; border: 1px solid var(--es-bord); border-radius: 14px; padding: 20px 22px; display: flex; flex-direction: column; gap: 12px; }
 .ea-dispositif h2 { font: 800 clamp(22px, 3vw, 28px)/1.15 'Outfit', sans-serif; letter-spacing: -.02em; margin: 0; color: var(--es-encre); }
 .ea-dispositif p { margin: 0; font: 600 16px/1.55 'Nunito', sans-serif; color: var(--es-encre-2); max-width: 70ch; }
+.ea-dispo-corps { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 28px; align-items: start; }
+.ea-dispo-texte { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.ea-dispo-corps .ea-logos { flex-direction: column; align-items: stretch; width: 210px; margin: 0; gap: 12px; }
+.ea-dispo-corps .ea-logos a { height: 78px; width: 100%; box-sizing: border-box; }
+.ea-dispo-corps .ea-logos li { width: 100%; }
 .ea-logos { list-style: none; margin: 4px 0 0; padding: 0; display: flex; flex-wrap: wrap; align-items: center; gap: 14px 22px; }
 .ea-logos li { display: flex; }
 .ea-logos a { display: flex; align-items: center; justify-content: center; height: 84px; padding: 6px 14px; background: #fff; border: 1.5px solid var(--es-bord); border-radius: 12px; transition: border-color .15s, box-shadow .15s; }
@@ -60,6 +65,10 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 .ea-mode b { display: flex; align-items: center; gap: 6px; font: 800 17px 'Outfit', sans-serif; color: var(--es-encre); margin-bottom: 2px; }
 @media (max-width: 900px) {
   .ea-hero { grid-template-columns: minmax(0, 1fr); }
+  .ea-dispo-corps { grid-template-columns: minmax(0, 1fr); gap: 14px; }
+  .ea-dispo-corps .ea-logos { flex-direction: row; flex-wrap: wrap; gap: 10px; width: auto; }
+  .ea-dispo-corps .ea-logos a { height: 72px; width: auto; }
+  .ea-dispo-corps .ea-logos li { width: auto; }
   .ea-logos { gap: 10px; }
   .ea-logos a { height: 72px; padding: 5px 10px; }
   .ea-tuiles, .ea-modes { grid-template-columns: minmax(0, 1fr); }
