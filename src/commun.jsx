@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useMemo, Fragment } from "react";
+import { useState, useEffect, useLayoutEffect, useRef, useMemo, Fragment } from "react";
 import { signaler } from "./avancement";
 import { Emo, Pic, ec } from './Pictos';
 
@@ -97,7 +97,7 @@ export function Graphe({ xMax, yMax, xLabel, yLabel, courbes = [], points = [], 
   const ticksY = Array.from({ length: Math.floor(yMax / py) + 1 }, (_, i) => i * py);
   const dec = v => (v < 1 && v > 0 ? (v < 0.01 ? 3 : 2) : v < 10 && v % 1 ? 1 : 0);
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} style={{ width: '100%', height: 'auto', display: 'block',
+    <svg viewBox={`0 0 ${W} ${H}`} style={{ width: '100%', maxWidth: 520, height: 'auto', display: 'block', margin: '0 auto',
       background: 'white', borderRadius: 8, border: `1px solid ${'#cbd5e1'}` }}>
       {zones.map((z, i) => (
         <g key={i}>
@@ -156,7 +156,7 @@ export function Graphe({ xMax, yMax, xLabel, yLabel, courbes = [], points = [], 
 //  etapes : [{ titre, texte, tache }]
 //  tache : null
 //        | { type: 'action', ok, label?, faire?, attente?, consigne?, bloque? }
-//        | { type: 'qcm', q, options, bonne, expl? }
+//        | { type: 'qcm', q, options, bonne, expl?, indice? }   (indice : texte, ou liste d'indices du plus général au plus précis)
 //        | { type: 'num', q, unite, vrai, tol, pieges?, aide?, expl?, bloque? }
 //  etat = { etape, reps, verifs } est conservé par la page (setEtat).
 // ============================================================
@@ -193,6 +193,39 @@ export function avecIndices(t) {
   return <>{morceaux.map((m, i) => <Fragment key={i}>{typeof m === 'string' ? ec(m) : m}</Fragment>)}</>;
 }
 
+
+// ── Formule en notation mathématique classique (MathML) : vraie barre de fraction, vraie racine, vrais indices, sur UNE seule ligne ──
+// <Formule> : formule centrée sur sa propre ligne ; si l'écran est trop étroit (téléphone), les caractères sont réduits (jamais sous 0,72 em).
+// <FormuleEnLigne> : au fil du texte. Éléments MathML à utiliser dedans : <mi>, <mn>, <mo>, <mfrac>, <msqrt>, <msub>, <msup>, <msubsup>, <mrow>.
+export function Formule({ children }) {
+  const cadre = useRef(null), maths = useRef(null), largeurPleine = useRef(0);
+  const [taille, setTaille] = useState(1.05);
+  useLayoutEffect(() => {
+    const ajuster = () => {
+      const c = cadre.current, m = maths.current;
+      if (!c) return;
+      if (m) { m.style.fontSize = '1.05em'; largeurPleine.current = m.getBoundingClientRect().width; m.style.fontSize = ''; }
+      const l = c.clientWidth, w = largeurPleine.current;
+      if (!(l > 0 && w > 0)) return;
+      const t = Math.max(0.72, w > l ? 1.05 * (l - 2) / w : 1.05);
+      setTaille(a => (Math.abs(a - t) < 0.005 ? a : t));
+    };
+    ajuster();
+    let obs = null;
+    if (typeof ResizeObserver !== 'undefined' && cadre.current) { obs = new ResizeObserver(ajuster); obs.observe(cadre.current); }
+    if (document.fonts?.ready) document.fonts.ready.then(ajuster).catch(() => {});
+    return () => obs && obs.disconnect();
+  }, []);
+  return (
+    <span ref={cadre} role="math" style={{ display: 'block', overflowX: 'auto', overflowY: 'hidden', maxWidth: '100%', textAlign: 'center', margin: '6px 0', padding: '2px 0' }}>
+      <math ref={maths} style={{ fontSize: `${taille}em`, whiteSpace: 'nowrap', mathStyle: 'normal' }}>{children}</math>
+    </span>
+  );
+}
+export function FormuleEnLigne({ children }) {
+  return <math style={{ fontSize: '1.05em', whiteSpace: 'nowrap', mathStyle: 'normal' }}>{children}</math>;
+}
+
 export function CarteParcours({ etapes, etat, setEtat, fin, cle }) {
   const { etape, reps, verifs } = etat;
   // Avancement : signalé au module d'avancement (niveaux, enregistrement sur le serveur si l'élève est connecté)
@@ -219,6 +252,9 @@ export function CarteParcours({ etapes, etat, setEtat, fin, cle }) {
   const dejaReussie = !!(etat.reussies && etat.reussies[etape]);
   const reussie = reussieMaintenant || dejaReussie;
   const vuRep = !!reps[`vu${etape}`];
+  // Indices du parcours : un seul (texte) ou plusieurs, du plus général au plus précis (bouton « Autre indice »)
+  const indicesTache = tache && tache.indice ? (Array.isArray(tache.indice) ? tache.indice : [tache.indice]) : [];
+  const nbInd = reps[`ind${etape}`] || 0;
   // window.__PARCOURS_TEST__ : utilisé seulement par un contrôle automatique pour passer les étapes manuelles
   const peutSuivre = !tache || reussie || vuRep || (typeof window !== 'undefined' && !!window.__PARCOURS_TEST__);
   // Une étape réussie le reste, même si la page est rechargée et qu'une mesure a disparu
@@ -301,6 +337,7 @@ export function CarteParcours({ etapes, etat, setEtat, fin, cle }) {
         <div>
           {tache.bloque ? <div style={{ fontSize: 14, color: '#b45309' }}>{tache.bloque}</div>
             : tache.label && !tache.ok && <button onClick={tache.faire} disabled={!!tache.attente} style={btn(true)}>{ec(tache.label)}</button>}
+          {tache.bloque && tache.retablir && <button onClick={tache.retablir.faire} style={{ ...btn(true), marginTop: 6 }}>{ec(tache.retablir.label)}</button>}
           {tache.consigne && <div style={{ fontSize: 14, fontWeight: 700, color: TXT, marginTop: 6, whiteSpace: 'pre-wrap' }}>{avecIndices(tache.consigne)}</div>}
           {tache.attente && <div style={{ fontSize: 14, color: TXT2, marginTop: 6 }}>{tache.attente}</div>}
           {tache.ok && <div style={{ fontSize: 14, color: '#15803d', fontWeight: 700, marginTop: 6 }}><Emo e="✅"/> C'est fait !</div>}
@@ -318,7 +355,8 @@ export function CarteParcours({ etapes, etat, setEtat, fin, cle }) {
       {tache && tache.type === 'num' && (
         <div>
           <div style={{ fontSize: 14.5, fontWeight: 700, color: TXT, marginBottom: 6 }}>{avecIndices(tache.q)}</div>
-          {tache.bloque ? <div style={{ fontSize: 14, color: '#b45309' }}>{tache.bloque}</div> : (
+          {tache.bloque ? <div style={{ fontSize: 14, color: '#b45309' }}>{tache.bloque}
+            {tache.retablir && <div><button onClick={tache.retablir.faire} style={{ ...btn(true), marginTop: 6 }}>{ec(tache.retablir.label)}</button></div>}</div> : (
             <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
               <input value={reps[etape] ?? ''} placeholder="?" aria-label="Votre réponse"
                 onChange={x => setRep(x.target.value)} onKeyDown={x => { if (x.key === 'Enter') verifier(); }}
@@ -327,6 +365,15 @@ export function CarteParcours({ etapes, etat, setEtat, fin, cle }) {
             </div>
           )}
           {tache.aide && !verifie && <div style={{ fontSize: 12.5, color: TXT2, marginTop: 4 }}>{tache.aide}</div>}
+        </div>
+      )}
+      {tache && tache.type !== 'action' && !tache.bloque && !reussie && indicesTache.length > 0 && (
+        <div>
+          {nbInd > 0 && <div style={{ fontSize: 13.5, color: '#713f12', background: '#fefce8', border: '1px solid #fde68a', borderRadius: 6, padding: '6px 9px', marginBottom: 6, lineHeight: 1.55 }}>
+            {indicesTache.slice(0, nbInd).map((t, i) => <div key={i} style={{ marginTop: i ? 4 : 0 }}><Emo e="💡"/> {typeof t === 'string' ? avecIndices(t) : t}</div>)}
+          </div>}
+          {nbInd < indicesTache.length && <button onClick={() => maj(e => ({ reps: { ...e.reps, [`ind${etape}`]: nbInd + 1 } }))}
+            style={{ background: 'none', border: `1.5px solid #fbbf24`, color: '#92400e', borderRadius: 999, padding: '4px 11px', fontSize: 13, fontWeight: 700, cursor: 'pointer' }}><Emo e="💡"/> {nbInd === 0 ? 'Indice' : 'Autre indice'}</button>}
         </div>
       )}
       {dejaReussie && !reussieMaintenant && (
@@ -381,6 +428,20 @@ export function CarteParcours({ etapes, etat, setEtat, fin, cle }) {
   );
 }
 
+
+// Sélecteur « Parcours : » placé au-dessus de la carte quand un atelier propose plusieurs parcours courts
+export function SelecteurParcours({ parcours, choix, setChoix, couleur = ORANGE_GUIDE }) {
+  return (
+    <div role="group" aria-label="Parcours" style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap', marginBottom: 8 }}>
+      <span style={{ fontSize: 13.5, fontWeight: 700, color: '#334155' }}>Parcours :</span>
+      {parcours.map(([id, nom]) => (
+        <button key={id} onClick={() => setChoix(id)} aria-pressed={choix === id}
+          style={{ padding: '5px 12px', borderRadius: 999, cursor: 'pointer', fontWeight: 700, fontSize: 13.5,
+            border: `1.5px solid ${choix === id ? couleur : '#cbd5e1'}`, background: choix === id ? couleur : 'white', color: choix === id ? 'white' : '#334155' }}>{nom}</button>
+      ))}
+    </div>
+  );
+}
 
 // ============================================================
 //  KIT COMMUN : mémorisation, bandeau de contexte, briques d'interface

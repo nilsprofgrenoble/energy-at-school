@@ -12,7 +12,8 @@ import { rest, toutLire, getSession, estEleve } from './serveur';
 // Les parcours guidés, regroupés comme dans la journée
 export const FAMILLES = [
   { id: 'produire', nom: 'Produire', icone: '🌀', couleur: '#0284c7', badge: 'Producteur·rice', parcours: [
-    { cle: 'es1-production1', nom: 'Turbine Pelton', page: 'production-1' },
+    { cle: 'es1-production1', nom: 'Turbine Pelton, parcours 1', page: 'production-1' },
+    { cle: 'es1-production1-p2', nom: 'Turbine Pelton, parcours 2', page: 'production-1' },
     { cle: 'es1-production2', nom: 'Banc Pelton', page: 'production-2' },
     { cle: 'es1-production3', nom: 'Au fil de l’eau', page: 'production-3' } ] },
   { id: 'transporter', nom: 'Transporter', icone: '🗼', couleur: '#7c3aed', badge: 'Transporteur·se', parcours: [
@@ -36,15 +37,15 @@ export const DEFIS = [
   { cle: 'defi-stockage', nom: 'Batteries', page: 'stockage', famille: 'stocker' },
   { cle: 'defi-hydrogene', nom: 'Hydrogène', page: 'hydrogene', famille: 'stocker' },
 ];
-// Niveaux : seuil = points = parcours terminés (9 au maximum) + défis relevés (6 au maximum) = 15.
+// Niveaux : seuil = points = parcours terminés (10 au maximum) + défis relevés (6 au maximum) = 16.
 // Les deux derniers niveaux ne s'atteignent qu'en relevant des défis.
 export const NIVEAUX = [
   { seuil: 0, nom: 'Étincelle capricieuse', icone: '✨' },
   { seuil: 1, nom: 'Court-circuit maîtrisé', icone: '🔌' },
   { seuil: 4, nom: 'Tension montante', icone: '⚡' },
   { seuil: 7, nom: 'Puissance explosive', icone: '💥' },
-  { seuil: 10, nom: 'Rendement imbattable', icone: '🏆' },
-  { seuil: 13, nom: 'Surtension légendaire', icone: '🌩️' },
+  { seuil: 11, nom: 'Rendement imbattable', icone: '🏆' },
+  { seuil: 14, nom: 'Surtension légendaire', icone: '🌩️' },
 ];
 export const termine = p => !!p && p.etape >= p.total - 1 && p.total > 1;
 // « suivi » : { cle: { etape, total, reussies } }
