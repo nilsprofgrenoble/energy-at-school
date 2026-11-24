@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Cadre, CarteParcours, KIT, fmt, styleBoite, styleBouton, stylePetitBouton, useEtatPersistant,
-  Section, LigneMesure } from "../commun";
+  Section, LigneMesure, FormuleEnLigne } from "../commun";
 import { PicSvg } from '../Pictos';
 
 // ====================================================
@@ -43,68 +43,77 @@ export function ParcoursReseauReel({ fin }) {
         la chute de tension dans le calcul du courant. Un vrai réseau est triphasé : l'ordre de grandeur des pertes reste le même.</em></>, tache: null },
     { id: 'joule', titre: 'Pourquoi perd-on de l’énergie ?', focus: ['ligne'],
       texte: <>Les câbles ne sont pas des conducteurs parfaits : ils ont une résistance R.</>,
-      tache: { type: 'qcm', q: 'Que devient l’énergie perdue dans les câbles ?', options: ['Elle chauffe les câbles (effet Joule)', 'Elle retourne à la centrale', 'Elle est stockée dans les pylônes'], bonne: 0 } },
+      tache: { type: 'qcm', q: 'Que devient l’énergie perdue dans les câbles ?', options: ['Elle chauffe les câbles (effet Joule)', 'Elle retourne à la centrale', 'Elle est stockée dans les pylônes'], bonne: 0,
+        indice: 'Un fil parcouru par un courant s’échauffe : pensez à un grille-pain ou à un radiateur.' } },
     { id: 'I', titre: 'Le courant dans la ligne', focus: ['ligne'],
       texte: <>La ligne est à <strong>U = 20 kV</strong>. La puissance transportée vaut P = U × I.</>,
-      tache: { type: 'num', q: 'Intensité du courant dans la ligne I = P / U', carnet: 'Intensité I (20 kV)', unite: 'A', vrai: r20.I, tol: 0.02,
+      tache: { type: 'num', q: 'Intensité du courant dans la ligne I = P / U', carnet: 'Intensité I (20 kV)', unite: 'A', vrai: r20.I, tol: 0.03,
+        indice: ['On cherche I à partir de P = U × I.', <>I = <FormuleEnLigne><mfrac><mi>P</mi><mi>U</mi></mfrac></FormuleEnLigne> avec P = 1 MW = 1 000 000 W et U = 20 kV = 20 000 V.</>],
         pieges: [[r20.I * 1000, '20 kV = 20 000 V.'], [20000 / 1e6, 'C’est P / U, et non U / P.']] } },
     { id: 'R', titre: 'La résistance de la ligne', focus: ['ligne'],
       texte: <>Câbles en aluminium (ρ = 2,8 × 10⁻⁸ Ω·m) de section <strong>S = 150 mm²</strong>, sur une longueur totale L = 40 km
-        (aller et retour). On a R = ρ × L / S.</>,
-      tache: { type: 'num', q: 'Résistance totale de la ligne R', carnet: 'Résistance R de la ligne', unite: 'Ω', vrai: r20.R, tol: 0.02,
+        (aller et retour). On a <FormuleEnLigne><mi>R</mi><mo>=</mo><mi>ρ</mi><mo>×</mo><mfrac><mi>L</mi><mi>S</mi></mfrac></FormuleEnLigne>.</>,
+      tache: { type: 'num', q: 'Résistance totale de la ligne R', carnet: 'Résistance R de la ligne', unite: 'Ω', vrai: r20.R, tol: 0.03,
+        indice: ['Convertissez tout en unités du système international : L en mètres, S en m².', 'L = 40 km = 40 000 m ; S = 150 mm² = 150 × 10⁻⁶ m².'],
         pieges: [[r20.R / 2, 'Le courant fait l’aller et le retour : L = 2 × 20 km = 40 km.'], [r20.R * 1e6, 'Convertissez S en m² : 1 mm² = 10⁻⁶ m².'], [r20.R / 1e6, 'Convertissez S en m² : 1 mm² = 10⁻⁶ m².']],
         aide: 'Pensez à tout convertir en mètres et en m².' } },
     { id: 'PJ', titre: 'Les pertes par effet Joule', focus: ['ligne'],
-      texte: <>La puissance perdue en chaleur dans la ligne vaut P<sub>J</sub> = R × I². Reprenez vos deux résultats : I = {fmt(r20.I, 0)} A et R = {fmt(r20.R, 2)} Ω.</>,
-      tache: { type: 'num', q: 'Pertes P_J, en kW', carnet: 'Pertes P_J (20 kV)', unite: 'kW', vrai: r20.PJ / 1000, tol: 0.02, affiche: v => fmt(v, 1),
+      texte: <>La puissance perdue en chaleur dans la ligne vaut <FormuleEnLigne><msub><mi>P</mi><mi>J</mi></msub><mo>=</mo><mi>R</mi><mo>×</mo><msup><mi>I</mi><mn>2</mn></msup></FormuleEnLigne>. Reprenez vos deux résultats : I = {fmt(r20.I, 0)} A et R = {fmt(r20.R, 2)} Ω.</>,
+      tache: { type: 'num', q: <>Pertes P<sub>J</sub>, en kW</>, carnet: 'Pertes P_J (20 kV)', unite: 'kW', vrai: r20.PJ / 1000, tol: 0.05, affiche: v => fmt(v, 1),
+        indice: ['Le courant est élevé au carré : I² = I × I.', 'Calculez en watts, puis divisez par 1000 pour obtenir des kW.'],
         pieges: [[r20.R * r20.I / 1000, 'C’est R × I², avec le courant au carré.'], [r20.PJ, 'La réponse est demandée en kW.']] } },
     { id: 'eta', titre: 'Le rendement du transport', focus: ['ville'],
-      texte: <>La ville reçoit P − P<sub>J</sub>, avec P = 1 MW et P<sub>J</sub> = {fmt(r20.PJ / 1000, 1)} kW (étape précédente). Le rendement du transport vaut η = (P − P<sub>J</sub>) / P.</>,
-      tache: { type: 'num', q: 'Rendement du transport, en %', unite: '%', vrai: r20.eta * 100, tol: 0.002, affiche: v => fmt(v, 1),
+      texte: <>La ville reçoit P − P<sub>J</sub>, avec P = 1 MW et P<sub>J</sub> = {fmt(r20.PJ / 1000, 1)} kW (étape précédente). Le rendement du transport vaut{' '}
+        <FormuleEnLigne><mi>η</mi><mo>=</mo><mfrac><mrow><mi>P</mi><mo>−</mo><msub><mi>P</mi><mi>J</mi></msub></mrow><mi>P</mi></mfrac></FormuleEnLigne>.</>,
+      tache: { type: 'num', q: 'Rendement du transport, en %', unite: '%', vrai: r20.eta * 100, tol: 0.005, affiche: v => fmt(v, 1),
+        indice: ['Mettez P et P_J dans la même unité (1 MW = 1000 kW).', 'η = (1000 − P_J) / 1000, puis multipliez par 100 pour avoir des %.'],
         pieges: [[r20.PJ / P_CENTRALE * 100, 'C’est la part perdue : le rendement est la part qui arrive.']] } },
     { id: 'bas', titre: 'Et si l’on transportait à 400 V ?', focus: ['transfo1'],
-      texte: <>Les commandes sont apparues sous le schéma. Choisissez une tension de ligne de <strong>400 V</strong>, sans changer le câble.</>,
-      tache: { type: 'action', ok: U === 400 && S === 150, consigne: U === 400 && S === 150 ? null : 'Choisissez 400 V (câble de 150 mm²).' } },
-    { id: 'I400', titre: 'Le courant à 400 V', focus: ['ligne'],
-      texte: <>Pour transporter la même puissance, 1 MW, sous une tension 50 fois plus petite…</>,
-      tache: { type: 'num', q: 'Intensité du courant à 400 V', carnet: false, unite: 'A', vrai: r400.I, tol: 0.02 } },
+      texte: <>Les commandes sont apparues sous le schéma. Choisissez une tension de ligne de <strong>400 V</strong>, sans changer le câble : pour
+        transporter la même puissance, 1 MW, sous une tension 50 fois plus petite, quelle intensité faut-il ?</>,
+      tache: { type: 'num', q: 'Intensité du courant à 400 V', carnet: false, unite: 'A', vrai: r400.I, tol: 0.03,
+        bloque: U === 400 && S === 150 ? null : 'Choisissez 400 V (câble de 150 mm²) dans les commandes.',
+        retablir: { label: 'Choisir 400 V', faire: () => { setU(400); setS(150); } },
+        indice: ['Même formule qu’à l’étape précédente : I = P / U.', 'P = 1 000 000 W et U = 400 V.'] } },
     { id: 'absurde', titre: 'Un résultat absurde', focus: ['ville'],
       texte: <>Avec 2500 A, la formule donne des pertes de {puissance(r400.PJ)}, et une chute de tension de {fmt(r400.dU / 1000, 1)} kV dans les câbles.</>,
       tache: { type: 'qcm', q: 'Que signifie ce résultat ?', options: ['C’est impossible : il n’arriverait rien à la ville, la ligne fondrait', 'La ville reçoit plus que prévu', 'Les pertes sont acceptables'], bonne: 0,
+        indice: 'Comparez les pertes calculées à la puissance de la centrale (1 MW).',
         expl: 'Les pertes calculées dépassent de loin la puissance transportée : à basse tension, on ne peut pas transporter 1 MW sur 20 km.' } },
     { id: 'loi', titre: 'La loi à retenir', focus: ['ligne'],
       texte: <>De 400 V à 20 kV, la tension est multipliée par 50, donc le courant est divisé par 50.</>,
       tache: { type: 'qcm', q: 'Par combien les pertes R × I² sont-elles divisées ?', options: ['Par 50', 'Par 2500', 'Par 100'], bonne: 1,
+        indice: 'Dans R × I², le courant est élevé au carré.',
         expl: 'Le courant est au carré : 50² = 2500. Multiplier la tension par k divise les pertes par k².' } },
-    { id: 'tht', titre: 'La très haute tension', focus: ['transfo1'],
-      texte: <>Passez maintenant à <strong>400 kV</strong>, la tension des grandes lignes du réseau français.</>,
-      tache: { type: 'action', ok: U === 400000, consigne: U === 400000 ? `Pertes : ${puissance(r.PJ)}` : 'Choisissez 400 kV.' } },
     { id: 'pourquoi', titre: 'Pourquoi pas 400 kV partout ?', focus: ['transfo2'],
-      texte: <>À 400 kV, les pertes deviennent minuscules. Pourtant, la ligne qui arrive dans votre rue est à 20 kV, et votre prise à 230 V.</>,
+      texte: <>Essayez <strong>400 kV</strong> dans les commandes, la tension des grandes lignes françaises : les pertes deviennent minuscules.
+        Pourtant, la ligne qui arrive dans votre rue est à 20 kV, et votre prise à 230 V.</>,
       tache: { type: 'qcm', q: 'Pourquoi ne pas utiliser la très haute tension partout ?',
         options: ['Il faut de grands pylônes, de grandes distances d’isolement et des transformateurs coûteux, et c’est dangereux', 'La très haute tension ne transporte pas d’énergie', 'Les câbles fondraient'], bonne: 0,
+        indice: 'Pensez à la taille des pylônes et à la sécurité près des habitations.',
         expl: 'On utilise la très haute tension pour les longues distances, puis des transformateurs abaissent la tension par étapes jusqu’à 230 V.' } },
-    { id: 'section', titre: 'Et la section des câbles ?', focus: ['ligne'],
-      texte: <>Revenez à <strong>20 kV</strong> et choisissez un câble de <strong>600 mm²</strong>. Regardez les pertes et la masse d'aluminium.</>,
-      tache: { type: 'action', ok: U === 20000 && S === 600, consigne: U === 20000 && S === 600 ? null : `Actuel : ${TENSIONS.find(t => t.U === U).nom}, ${S} mm²` } },
-    { id: 'compromis', titre: 'Le compromis', focus: ['ligne'],
-      texte: <>Avec une section 4 fois plus grande, la résistance est divisée par 4.</>,
+    { id: 'compromis', titre: 'Le compromis sur la section', focus: ['ligne'],
+      texte: <>Revenez à <strong>20 kV</strong> et choisissez un câble de <strong>600 mm²</strong> : la résistance est divisée par 4. Regardez la masse d'aluminium.</>,
       tache: { type: 'qcm', q: 'Pourquoi ne pas prendre des câbles énormes ?', options: ['Il faut 4 fois plus d’aluminium : les câbles coûtent plus cher et sont plus lourds à porter', 'Les pertes augmenteraient', 'Le courant ne passerait plus'], bonne: 0,
+        indice: 'Regardez la ligne « Masse d’aluminium » dans les mesures.',
         expl: `Ici, ${fmt(reseau(20000, 600).masse / 1000, 0)} tonnes d’aluminium au lieu de ${fmt(r20.masse / 1000, 0)}. Augmenter la tension est bien plus efficace : c’est gratuit en aluminium.` } },
     { id: 'maquette', titre: 'Le jour J, sur la maquette', focus: [],
       texte: <>À l'ENSE3, la maquette a un générateur de 25 V, des câbles de 10 m, et deux transformateurs qui peuvent doubler ou diviser
         par deux la tension.</>,
       tache: { type: 'qcm', q: 'Si le transformateur double la tension de la ligne, les pertes dans les câbles sont…', options: ['divisées par 2', 'divisées par 4', 'multipliées par 2'], bonne: 1,
+        indice: 'Souvenez-vous de la loi trouvée plus haut : tension × k, pertes ÷ k².',
         expl: 'Même loi : 2² = 4. Sur la maquette, vous verrez aussi que les transformateurs eux-mêmes perdent de l’énergie.' } },
-    { id: 'bravo', titre: 'Bravo !', focus: [],
-      texte: <>Vous avez la méthode : I = P / U, R = ρL / S, P<sub>J</sub> = R × I², puis le rendement. Vous l'appliquerez le jour J sur la
-        maquette. Après l'atelier, le parcours « Revoir l'atelier » reprend les mesures de la maquette.</>, tache: null },
+    { id: 'bilan', titre: 'Le bilan', focus: [],
+      texte: <>La méthode : <FormuleEnLigne><mi>I</mi><mo>=</mo><mfrac><mi>P</mi><mi>U</mi></mfrac></FormuleEnLigne>, <FormuleEnLigne><mi>R</mi><mo>=</mo><mi>ρ</mi><mfrac><mi>L</mi><mi>S</mi></mfrac></FormuleEnLigne>,{' '}
+        <FormuleEnLigne><msub><mi>P</mi><mi>J</mi></msub><mo>=</mo><mi>R</mi><msup><mi>I</mi><mn>2</mn></msup></FormuleEnLigne>, puis le rendement. À 20 kV : I = {fmt(r20.I, 0)} A, R = {fmt(r20.R, 1)} Ω, P<sub>J</sub> = {fmt(r20.PJ / 1000, 1)} kW,
+        rendement {fmt(r20.eta * 100, 1)} %. Élever la tension d'un facteur k divise les pertes par k² ; une section plus grande les réduit aussi, mais coûte de l'aluminium.
+        Le jour J, vous appliquerez cette méthode sur la maquette. Après l'atelier, le parcours « Revoir l'atelier » reprend les mesures.</>, tache: null },
   ];
   const idx = id => ETAPES.findIndex(e => e.id === id);
   const et = ETAPES[Math.min(etape, ETAPES.length - 1)];
   const hl = id => et.focus.includes(id);
   const vu = id => etape >= idx(id);
-  const commandesVisibles = vu('bas'), sectionsVisibles = vu('section');
+  const commandesVisibles = vu('bas'), sectionsVisibles = vu('compromis');
   // Sur le schéma, une valeur n'apparaît qu'après l'étape où l'élève la calcule
   const montreI = U === 400 ? vu('absurde') : vu('R'), montrePJ = vu('eta'), montreRecu = vu('bas');
 
@@ -121,35 +130,34 @@ export function ParcoursReseauReel({ fin }) {
     </g>
   );
   const schema = (
-    <svg viewBox="0 0 640 230" role="img" aria-label="Réseau : centrale, transformateurs, ligne de 20 km, ville"
-      style={{ width: '100%', height: 'auto', display: 'block', background: 'white', borderRadius: 8, border: `1px solid ${KIT.bord}` }}>
+    <svg viewBox="0 0 640 230" role="img" aria-label="Réseau : centrale, transformateurs, ligne de 20 km, ville" className="es-schema" style={{ background: 'white', borderRadius: 8, border: `1px solid #cbd5e1` }}>
       {/* centrale */}
       <rect x="14" y="110" width="64" height="60" fill="#e2e8f0" stroke={KIT.txt} strokeWidth="2"/>
       <rect x="26" y="78" width="14" height="32" fill="#cbd5e1" stroke={KIT.txt} strokeWidth="1.5"/>
       <PicSvg n="bolt" x="33" y="126" t="26" color={KIT.txt}/>
-      <text x="46" y="190" fontSize="13" fontWeight="700" fill={KIT.txt} textAnchor="middle">centrale</text>
-      <text x="46" y="206" fontSize="12" fill={KIT.txt2} textAnchor="middle">1 MW</text>
+      <text x="46" y="190" fontSize="14" fontWeight="700" fill={KIT.txt} textAnchor="middle">centrale</text>
+      <text x="46" y="206" fontSize="13.5" fill={KIT.txt2} textAnchor="middle">1 MW</text>
       {/* transformateur élévateur */}
       <circle cx="112" cy="132" r="15" fill="none" stroke={KIT.txt} strokeWidth="2"/><circle cx="128" cy="132" r="15" fill="none" stroke={KIT.txt} strokeWidth="2"/>
-      <text x="120" y="172" fontSize="12" fill={KIT.txt} textAnchor="middle">élévateur</text>
+      <text x="120" y="172" fontSize="13.5" fill={KIT.txt} textAnchor="middle">élévateur</text>
       <line x1="78" y1="132" x2="97" y2="132" stroke={KIT.txt} strokeWidth="2"/>
       {/* ligne */}
       {[200, 300, 400].map(pylone)}
       <path d={`M 143 132 Q 172 118 200 104 Q 250 122 300 104 Q 350 122 400 104 Q 450 118 497 132`} fill="none" stroke={couleurLigne} strokeWidth={epais}/>
       <text x="300" y="80" fontSize="14" fontWeight="700" fill={KIT.txt} textAnchor="middle">ligne de 20 km · U = {TENSIONS.find(t => t.U === U).nom}{montreI ? ` · I = ${fmt(r.I, r.I < 10 ? 2 : 0)} A` : ''}</text>
-      <text x="300" y="196" fontSize="13" fill={r.possible ? '#b45309' : '#b91c1c'} textAnchor="middle" fontWeight="700">
+      <text x="300" y="196" fontSize="14" fill={r.possible ? '#b45309' : '#b91c1c'} textAnchor="middle" fontWeight="700">
         {!montrePJ ? 'chaleur perdue : ?' : r.possible ? `chaleur perdue : ${puissance(r.PJ)}` : `pertes calculées : ${puissance(r.PJ)} — impossible !`}</text>
-      <text x="300" y="214" fontSize="12" fill={KIT.txt2} textAnchor="middle">câbles en aluminium de {S} mm²</text>
+      <text x="300" y="214" fontSize="13.5" fill={KIT.txt2} textAnchor="middle">câbles en aluminium de {S} mm²</text>
       {/* transformateur abaisseur et ville */}
       <circle cx="512" cy="132" r="15" fill="none" stroke={KIT.txt} strokeWidth="2"/><circle cx="528" cy="132" r="15" fill="none" stroke={KIT.txt} strokeWidth="2"/>
-      <text x="520" y="172" fontSize="12" fill={KIT.txt} textAnchor="middle">abaisseur</text>
+      <text x="520" y="172" fontSize="13.5" fill={KIT.txt} textAnchor="middle">abaisseur</text>
       <line x1="543" y1="132" x2="560" y2="132" stroke={KIT.txt} strokeWidth="2"/>
       {[[566, 120], [590, 112], [612, 124]].map(([x, y], k) => (
         <g key={k}><rect x={x} y={y} width="20" height={170 - y} fill={r.possible ? '#fde68a' : '#e5e7eb'} stroke={KIT.txt} strokeWidth="1.5"/>
           <polygon points={`${x - 3},${y} ${x + 10},${y - 10} ${x + 23},${y}`} fill="#94a3b8" stroke={KIT.txt} strokeWidth="1"/></g>
       ))}
-      <text x="594" y="190" fontSize="13" fontWeight="700" fill={KIT.txt} textAnchor="middle">ville</text>
-      <text x="594" y="206" fontSize="12" fill={KIT.txt2} textAnchor="middle">{!montreRecu ? 'reçoit ?' : r.possible ? `reçoit ${puissance(P_CENTRALE - r.PJ)}` : 'ne reçoit rien'}</text>
+      <text x="594" y="190" fontSize="14" fontWeight="700" fill={KIT.txt} textAnchor="middle">ville</text>
+      <text x="594" y="206" fontSize="13.5" fill={KIT.txt2} textAnchor="middle">{!montreRecu ? 'reçoit ?' : r.possible ? `reçoit ${puissance(P_CENTRALE - r.PJ)}` : 'ne reçoit rien'}</text>
       <Cadre actif={hl('ligne')} x={140} y={66} w={362} h={156}/>
       <Cadre actif={hl('transfo1')} x={92} y={110} w={56} h={70}/>
       <Cadre actif={hl('transfo2')} x={492} y={110} w={56} h={70}/>
@@ -206,7 +214,8 @@ export function ParcoursReseauReel({ fin }) {
       <div className="tr-l1">
         <div style={styleBoite}>
           <div style={{ fontWeight: 700, fontSize: 15, color: KIT.txt, marginBottom: 6 }}>Un vrai réseau : de la centrale à la ville</div>
-          {schema}
+          <div className="es-schema-cadre">{schema}</div>
+          <div className="es-schema-aide">↔ Faites glisser le schéma pour le voir en entier.</div>
           {etape > idx('eta') && bilan}
           <div style={{ fontSize: 13, color: KIT.txt2, marginTop: 6, lineHeight: 1.5 }}>
             L'épaisseur de la ligne suit la section des câbles ; sa couleur vire au rouge quand les pertes augmentent.
@@ -216,7 +225,7 @@ export function ParcoursReseauReel({ fin }) {
         <CarteParcours cle="es1-transport-prep" etapes={ETAPES} etat={guide} setEtat={setGuide} fin={fin}/>
       </div>
       <div className="tr-l2">
-        <div data-apparait={`${idx('bas')} ${idx('section')}`}>
+        <div data-apparait={`${idx('bas')} ${idx('compromis')}`}>
           <Section titre="Commandes" ouvert={ouverts.commandes} onBascule={() => setOuverts(o => ({ ...o, commandes: !o.commandes }))}>{commandes}</Section>
         </div>
         <div><Section titre="Mesures" ouvert={ouverts.mesures} onBascule={() => setOuverts(o => ({ ...o, mesures: !o.mesures }))}>{mesures}</Section></div>
