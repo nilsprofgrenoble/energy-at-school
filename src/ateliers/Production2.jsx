@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { cardStyle, Graphe, fmt, sci, lireNombre, proche, CarteParcours, Cadre, ORANGE_GUIDE, useEtatPersistant, avecIndices, IndiceDefi, valeurAttendue } from "../commun";
+import { cardStyle, Graphe, fmt, sci, lireNombre, proche, CarteParcours, Cadre, ORANGE_GUIDE, useEtatPersistant, avecIndices, IndiceDefi, valeurAttendue, FormuleEnLigne } from "../commun";
 import { BoutonFiche } from "../fiches/Fiche";
 import { signalerDefi, ouvrirDefi } from "../avancement";
 import { Emo, Pic } from '../Pictos';
@@ -72,7 +72,7 @@ export function SimulationProduction2() {
   const enGuide = mode === 'guide';
   const etape = guide.etape;
   const vu = k => !enGuide || etape >= k;
-  const revele = { vitesses: vu(7), frein: vu(8), graphe: vu(12), puissance: vu(14) };
+  const revele = { vitesses: vu(10), frein: vu(6), graphe: vu(9), puissance: vu(11) };
 
   // ── Styles ──
   const { txt: TXT, txt2: TXT2, bord: BORDER, fond: BG } = COUL;
@@ -118,84 +118,84 @@ export function SimulationProduction2() {
   const C4 = (4 - 4 / P2_RAPPORT_F) * P2_D / 2;
   const n4 = Math.round(etatTurbine(15, 4).n);
   const Pm4 = C4 * 2 * Math.PI * n4 / 60;
+  const retablirF4 = { label: 'Régler F₁ = 4,0 N', faire: () => setF1(4) };
   const ETAPES = [
     { titre: 'Une vraie turbine de laboratoire', focus: ['roue', 'tuyere', 'frein'],
-      texte: <>Le banc HM 150.19 est une petite <strong>turbine Pelton</strong> : un jet d'eau sort d'une <strong>tuyère</strong> et fait
-        tourner une roue à augets. Dans une centrale, la roue entraînerait un alternateur ; ici, on la ralentit avec un
+      texte: <>Le banc HM 150.19 est une petite <strong>turbine Pelton</strong> : un jet d'eau sort d'une <strong>tuyère à aiguille</strong> (qui règle le débit et accélère le jet)
+        et fait tourner une roue à augets. Dans une centrale, la roue entraînerait un alternateur ; ici, on la ralentit avec un
         <strong> frein à bande</strong> réglable, qui joue le rôle de la charge. Votre objectif : mesurer la puissance mécanique
         récupérée et le rendement, et trouver la vitesse de rotation optimale.</>, tache: null },
-    { titre: 'La tuyère à aiguille', focus: ['tuyere'],
-      texte: <>Une aiguille se déplace à l'intérieur de la tuyère.</>,
-      tache: { type: 'qcm', q: 'À quoi sert la tuyère à aiguille ?',
-        options: ['À régler le débit et accélérer le jet', 'À freiner la roue', 'À mesurer la vitesse de rotation'], bonne: 0 } },
     { titre: 'Le frein à bande', focus: ['frein'],
       texte: <>Une bande frotte sur une poulie fixée à l'axe de la roue ; deux dynamomètres mesurent les forces F<sub>1</sub> et F<sub>2</sub>.</>,
       tache: { type: 'qcm', q: 'Dans une vraie centrale, qu’est-ce qui remplace le frein ?',
         options: ['L’alternateur, qui demande de l’énergie à la turbine', 'Le barrage', 'La tuyère'], bonne: 0,
+        indice: 'Le frein joue le rôle de la charge : qu’est-ce qui, dans une centrale, « consomme » l’énergie de la turbine ?',
         expl: 'Serrer le frein, c’est comme brancher un appareil plus gourmand sur l’alternateur.' } },
     { titre: 'Le débit', focus: ['panneau'],
       texte: <>Le panneau d'affichage indique un débit de <strong>15 L/min</strong>. Pour les calculs, il faut le convertir en m³·s⁻¹
         (1 L = 10⁻³ m³ ; 1 min = 60 s).</>,
       tache: { type: 'num', q: 'Débit en m³·s⁻¹', carnet: 'Débit Q_V', unite: 'm³·s⁻¹', vrai: Qg, tol: 0.03,
+        indice: ['Convertissez les litres en m³ (÷ 1000), puis les minutes en secondes (÷ 60).', 'Q = 15 × 10⁻³ ÷ 60.'],
         pieges: [[15 / 1000, 'N’oubliez pas les minutes : divisez aussi par 60.'], [15 / 60, '1 L = 10⁻³ m³ : divisez aussi par 1000.']], aide: 'Notation scientifique acceptée : pour 4,5 × 10⁻⁶, tapez 4,5e-6.' } },
     { titre: 'La puissance hydraulique', focus: ['panneau', 'tuyere'],
       texte: <>La pression en amont de la tuyère vaut <strong>1,0 bar</strong> (1 bar = 10⁵ Pa). La puissance apportée par l'eau
-        vaut P<sub>hyd</sub> = p × Q<sub>V</sub>, avec le débit de l'étape précédente : Q<sub>V</sub> = {sci(Qg)} m³·s⁻¹.</>,
-      tache: { type: 'num', q: <>Puissance hydraulique P<sub>hyd</sub></>, carnet: 'Puissance hydraulique P_hyd', unite: 'W', vrai: Phg, tol: 0.04,
+        vaut <FormuleEnLigne><msub><mi>P</mi><mtext>hyd</mtext></msub><mo>=</mo><mi>p</mi><mo>×</mo><msub><mi>Q</mi><mi>V</mi></msub></FormuleEnLigne>, avec le débit de l'étape précédente : Q<sub>V</sub> = {sci(Qg)} m³·s⁻¹.</>,
+      tache: { type: 'num', q: <>Puissance hydraulique P<sub>hyd</sub></>, carnet: 'Puissance hydraulique P_hyd', unite: 'W', vrai: Phg, tol: 0.05,
+        indice: ['Convertissez la pression en pascals : 1 bar = 10⁵ Pa.', 'Multipliez la pression (Pa) par le débit (m³·s⁻¹) : le résultat est en watts.'],
         pieges: [[1 * Qg, '1 bar = 10⁵ Pa.'], [1e5 * 15 / 1000, 'Le débit doit être en m³·s⁻¹.']] } },
     { titre: 'La turbine à vide', focus: ['frein', 'panneau'],
       texte: <>Le frein est relâché : la roue tourne librement, à <strong>{n0g} tr/min</strong>.</>,
       tache: { type: 'qcm', q: 'Pourquoi la puissance mécanique récupérée est-elle nulle à vide ?',
         options: ['Parce que le couple de freinage est nul', 'Parce que la roue ne tourne pas', 'Parce que le débit est nul'], bonne: 0,
+        indice: <>P<sub>méca</sub> = C × ω : que vaut ce produit si C = 0 ?</>,
         expl: <>P<sub>méca</sub> = C × ω : la roue tourne vite, mais on ne lui demande rien.</> } },
     { titre: 'La vitesse de l’auget à vide', focus: ['roue'],
-      texte: <>Le jet frappe les augets à r = <strong>5,00 cm</strong> de l'axe. On rappelle v = r × ω avec ω = 2π × n / 60
-        (n en tr/min).</>,
-      tache: { type: 'num', q: <>Vitesse de l'auget à vide v<sub>a</sub></>, carnet: false, unite: 'm·s⁻¹', vrai: va0g, tol: 0.03,
+      texte: <>Le jet frappe les augets à r = <strong>5,00 cm</strong> de l'axe. On rappelle <FormuleEnLigne><mi>v</mi><mo>=</mo><mi>r</mi><mo>×</mo><mi>ω</mi></FormuleEnLigne> avec <FormuleEnLigne><mi>ω</mi><mo>=</mo><mfrac><mrow><mn>2</mn><mi>π</mi><mo>×</mo><mi>n</mi></mrow><mn>60</mn></mfrac></FormuleEnLigne> (n en tr/min).</>,
+      tache: { type: 'num', q: <>Vitesse de l'auget à vide v<sub>a</sub></>, carnet: false, unite: 'm·s⁻¹', vrai: va0g, tol: 0.05,
+        indice: ['Calculez d’abord ω en rad·s⁻¹ avec n = ' + n0g + ' tr/min.', 'Puis v = r × ω, avec r = 0,0500 m.'],
         pieges: [[va0g * 60, 'n est en tr/min : divisez par 60.'], [va0g / (2 * Math.PI), 'N’oubliez pas 2π.'], [va0g * 100, 'r doit être en mètres.']] } },
-    { titre: 'La roue rattrape-t-elle le jet ?', focus: ['roue', 'tuyere'],
-      texte: <>Ouvrez l'onglet <strong>Vitesses</strong> du graphique. Le jet sort de la tuyère à environ 14 m·s⁻¹ (on peut le
-        calculer avec la relation de Bernoulli, en terminale).</>,
-      tache: { type: 'qcm', q: 'Pourquoi la roue à vide va-t-elle moins vite que le jet ?',
-        options: ['Les frottements (paliers, air, éclaboussures) la freinent', 'Le jet ralentit dans l’air', 'La roue est trop lourde pour tourner vite'], bonne: 0,
-        expl: 'C’est la principale raison dans notre modèle. Dans la vraie turbine, d’autres pertes s’ajoutent (le jet s’étale sur l’auget, la pression est mesurée en amont de la tuyère) : la mesure sur le banc est la seule référence.' } },
-    { titre: 'Freiner la roue', focus: ['frein'],
-      texte: <>Le réglage du frein est apparu sous le schéma. Serrez-le jusqu'à lire <strong>F<sub>1</sub> = 4,0 N</strong>.</>,
-      tache: { type: 'action', ok: Math.abs(F1 - 4) < 0.05, consigne: `F₁ actuel : ${fmt(F1, 1)} N` } },
     { titre: 'Le couple de freinage', focus: ['frein'],
-      texte: <>Le couple exercé par le frein vaut C = (F<sub>1</sub> − F<sub>2</sub>) × D/2, avec D = <strong>5,0 cm</strong> le diamètre
-        de la poulie. Lisez F<sub>2</sub> sur le second dynamomètre.</>,
-      tache: { type: 'num', q: 'Couple de freinage C', carnet: 'Couple de freinage C', unite: 'N·m', vrai: C4, tol: 0.04,
-        bloque: Math.abs(F1 - 4) >= 0.05 ? 'Remettez F₁ sur 4,0 N.' : null,
+      texte: <>Le réglage du frein est apparu sous le schéma. Serrez-le jusqu'à lire <strong>F<sub>1</sub> = 4,0 N</strong>, puis lisez F<sub>2</sub> sur le second dynamomètre.
+        Le couple exercé par le frein vaut <FormuleEnLigne><mi>C</mi><mo>=</mo><mo>(</mo><msub><mi>F</mi><mn>1</mn></msub><mo>−</mo><msub><mi>F</mi><mn>2</mn></msub><mo>)</mo><mo>×</mo><mfrac><mi>D</mi><mn>2</mn></mfrac></FormuleEnLigne>, avec D = <strong>5,0 cm</strong> le diamètre de la poulie.</>,
+      tache: { type: 'num', q: 'Couple de freinage C', carnet: 'Couple de freinage C', unite: 'N·m', vrai: C4, tol: 0.05,
+        bloque: Math.abs(F1 - 4) >= 0.05 ? `Réglez d’abord F₁ sur 4,0 N (actuellement ${fmt(F1, 1)} N).` : null,
+        retablir: retablirF4,
+        indice: ['Calculez la différence F₁ − F₂ (en N), puis multipliez par le rayon D/2 de la poulie.', 'D/2 = 0,025 m.'],
         pieges: [[C4 * 2, 'C’est D/2 : le rayon de la poulie.'], [C4 * 100, 'D doit être en mètres : 5,0 cm = 0,050 m.']] } },
     { titre: 'La puissance mécanique', focus: ['panneau'],
       texte: <>Freinée, la roue ne tourne plus qu'à <strong>{n4} tr/min</strong>. La puissance mécanique vaut
-        P<sub>méca</sub> = C × ω, avec ω = 2π × n / 60 et le couple C de l'étape précédente ({fmt(C4, 3)} N·m).</>,
-      tache: { type: 'num', q: <>Puissance mécanique P<sub>méca</sub></>, carnet: 'Puissance mécanique P_méca', unite: 'W', vrai: Pm4, tol: 0.05,
-        bloque: Math.abs(F1 - 4) >= 0.05 ? 'Remettez F₁ sur 4,0 N.' : null,
+        <FormuleEnLigne><msub><mi>P</mi><mtext>méca</mtext></msub><mo>=</mo><mi>C</mi><mo>×</mo><mi>ω</mi></FormuleEnLigne>, avec ω = 2π × n / 60 et le couple C de l'étape précédente ({fmt(C4, 3)} N·m).</>,
+      tache: { type: 'num', q: <>Puissance mécanique P<sub>méca</sub></>, carnet: 'Puissance mécanique P_méca', unite: 'W', vrai: Pm4, tol: 0.06,
+        bloque: Math.abs(F1 - 4) >= 0.05 ? 'Remettez F₁ sur 4,0 N.' : null, retablir: retablirF4,
+        indice: ['Calculez ω = 2π × n / 60 (n en tr/min, ω en rad·s⁻¹).', 'Puis P = C × ω.'],
         pieges: [[C4 * n4 / 60, 'N’oubliez pas 2π : ω = 2π × n / 60.'], [C4 * 2 * Math.PI * n4, 'n est en tr/min : divisez par 60.']] } },
     { titre: 'Le rendement', focus: [],
-      texte: <>Le rendement compare la puissance utile (mécanique) à la puissance absorbée (hydraulique) : r = P<sub>méca</sub> / P<sub>hyd</sub>.
-        Reprenez vos deux résultats : P<sub>hyd</sub> = {fmt(Phg, 1)} W (étape 5) et P<sub>méca</sub> = {fmt(Pm4, 2)} W (étape précédente).</>,
+      texte: <>Le rendement compare la puissance utile (mécanique) à la puissance absorbée (hydraulique) : <FormuleEnLigne><mi>r</mi><mo>=</mo><mfrac><msub><mi>P</mi><mtext>méca</mtext></msub><msub><mi>P</mi><mtext>hyd</mtext></msub></mfrac></FormuleEnLigne>.
+        Reprenez vos deux résultats : P<sub>hyd</sub> = {fmt(Phg, 1)} W et P<sub>méca</sub> = {fmt(Pm4, 2)} W.</>,
       tache: { type: 'num', q: 'Rendement r', carnet: false, unite: '%', vrai: Pm4 / Phg * 100, tol: 0.06,
+        indice: ['Divisez la puissance utile (mécanique) par la puissance absorbée (hydraulique).', 'Multipliez par 100 pour exprimer en %.'],
         pieges: [[Phg / Pm4 * 100, 'C’est l’inverse : puissance utile sur puissance absorbée.'], [Pm4 / Phg, 'Exprimez le rendement en pourcentage.']] } },
     { titre: 'Tracer la courbe de rendement', focus: ['frein'],
       texte: <>Le graphique est apparu. Partez du frein relâché, serrez-le pas à pas jusqu'à bloquer la roue, et ajoutez un
         point à chaque réglage (menu « Mes points »).</>,
       tache: { type: 'action', ok: points.length >= 6, consigne: `Points ajoutés : ${points.length} / 6` } },
     { titre: 'La vitesse optimale', focus: ['panneau'],
-      texte: <>Repérez sur votre courbe la vitesse de rotation qui donne le meilleur rendement, et comparez-la à la vitesse à vide ({n0g} tr/min).</>,
+      texte: <>Repérez sur votre courbe la vitesse de rotation qui donne le meilleur rendement, et comparez-la à la vitesse à vide ({n0g} tr/min).
+        L'onglet <strong>Vitesses</strong> compare la vitesse de l'auget à celle du jet (environ 14 m·s⁻¹, calculée en terminale avec la relation de Bernoulli).</>,
       tache: { type: 'qcm', q: 'Le rendement est maximal quand la roue tourne…',
         options: ['à sa vitesse à vide', 'à environ la moitié de sa vitesse à vide', 'le plus lentement possible'], bonne: 1,
+        indice: ['Regardez l’abscisse du sommet de votre courbe de rendement.', 'Comparez-la à la vitesse à vide.'],
         expl: 'Trop vite, la roue ne freine plus l’eau ; trop lentement, elle ne transforme presque rien en mouvement.' } },
     { titre: 'Et si le débit change ?', focus: [],
       texte: <>Ouvrez l'onglet <strong>Puissance</strong> : il montre P<sub>méca</sub> en fonction de la vitesse de rotation pour trois
         débits (documentation GUNT).</>,
       tache: { type: 'qcm', q: 'Pour une même vitesse de rotation, un débit plus faible donne une puissance mécanique…',
-        options: ['plus faible', 'plus élevée'], bonne: 0 } },
-    { titre: 'Bravo !', focus: [],
-      texte: <>Vous avez caractérisé la turbine : puissance hydraulique, couple, puissance mécanique, rendement et vitesse
-        optimale. Explorez librement le banc (changez le débit…) ou relevez le défi.</>, tache: null },
+        options: ['plus faible', 'plus élevée'], bonne: 0,
+        indice: 'Moins d’eau, c’est moins de puissance hydraulique à récupérer. Vérifiez sur les trois courbes.' } },
+    { titre: 'Le bilan', focus: [],
+      texte: <>Vous avez caractérisé la turbine : P<sub>hyd</sub> = {fmt(Phg, 1)} W, couple C = {fmt(C4, 3)} N·m à F<sub>1</sub> = 4,0 N, P<sub>méca</sub> = {fmt(Pm4, 2)} W, rendement {fmt(Pm4 / Phg * 100, 0)} %.
+        Le rendement est maximal vers la moitié de la vitesse à vide ({n0g} tr/min) : trop vite la roue ne freine plus l'eau, trop lentement elle ne produit rien.
+        Explorez librement le banc (changez le débit…) ou relevez le défi.</>, tache: null },
   ];
   const et = ETAPES[Math.min(etape, ETAPES.length - 1)];
   const hl = id => enGuide && et.focus.includes(id);
@@ -218,7 +218,7 @@ export function SimulationProduction2() {
   };
   const schema = (
     <svg viewBox="0 0 640 330" role="img" aria-label="Banc HM 150.19 : turbine Pelton et frein à bande"
-      style={{ width: '100%', height: 'auto', display: 'block', background: 'white', borderRadius: 8, border: `1px solid ${BORDER}` }}>
+      className="es-schema" style={{ background: 'white', borderRadius: 8, border: `1px solid ${BORDER}` }}>
       {/* Panneau d'affichage */}
       <rect x="12" y="30" width="176" height="152" rx="8" fill="#f1f5f9" stroke={TXT} strokeWidth="2"/>
       <text x="100" y="22" fontSize="15" fontWeight="700" fill={TXT} textAnchor="middle">Panneau d'affichage</text>
@@ -632,7 +632,8 @@ export function SimulationProduction2() {
       <div className="p2-l1">
         <div style={box}>
           <div style={titreBox}>Le banc : turbine Pelton freinée</div>
-          {schema}
+          <div className="es-schema-cadre">{schema}</div>
+          <div className="es-schema-aide">↔ Faites glisser le schéma pour le voir en entier.</div>
           <div style={{ fontSize: 13, color: TXT2, marginTop: 6, lineHeight: 1.5 }}>
             {enGuide ? <>L'élément encadré en orange est celui dont parle l'étape en cours. L'animation de la roue est ralentie.</>
               : <>Le jet fait tourner la roue ; le frein à bande joue le rôle de l'alternateur en lui demandant de l'énergie.
