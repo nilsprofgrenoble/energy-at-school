@@ -479,60 +479,62 @@ export function SimulationHydrogene() {
   );
   const dureeHelice = iBanc > 0.05 ? Math.max(0.2, 2.5 - iBanc * 0.22) : 0;
   const schemaBanc = (
-    <svg viewBox="0 0 640 300" role="img" aria-label="Banc de la pile à combustible"
-      className="es-schema" style={{ background: 'white', borderRadius: 8, border: `1px solid ${BORDER}` }}>
-      {cadreModule('reservoir', 8, 52, 128, 82)}
-      {cadreModule('detendeur', 142, 52, 70, 82)}
-      {cadreModule('capteurs', 236, 62, 92, 62)}
-      {cadreModule('ventilateur', 368, 4, 100, 64)}
-      {cadreModule('pac', 356, 72, 124, 118)}
-      {cadreModule('charge', 500, 70, 132, 150)}
+    <svg viewBox="0 0 400 366" role="img" aria-label="Banc de la pile à combustible"
+      className="es-schema-compact" style={{ background: 'white', borderRadius: 8, border: `1px solid ${BORDER}` }}>
+      {cadreModule('reservoir', 6, 34, 108, 88)}
+      {cadreModule('detendeur', 130, 34, 68, 88)}
+      {cadreModule('capteurs', 214, 34, 118, 88)}
+      {cadreModule('ventilateur', 192, 138, 92, 78)}
+      {cadreModule('pac', 284, 138, 112, 134)}
+      {cadreModule('charge', 6, 138, 152, 172)}
       <g pointerEvents="none">
+        {/* Tuyau H2 : réservoir → détendeur → capteurs → haut de la pile */}
+        <line x1="104" y1="62" x2="130" y2="62" stroke="#dc2626" strokeWidth="6"/>
+        <line x1="182" y1="62" x2="356" y2="62" stroke="#dc2626" strokeWidth="6"/>
+        <line x1="356" y1="62" x2="356" y2="134" stroke="#dc2626" strokeWidth="6"/>
+        <polygon points="348,128 356,142 364,128" fill="#dc2626"/>
+        <text x="190" y="52" fontSize="16" fontWeight="700" fill="#dc2626">H₂</text>
         {/* Réservoir */}
-        <rect x="24" y="72" width="96" height="40" rx="18" fill="#e5e7eb" stroke={TXT} strokeWidth="2"/>
-        <rect x="24" y="72" width="18" height="40" rx="6" fill="#dc2626"/>
-        <rect x="102" y="72" width="18" height="40" rx="6" fill="#dc2626"/>
-        <text x="72" y="128" fontSize="15" fontWeight="700" fill={TXT} textAnchor="middle">Réservoir</text>
+        <rect x="14" y="44" width="90" height="36" rx="16" fill="#e5e7eb" stroke={TXT} strokeWidth="2"/>
+        <rect x="14" y="44" width="16" height="36" rx="6" fill="#dc2626"/>
+        <rect x="88" y="44" width="16" height="36" rx="6" fill="#dc2626"/>
+        <text x="60" y="104" fontSize="16" fontWeight="700" fill={TXT} textAnchor="middle">Réservoir</text>
         {/* Détendeur */}
-        <circle cx="177" cy="92" r="17" fill="white" stroke={TXT} strokeWidth="2"/>
-        <line x1="177" y1="92" x2="187" y2="84" stroke="#dc2626" strokeWidth="2"/>
-        <text x="177" y="128" fontSize="15" fontWeight="700" fill={TXT} textAnchor="middle">Détendeur</text>
-        {/* Tuyau H2 */}
-        <line x1="120" y1="92" x2="160" y2="92" stroke="#dc2626" strokeWidth="6"/>
-        <line x1="194" y1="92" x2="360" y2="92" stroke="#dc2626" strokeWidth="6"/>
-        <polygon points="352,84 364,92 352,100" fill="#dc2626"/>
-        <text x="215" y="84" fontSize="17" fontWeight="700" fill="#dc2626">H₂</text>
+        <circle cx="156" cy="62" r="17" fill="white" stroke={TXT} strokeWidth="2"/>
+        <line x1="156" y1="62" x2="166" y2="54" stroke="#dc2626" strokeWidth="2"/>
+        <text x="156" y="104" fontSize="16" fontWeight="700" fill={TXT} textAnchor="middle">Détendeur</text>
         {/* Capteurs */}
-        <rect x="248" y="78" width="68" height="28" rx="4" fill="white" stroke={TXT} strokeWidth="2"/>
-        <text x="282" y="97" fontSize="14" fontWeight="700" fill={TXT} textAnchor="middle">débit, T</text>
-        <text x="282" y="120" fontSize="15" fontWeight="700" fill={TXT} textAnchor="middle">Capteurs</text>
+        <rect x="228" y="46" width="90" height="32" rx="4" fill="white" stroke={TXT} strokeWidth="2"/>
+        <text x="273" y="68" fontSize="16" fontWeight="700" fill={TXT} textAnchor="middle">débit, T</text>
+        <text x="273" y="104" fontSize="16" fontWeight="700" fill={TXT} textAnchor="middle">Capteurs</text>
         {/* Ventilateur */}
-        <g transform="translate(418 34)">
-          <circle r="24" fill="white" stroke={TXT} strokeWidth="2"/>
+        <g transform="translate(238 168)">
+          <circle r="22" fill="white" stroke={TXT} strokeWidth="2"/>
           <g>
-            {[0, 90, 180, 270].map(a => <ellipse key={a} cx="0" cy="-11" rx="5" ry="11" fill="#60a5fa" transform={`rotate(${a})`}/>)}
+            {[0, 90, 180, 270].map(a => <ellipse key={a} cx="0" cy="-10" rx="4.5" ry="10" fill="#60a5fa" transform={`rotate(${a})`}/>)}
             {dureeHelice > 0 && <animateTransform attributeName="transform" type="rotate" from="0" to="360" dur={`${dureeHelice}s`} repeatCount="indefinite"/>}
           </g>
         </g>
-        <text x="468" y="30" fontSize="14" fill={TXT2}>air (O₂)</text>
+        <line x1="262" y1="168" x2="284" y2="168" stroke="#60a5fa" strokeWidth="4"/>
+        <text x="238" y="208" fontSize="16" fontWeight="700" fill={TXT} textAnchor="middle">Ventilateur</text>
         {/* Pile : 10 cellules */}
-        <rect x="372" y="80" width="92" height="96" rx="4" fill="#fee2e2" stroke={TXT} strokeWidth="2"/>
+        <rect x="296" y="142" width="96" height="82" rx="4" fill="#fee2e2" stroke={TXT} strokeWidth="2"/>
         {Array.from({ length: BANC_N + 1 }, (_, k) => (
-          <line key={k} x1={378 + k * 8} y1="84" x2={378 + k * 8} y2="172" stroke="#7f1d1d" strokeWidth="2"/>
+          <line key={k} x1={302 + k * 8.4} y1="146" x2={302 + k * 8.4} y2="220" stroke="#7f1d1d" strokeWidth="2"/>
         ))}
-        <text x="418" y="198" fontSize="15" fontWeight="700" fill={TXT} textAnchor="middle">Pile (10 cellules)</text>
-        {/* Câbles */}
-        <polyline points="418,176 418,232 540,232 540,212" fill="none" stroke={COUL.pile} strokeWidth="2.5"/>
-        <polyline points="464,120 520,120" fill="none" stroke={COUL.elec} strokeWidth="2.5"/>
+        <text x="352" y="244" fontSize="16" fontWeight="700" fill={TXT} textAnchor="middle">Pile</text>
+        <text x="352" y="262" fontSize="16" fill={TXT2} textAnchor="middle">10 cellules</text>
+        {/* Câbles pile → charge */}
+        <polyline points="308,224 308,274 82,274 82,258" fill="none" stroke={COUL.pile} strokeWidth="2.5"/>
+        <polyline points="296,220 158,220" fill="none" stroke={COUL.elec} strokeWidth="2.5"/>
         {/* Charge électronique */}
-        <rect x="514" y="80" width="108" height="130" rx="6" fill="#f1f5f9" stroke={TXT} strokeWidth="2"/>
-        {afficheur(522, 90, `${fmt(iBanc, 2)} A`, '#fca5a5')}
-        {afficheur(522, 120, `${fmt(uB, 2)} V`, '#93c5fd')}
-        {afficheur(522, 150, `${fmt(pB, 1)} W`, '#86efac')}
-        <text x="568" y="198" fontSize="14.5" fontWeight="700" fill={TXT} textAnchor="middle">Charge</text>
-        <text x="320" y="270" fontSize="15" fill={TXT2} textAnchor="middle">
-          Cliquez sur un élément du banc pour savoir à quoi il sert.
-        </text>
+        <rect x="14" y="146" width="136" height="112" rx="6" fill="#f1f5f9" stroke={TXT} strokeWidth="2"/>
+        {afficheur(36, 154, `${fmt(iBanc, 2)} A`, '#fca5a5')}
+        {afficheur(36, 186, `${fmt(uB, 2)} V`, '#93c5fd')}
+        {afficheur(36, 218, `${fmt(pB, 1)} W`, '#86efac')}
+        <text x="82" y="300" fontSize="16" fontWeight="700" fill={TXT} textAnchor="middle">Charge</text>
+        <text x="200" y="336" fontSize="16" fill={TXT2} textAnchor="middle">Cliquez sur un élément du banc</text>
+        <text x="200" y="356" fontSize="16" fill={TXT2} textAnchor="middle">pour savoir à quoi il sert.</text>
       </g>
     </svg>
   );
@@ -1106,8 +1108,8 @@ export function SimulationHydrogene() {
       <div className="h2-l1">
         <div style={box}>
           <div style={titreBox}>{atelier === 1 ? 'La maquette : de la lumière au moteur' : 'Le banc de la pile à combustible'}</div>
-          <div className="es-schema-cadre">{atelier === 1 ? schemaMaquette : schemaBanc}</div>
-          <div className="es-schema-aide">↔ Faites glisser le schéma pour le voir en entier.</div>
+          {atelier === 1 ? <><div className="es-schema-cadre">{schemaMaquette}</div>
+          <div className="es-schema-aide">↔ Faites glisser le schéma pour le voir en entier.</div></> : <div>{schemaBanc}</div>}
           {enGuide && atelier === 2 && moduleInfo && <div style={{ fontSize: 14, color: TXT, marginTop: 8, padding: '6px 10px',
             background: '#fef9c3', borderRadius: 6 }}><strong>{moduleInfo.nom}</strong> : {moduleInfo.role}</div>}
           <div style={{ fontSize: 13, color: TXT2, marginTop: 6, lineHeight: 1.5 }}>
