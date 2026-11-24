@@ -1,4 +1,4 @@
-import { Fm, Fi, Grandeurs, Exemple, Memo, FauxVrai, Schema, T, Fl, COUL, Courbe, BarrePertes } from '../elements';
+import { Fm, Fi, Grandeurs, Exemple, Memo, FauxVrai, Def, Schema, T, Fl, COUL, Courbe, BarrePertes } from '../elements';
 
 // Hydrogène : F = 96 485 C/mol ; Vm = 24 L/mol (20 °C) ; ΔH = 285 kJ/mol ; ΔH/2F ≈ 1,48 V ; η_F = 0,72 ; électrolyseur : 0,17 A et 1,52 V à pleine lumière.
 // Banc de pile : 10 cellules en série de 25 cm² ; U_banc(i) = 8,775 − 0,6688·ln(1 + i/0,1474) − 0,0377·i (modèle de la simulation).
@@ -42,6 +42,39 @@ const SceneElectrolyse = () => (
   </Schema>
 );
 
+const ScenePileReactions = () => (
+  <Schema h={248} titre="Pile à combustible : à l'électrode négative le dihydrogène libère des électrons et des ions H plus ; à l'électrode positive le dioxygène les capte et forme de l'eau">
+    <rect x="70" y="70" width="220" height="110" rx="10" fill="#f8fafc" stroke="#94a3b8" strokeWidth="2.5" />
+    <rect x="70" y="70" width="60" height="110" fill="#e0e7ff" stroke={COUL.violet} strokeWidth="2.5" />
+    <rect x="230" y="70" width="60" height="110" fill="#ffedd5" stroke={COUL.orange} strokeWidth="2.5" />
+    <T x="100" y="130" s="(−)" f={15} c={COUL.violet} /><T x="260" y="130" s="(+)" f={15} c={COUL.orange} />
+    <T x="180" y="122" s="H⁺" c={COUL.eau} f={14} /><Fl x1="140" y1="136" x2="220" y2="136" c="B" e={2.5} />
+    <Fl x1="86" y1="24" x2="86" y2="66" c="B" e={2.5} /><T x="86" y="16" s="H₂" f={14} c={COUL.eau} />
+    <Fl x1="274" y1="24" x2="274" y2="66" c="G" e={2.5} /><T x="274" y="16" s="O₂" f={14} c={COUL.vert} />
+    <Fl x1="260" y1="184" x2="260" y2="214" c="K" e={2.5} /><T x="260" y="230" s="H₂O" f={14} />
+    <T x="100" y="206" s="H₂ → 2 H⁺ + 2 e⁻" f={13} w={600} /><T x="100" y="224" s="anode (oxydation)" f={13} c={COUL.violet} />
+    <T x="180" y="34" s="e⁻ par le circuit" w={600} c={COUL.orange} f={13} />
+    <path d="M116 66 V44 H244 V66" fill="none" stroke={COUL.orange} strokeWidth="2.5" strokeDasharray="6 4" />
+  </Schema>
+);
+
+const SceneBilanChaine = () => {
+  const R = [['Panneau solaire', '10 %', '#f59e0b'], ['Électrolyseur', '≈ 70 %', COUL.eau], ['Pile à combustible', '≈ 50 %', COUL.vert], ['Moteur', '90 %', COUL.violet]];
+  return (
+    <Schema h={236} titre="Rendement global de la chaîne : 10 % pour le panneau, 70 % pour l'électrolyseur, 50 % pour la pile et 90 % pour le moteur donnent environ 3 % en tout">
+      {R.map(([n, v, c], k) => (
+        <g key={k}>
+          <rect x="8" y={8 + k * 42} width="210" height="32" rx="10" fill="#fff" stroke={c} strokeWidth="2.5" />
+          <T x="113" y={29 + k * 42} s={n} f={14} />
+          <T x="262" y={30 + k * 42} s={v} f={16} c={c} />
+          {k < 3 && <T x="320" y={36 + k * 42} s="×" f={16} c="#475569" />}
+        </g>))}
+      <rect x="8" y="180" width="344" height="44" rx="10" fill="#fff7ed" stroke={COUL.orange} strokeWidth="2.5" />
+      <T x="180" y="208" s="η global ≈ 0,10 × 0,70 × 0,50 × 0,90 ≈ 3 %" f={15} c={COUL.orange} />
+    </Schema>
+  );
+};
+
 export const hydrogene = [
   { id: 'chaine', titre: 'Le dihydrogène, un vecteur d’énergie', corps: <>
     <SceneChaine />
@@ -73,5 +106,19 @@ export const hydrogene = [
     <Grandeurs lignes={[['η', 'rendement d’une cellule', '%'], ['U_cellule', 'tension d’une cellule', 'V'], ['U_pile', 'tension aux bornes des 10 cellules en série', 'V'], ['1,48', '= ΔH ÷ 2F, tension théorique', 'V']]} />
     <Exemple>À 10 A : <Fi>{'U_pile ≈ 5,6 [V]'}</Fi>, donc <Fi>{'U_cellule ≈ 0,56 [V]'}</Fi> et <Fi>{'η = {0,56|1,48} ≈ 38 [%]'}</Fi>. Densité de courant : 10 A ÷ 25 cm² = 0,40 A/cm².</Exemple>
     <Memo>Plus on demande de courant, plus la tension et le rendement baissent : il faut choisir entre rendement et puissance.</Memo>
+  </> },
+  { id: 'reactions', titre: 'Dans la pile : l’eau revient', corps: <>
+    <ScenePileReactions />
+    <Def terme="Électrode négative (anode)">H₂ → 2 H⁺ + 2 e⁻ : le dihydrogène perd ses électrons.</Def>
+    <Def terme="Électrode positive (cathode)">½ O₂ + 2 H⁺ + 2 e⁻ → H₂O : le dioxygène les récupère et forme de l’eau.</Def>
+    <Exemple>Bilan : H₂ + ½ O₂ → H₂O. C’est l’électrolyse à l’envers : on récupère de l’électricité, il ne reste que de l’eau.</Exemple>
+    <Memo>Électrolyse : on injecte de l’électricité pour casser l’eau. Pile : on récupère de l’électricité en refaisant l’eau.</Memo>
+  </> },
+  { id: 'bilan', titre: 'Le bilan de toute la chaîne', corps: <>
+    <SceneBilanChaine />
+    <Fm>{'η_{global} = η_{panneau} * η_{élec} * η_{pile} * η_{moteur}'}</Fm>
+    <Grandeurs lignes={[['η_{panneau}', 'rendement du panneau solaire', ''], ['η_{élec}', 'rendement de l’électrolyseur', ''], ['η_{pile}', 'rendement de la pile (dépend du courant)', ''], ['η_{moteur}', 'rendement du moteur', '']]} />
+    <Exemple><Fi>{'η_{global} = 0,10 × 0,70 × 0,50 × 0,90 ≈ 0,03'}</Fi> : environ 3 % de l’énergie lumineuse devient de l’énergie mécanique (valeurs d’illustration).</Exemple>
+    <Memo>Les rendements se multiplient : chaque maillon de la chaîne en fait perdre un peu.</Memo>
   </> },
 ];
