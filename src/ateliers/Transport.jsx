@@ -307,6 +307,31 @@ export function SimulationTransport() {
       {[0.5, 1, 2].map(m => <button key={m} onClick={() => set(m)} style={petitBtn(val === m, COUL.ligne)}>m = {fmt(m, m % 1 ? 1 : 0)}</button>)}
     </div>
   );
+  const styleSel = { display: 'block', width: '100%', minHeight: 42, marginTop: 3, fontSize: 15, padding: '6px 8px', border: `1.5px solid ${BORDER}`, borderRadius: 8, background: 'white', color: TXT };
+  const menu = (libelle, valeur, onChange, options) => (
+    <label style={{ display: 'block', fontSize: 13.5, color: TXT2, fontWeight: 700, marginBottom: 8 }}>{libelle}
+      <select value={valeur} onChange={e => onChange(e.target.value)} style={styleSel}>
+        {options.map(([v, t]) => <option key={v} value={v}>{t}</option>)}
+      </select>
+    </label>
+  );
+  const nomM = m => `m = ${fmt(m, m % 1 ? 1 : 0)}`;
+  const cableCourant = CABLES.find(c => c.id === cableId);
+  const resumeCommandes = `${nomM(m1)} → ${nomM(m2)} · câbles ${cableCourant.nom} · ${L >= 1000 ? '1 km' : `${L} m`}`;
+  const commandesExplore = (
+    <>
+      <div style={{ fontSize: 12.5, color: TXT2, lineHeight: 1.5, marginBottom: 8 }}>
+        Choisissez les transformateurs, les câbles et la longueur de la ligne : le bilan et les mesures se mettent à jour.
+      </div>
+      {menu('Transformateur 1 (départ)', m1, v => setM1(+v), [0.5, 1, 2].map(m => [m, nomM(m)]))}
+      {menu('Transformateur 2 (arrivée)', m2, v => setM2(+v), [0.5, 1, 2].map(m => [m, nomM(m)]))}
+      {Math.abs(m1 * m2 - 1) > 0.01 && <div style={{ fontSize: 12.5, color: '#b45309', marginBottom: 8 }}>
+        m₁ × m₂ ≠ 1 : les habitations ne reçoivent pas la bonne tension.</div>}
+      {menu('Câbles de la ligne', cableId, setCableId, CABLES.map(c => [c.id, `${c.nom} · ${fmt(c.S, 1)} mm²`]))}
+      {menu('Longueur de la ligne', L, v => setL(+v), [10, 50, 100, 300, 1000].map(l => [l, l >= 1000 ? '1 km' : `${l} m`]))}
+      <button onClick={ajouterMesure} style={{ ...btn(true, '#0284c7'), marginTop: 2 }}><Emo e="➕"/> Enregistrer cette mesure</button>
+    </>
+  );
   const commandes = (
     <>
       {!revele.reglages && <div style={{ fontSize: 13, color: TXT2 }}>Les commandes apparaîtront au fil du parcours.</div>}
@@ -474,7 +499,7 @@ export function SimulationTransport() {
       <div className="tr-l2">
         {mode !== 'explore' && blocGraphe}
         <div data-apparait="3 4">
-          {section('commandes', 'Commandes', commandes)}
+          {section('commandes', mode === 'explore' ? <>Commandes <span style={{ fontWeight: 600, fontSize: 13, color: TXT2 }}>· {resumeCommandes}</span></> : 'Commandes', mode === 'explore' ? commandesExplore : commandes)}
           {revele.mesures && section('mesures', 'Mesures', mesures)}
         </div>
         {revele.tableau && <div data-apparait="8">{section('points', 'Mes mesures', tableau)}</div>}
